@@ -52,6 +52,9 @@ dependencies:
   firebase_messaging_platform_interface: ^4.6.5
   firebase_messaging_web: ^3.10.5
   flutter_local_notifications: ^19.2.0
+  google_maps_flutter: ^2.12.2
+  open_file: ^3.3.2
+  path_provider: ^2.1.2
 #  permission_handler: ^11.3.1
 #  device_info_plus: ^10.1.2
 

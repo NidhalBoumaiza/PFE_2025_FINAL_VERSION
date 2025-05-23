@@ -101,8 +101,43 @@ class AppTranslations extends Translations {
       'enable_location_settings': 'Activer les paramètres de localisation',
       'location_required_for_search':
           'La localisation est nécessaire pour rechercher des médecins à proximité',
+      'location_required_for_map':
+          'La localisation est nécessaire pour afficher les hôpitaux et pharmacies à proximité',
       'location_enabled': 'Localisation activée',
       'location_disabled': 'Localisation désactivée',
+      'error_enabling_location':
+          'Erreur lors de l\'activation de la localisation',
+
+      // Hospitals and Pharmacies Map
+      'hospitals': 'Hôpitaux',
+      'pharmacies': 'Pharmacies',
+      'nearby_hospitals': 'Hôpitaux à proximité',
+      'nearby_pharmacies': 'Pharmacies à proximité',
+      'your_location': 'Votre position',
+      'could_not_get_location': 'Impossible d\'obtenir votre position',
+      'error_fetching_places': 'Erreur lors de la recherche des établissements',
+      'no_places_found': 'Aucun établissement trouvé à proximité',
+      'get_directions': 'Itinéraire',
+      'could_not_launch_maps': 'Impossible d\'ouvrir Google Maps',
+      'loading_places': 'Chargement des établissements...',
+      'found': 'trouvé(s)',
+      'getting_location': 'Récupération de votre position...',
+
+      // Medical Records
+      'view': 'Voir',
+      'edit': 'Modifier',
+      'delete': 'Supprimer',
+      'download': 'Télécharger',
+      'downloaded': 'Téléchargé',
+      'downloading': 'Téléchargement',
+      'download_complete': 'Téléchargement terminé',
+      'download_failed': 'Échec du téléchargement',
+      'cannot_open_file': 'Impossible d\'ouvrir le fichier',
+      'storage_permission_denied': 'Permission de stockage refusée',
+      'error': 'Erreur',
+      'description': 'Description',
+      'added_on': 'Ajouté le',
+      'edit_description': 'Modifier la description',
 
       // New fields translations
       'blood_type': 'Groupe sanguin',
@@ -165,8 +200,42 @@ class AppTranslations extends Translations {
       'enable_location_settings': 'Enable Location Settings',
       'location_required_for_search':
           'Location is required to search for nearby doctors',
+      'location_required_for_map':
+          'Location is required to show nearby hospitals and pharmacies',
       'location_enabled': 'Location enabled',
       'location_disabled': 'Location disabled',
+      'error_enabling_location': 'Error enabling location',
+
+      // Hospitals and Pharmacies Map
+      'hospitals': 'Hospitals',
+      'pharmacies': 'Pharmacies',
+      'nearby_hospitals': 'Nearby Hospitals',
+      'nearby_pharmacies': 'Nearby Pharmacies',
+      'your_location': 'Your Location',
+      'could_not_get_location': 'Could not get your location',
+      'error_fetching_places': 'Error fetching places',
+      'no_places_found': 'No places found nearby',
+      'get_directions': 'Get Directions',
+      'could_not_launch_maps': 'Could not launch Google Maps',
+      'loading_places': 'Loading places...',
+      'found': 'found',
+      'getting_location': 'Getting your location...',
+
+      // Medical Records
+      'view': 'View',
+      'edit': 'Edit',
+      'delete': 'Delete',
+      'download': 'Download',
+      'downloaded': 'Downloaded',
+      'downloading': 'Downloading',
+      'download_complete': 'Download complete',
+      'download_failed': 'Download failed',
+      'cannot_open_file': 'Cannot open file',
+      'storage_permission_denied': 'Storage permission denied',
+      'error': 'Error',
+      'description': 'Description',
+      'added_on': 'Added on',
+      'edit_description': 'Edit description',
 
       // New fields translations
       'blood_type': 'Blood Type',

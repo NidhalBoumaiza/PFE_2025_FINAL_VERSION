@@ -29,6 +29,7 @@ import 'package:medical_app/core/utils/custom_snack_bar.dart';
 import 'package:geolocator/geolocator.dart';
 import 'dart:async';
 import 'package:medical_app/core/widgets/location_indicator.dart';
+import 'package:medical_app/core/widgets/location_activation_screen.dart';
 
 class HomePatient extends StatefulWidget {
   const HomePatient({super.key});
@@ -50,7 +51,19 @@ class _HomePatientState extends State<HomePatient> {
     super.initState();
     _loadUserData();
     _printFCMToken(); // Print FCM token for testing
-    _checkLocationPermission();
+
+    // Always show location activation screen when app is opened
+    // Small delay to ensure context is available
+    Future.delayed(Duration(milliseconds: 500), () {
+      if (!mounted) return;
+
+      _showLocationActivationScreen();
+
+      // Always try to update location even if user cancels the permission dialog
+      if (userId.isNotEmpty) {
+        _updateUserLocation();
+      }
+    });
   }
 
   @override
@@ -373,107 +386,77 @@ class _HomePatientState extends State<HomePatient> {
     );
   }
 
-  void _checkLocationPermission() async {
-    try {
-      final serviceEnabled = await LocationService.isLocationServiceEnabled();
-      if (!serviceEnabled) {
-        // Location services are not enabled
-        _showLocationServiceDialog();
-        return;
+  // Show the location activation screen every time the app is opened
+  void _showLocationActivationScreen() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder:
+            (context) => LocationActivationScreen(
+              onLocationEnabled: () {
+                if (userId.isNotEmpty) {
+                  _updateUserLocation();
+                }
+              },
+            ),
+      ),
+    ).then((enabled) {
+      // Even if user denied, try to get location with current permissions
+      if (enabled != true && userId.isNotEmpty) {
+        _updateUserLocation();
       }
-
-      final permission = await Geolocator.checkPermission();
-      if (permission == LocationPermission.denied) {
-        _showLocationPermissionDialog();
-      } else if (permission == LocationPermission.deniedForever) {
-        // Cannot request permission, show a snackbar
-        showErrorSnackBar(context, 'location_permission_denied'.tr);
-      } else if ((permission == LocationPermission.always ||
-              permission == LocationPermission.whileInUse) &&
-          userId.isNotEmpty) {
-        // Permission granted, update user location
-        await LocationService.updateUserLocation(userId, 'patient');
-        print('Location updated for user: $userId');
-      }
-    } catch (e) {
-      print('Error checking location permission: $e');
-    }
+    });
   }
 
-  void _showLocationPermissionDialog() async {
-    try {
-      final serviceEnabled = await LocationService.isLocationServiceEnabled();
-      if (!serviceEnabled) {
-        await Geolocator.openLocationSettings();
-        return;
-      }
+  // Placeholder methods to maintain compatibility with existing code
+  void _checkLocationPermission() {
+    _showLocationActivationScreen();
+  }
 
-      final permission = await LocationService.requestLocationPermission();
-      if (permission == LocationPermission.always ||
-          permission == LocationPermission.whileInUse) {
-        if (userId.isNotEmpty) {
-          final success = await LocationService.updateUserLocation(
-            userId,
-            'patient',
-          );
-          if (success) {
-            showSuccessSnackBar(context, 'location_enabled_success'.tr);
-          }
-        }
-      } else {
-        showErrorSnackBar(context, 'location_permission_denied'.tr);
-      }
-    } catch (e) {
-      print('Error requesting location permission: $e');
-    }
+  void _showLocationPermissionDialog() {
+    _showLocationActivationScreen();
   }
 
   void _showLocationServiceDialog() {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text(
-            'enable_location_settings'.tr,
-            style: GoogleFonts.raleway(
-              fontSize: 18.sp,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          content: Text(
-            'location_required_for_search'.tr,
-            style: GoogleFonts.raleway(fontSize: 14.sp),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.pop(context);
-              },
-              child: Text(
-                'deny'.tr,
-                style: GoogleFonts.raleway(color: Colors.grey),
-              ),
-            ),
-            ElevatedButton(
-              onPressed: () async {
-                Navigator.pop(context);
-                await Geolocator.openLocationSettings();
-                // Check again after returning from settings
-                _checkLocationPermission();
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primaryColor,
-              ),
-              child: Text(
-                'allow'.tr,
-                style: GoogleFonts.raleway(color: Colors.white),
-              ),
-            ),
-          ],
+    _showLocationActivationScreen();
+  }
+
+  void _requestLocationPermission() {
+    _showLocationActivationScreen();
+  }
+
+  Future<void> _checkAndRequestLocationPermission() async {
+    _showLocationActivationScreen();
+  }
+
+  // Update user location using the improved service
+  Future<void> _updateUserLocation() async {
+    try {
+      if (userId.isEmpty) return;
+
+      // Get fresh location
+      final position = await LocationService.getCurrentPosition();
+      if (position != null) {
+        print(
+          'Got accurate position: ${position.latitude}, ${position.longitude}',
         );
-      },
-    );
+
+        // Update user location in Firestore
+        final success = await LocationService.updateUserLocation(
+          userId,
+          'patient',
+        );
+        if (success) {
+          print('Location updated successfully for user: $userId');
+        } else {
+          print('Failed to update location for user: $userId');
+        }
+      } else {
+        print('Could not get current position');
+      }
+    } catch (e) {
+      print('Error updating user location: $e');
+    }
   }
 
   void _startPeriodicLocationUpdates() {
@@ -487,19 +470,6 @@ class _HomePatientState extends State<HomePatient> {
     _locationUpdateTimer = Timer.periodic(const Duration(minutes: 15), (_) {
       _updateUserLocation();
     });
-  }
-
-  Future<void> _updateUserLocation() async {
-    try {
-      final permission = await Geolocator.checkPermission();
-      if (permission == LocationPermission.always ||
-          permission == LocationPermission.whileInUse) {
-        await LocationService.updateUserLocation(userId, 'patient');
-        print('Location updated periodically for user: $userId');
-      }
-    } catch (e) {
-      print('Error updating location: $e');
-    }
   }
 
   // Get the title for the app bar based on the selected index

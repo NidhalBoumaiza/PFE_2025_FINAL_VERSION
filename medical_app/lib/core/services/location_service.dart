@@ -19,9 +19,12 @@ class LocationService {
 
   // Request location permission
   static Future<LocationPermission> requestLocationPermission() async {
-    final permission = await Geolocator.requestPermission();
-    final prefs = await SharedPreferences.getInstance();
+    LocationPermission permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+    }
 
+    final prefs = await SharedPreferences.getInstance();
     if (permission == LocationPermission.always ||
         permission == LocationPermission.whileInUse) {
       await prefs.setBool(LOCATION_PERMISSION_KEY, true);
@@ -32,26 +35,51 @@ class LocationService {
     return permission;
   }
 
-  // Get current position
-  static Future<Position?> getCurrentPosition() async {
+  // Get current position - improved implementation
+  static Future<Position?> getCurrentPosition({int timeoutSeconds = 10}) async {
     try {
-      final serviceEnabled = await isLocationServiceEnabled();
+      bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
       if (!serviceEnabled) {
+        // Try to open location settings
+        await Geolocator.openLocationSettings();
         return null;
       }
 
-      var permission = await Geolocator.checkPermission();
-      if (permission == LocationPermission.denied) {
-        permission = await requestLocationPermission();
-        if (permission == LocationPermission.denied ||
-            permission == LocationPermission.deniedForever) {
+      LocationPermission checkPermission = await Geolocator.checkPermission();
+      if (checkPermission == LocationPermission.denied) {
+        LocationPermission requestPermission =
+            await Geolocator.requestPermission();
+        if (requestPermission != LocationPermission.whileInUse &&
+            requestPermission != LocationPermission.always) {
           return null;
         }
       }
 
-      return await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.high,
-      );
+      // Always try to get the most accurate position possible
+      try {
+        // First try with high accuracy and timeout
+        var position = await Geolocator.getCurrentPosition(
+          desiredAccuracy: LocationAccuracy.high,
+          timeLimit: Duration(seconds: timeoutSeconds),
+        );
+
+        print(
+          'Got accurate position: ${position.latitude}, ${position.longitude}',
+        );
+        return position;
+      } catch (timeoutError) {
+        print('High accuracy position timed out, trying with lower accuracy');
+        // If high accuracy times out, try with lower accuracy
+        var position = await Geolocator.getCurrentPosition(
+          desiredAccuracy: LocationAccuracy.medium,
+          timeLimit: Duration(seconds: 5),
+        );
+
+        print(
+          'Got medium accuracy position: ${position.latitude}, ${position.longitude}',
+        );
+        return position;
+      }
     } catch (e) {
       print('Error getting current position: $e');
       return null;
@@ -61,21 +89,33 @@ class LocationService {
   // Update user location in Firestore
   static Future<bool> updateUserLocation(String userId, String userType) async {
     try {
+      // Get current position using our improved method
       final position = await getCurrentPosition();
-      if (position == null) return false;
+      if (position == null) {
+        print('Could not get current position');
+        return false;
+      }
 
+      // Format location data for Firestore
       final locationData = {
         'type': 'Point',
         'coordinates': [position.longitude, position.latitude],
       };
 
+      // Add timestamp separately to avoid serialization issues
+      final Map<String, dynamic> updateData = {
+        'location': locationData,
+        'locationUpdatedAt': FieldValue.serverTimestamp(),
+      };
+
       // Determine collection based on user type
       final collection = userType == 'patient' ? 'patients' : 'medecins';
 
+      // Update Firestore
       await FirebaseFirestore.instance
           .collection(collection)
           .doc(userId)
-          .update({'location': locationData});
+          .update(updateData);
 
       // Also update in shared preferences for cached user
       final prefs = await SharedPreferences.getInstance();
@@ -86,6 +126,9 @@ class LocationService {
         await prefs.setString('CACHED_USER', jsonEncode(userMap));
       }
 
+      print(
+        'Location updated successfully: ${position.latitude}, ${position.longitude}',
+      );
       return true;
     } catch (e) {
       print('Error updating user location: $e');

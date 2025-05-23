@@ -13,6 +13,7 @@ import '../../../../core/utils/app_colors.dart';
 import '../../../../injection_container.dart' as di;
 import '../../../authentication/data/models/user_model.dart';
 import '../../../localisation/presentation/pages/pharmacie_page.dart';
+import '../../../localisation/domain/entities/place_entity.dart';
 import '../../../rendez_vous/presentation/pages/RendezVousPatient.dart';
 import '../../../rendez_vous/presentation/blocs/rendez-vous BLoC/rendez_vous_bloc.dart';
 import '../../../specialite/presentation/pages/AllSpecialtiesPage.dart';
@@ -193,14 +194,20 @@ class _DashboardpatientState extends State<Dashboardpatient> {
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (context) => const PharmaciePage(),
+                                  builder:
+                                      (context) => const PharmaciePage(
+                                        initialType: PlaceType.pharmacy,
+                                      ),
                                 ),
                               );
                             } else if (itemText == 'hospitals'.tr) {
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (context) => const PharmaciePage(),
+                                  builder:
+                                      (context) => const PharmaciePage(
+                                        initialType: PlaceType.hospital,
+                                      ),
                                 ),
                               );
                             }
