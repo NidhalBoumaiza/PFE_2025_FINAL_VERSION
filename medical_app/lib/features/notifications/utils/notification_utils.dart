@@ -6,7 +6,7 @@ enum NotificationType {
   newPrescription,
   prescriptionUpdated,
   newMessage,
-  newRating,
+  newRating, appointmentCanceled, prescriptionCanceled, prescriptionRefilled,
 }
 
 class NotificationUtils {
@@ -28,6 +28,15 @@ class NotificationUtils {
         return 'newMessage';
       case NotificationType.newRating:
         return 'newRating';
+      case NotificationType.appointmentCanceled:
+        // TODO: Handle this case.
+        throw UnimplementedError();
+      case NotificationType.prescriptionCanceled:
+        // TODO: Handle this case.
+        throw UnimplementedError();
+      case NotificationType.prescriptionRefilled:
+        // TODO: Handle this case.
+        throw UnimplementedError();
     }
   }
 

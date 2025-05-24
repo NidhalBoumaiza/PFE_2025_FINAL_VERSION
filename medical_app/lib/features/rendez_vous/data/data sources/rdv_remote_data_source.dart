@@ -102,39 +102,36 @@ class RendezVousRemoteDataSourceImpl implements RendezVousRemoteDataSource {
       String recipientRole,
       ) async {
     try {
-      // If status is 'accepted', calculate the end time based on doctor's appointment duration
+      // Get the current appointment data
+      final appointmentDoc = await firestore.collection('rendez_vous').doc(rendezVousId).get();
+      if (!appointmentDoc.exists) {
+        throw ServerMessageException('Rendezvous not found');
+      }
+
+      final appointmentData = appointmentDoc.data() as Map<String, dynamic>;
+      DateTime startTime;
+
+      // Parse startTime from the document
+      if (appointmentData['startTime'] is Timestamp) {
+        startTime = (appointmentData['startTime'] as Timestamp).toDate();
+      } else if (appointmentData['startTime'] is String) {
+        startTime = DateTime.parse(appointmentData['startTime'] as String);
+      } else {
+        throw ServerException('Invalid startTime format in appointment');
+      }
+
+      // Handle different status updates
       if (status == 'accepted') {
-        // Get the current appointment data to access the startTime
-        final appointmentDoc = await firestore.collection('rendez_vous').doc(rendezVousId).get();
-        if (!appointmentDoc.exists) {
-          throw ServerMessageException('Rendezvous not found');
-        }
-
-        final appointmentData = appointmentDoc.data() as Map<String, dynamic>;
-        DateTime startTime;
-
-        // Parse startTime from the document
-        if (appointmentData['startTime'] is Timestamp) {
-          startTime = (appointmentData['startTime'] as Timestamp).toDate();
-        } else if (appointmentData['startTime'] is String) {
-          startTime = DateTime.parse(appointmentData['startTime'] as String);
-        } else {
-          throw ServerException('Invalid startTime format in appointment');
-        }
-
         // Get the doctor's appointment duration
         final appointmentDuration = await fetchDoctorAppointmentDuration(doctorId);
-
-        // Calculate endTime based on startTime and appointmentDuration
         final endTime = startTime.add(Duration(minutes: appointmentDuration));
 
-        // Update the appointment with status and calculated endTime
         await firestore.collection('rendez_vous').doc(rendezVousId).update({
           'status': status,
           'endTime': endTime.toIso8601String(),
         });
 
-        // Check if a conversation already exists
+        // Create conversation if it doesn't exist
         final existingConversation = await firestore
             .collection('conversations')
             .where('patientId', isEqualTo: patientId)
@@ -142,10 +139,7 @@ class RendezVousRemoteDataSourceImpl implements RendezVousRemoteDataSource {
             .get();
 
         if (existingConversation.docs.isEmpty) {
-          // Create new conversation
-          final docRef = firestore.collection('conversations').doc();
-          await docRef.set({
-            'id': docRef.id,
+          await firestore.collection('conversations').add({
             'patientId': patientId,
             'doctorId': doctorId,
             'patientName': patientName,
@@ -158,8 +152,7 @@ class RendezVousRemoteDataSourceImpl implements RendezVousRemoteDataSource {
           });
         }
 
-        // Notification handled by RendezVousBloc
-        /*
+        // Notify patient about acceptance
         await notificationRemoteDataSource.sendNotification(
           title: 'Appointment Accepted',
           body: 'Dr. $doctorName has accepted your appointment on ${startTime.toLocal().toString().substring(0, 16)}.',
@@ -167,44 +160,80 @@ class RendezVousRemoteDataSourceImpl implements RendezVousRemoteDataSource {
           recipientId: patientId,
           type: NotificationType.appointmentAccepted,
           appointmentId: rendezVousId,
-          recipientRole: recipientRole,
+          recipientRole: 'patient',
           data: {
             'doctorName': doctorName,
             'startTime': startTime.toIso8601String(),
           },
         );
-        print('Sent notification for accepted appointment $rendezVousId to patient $patientId');
-        */
-      } else if (status == 'rejected') {
-        // Update the appointment status
-        await firestore
-            .collection('rendez_vous')
-            .doc(rendezVousId)
-            .update({'status': status});
 
-        // Notification handled by RendezVousBloc
-        /*
+      } else if (status == 'rejected') {
+        await firestore.collection('rendez_vous').doc(rendezVousId).update({
+          'status': status,
+        });
+
+        // Notify patient about rejection
         await notificationRemoteDataSource.sendNotification(
           title: 'Appointment Rejected',
-          body: 'Dr. $doctorName has rejected your appointment.',
+          body: 'Dr. $doctorName has rejected your appointment on ${startTime.toLocal().toString().substring(0, 16)}.',
           senderId: doctorId,
           recipientId: patientId,
           type: NotificationType.appointmentRejected,
           appointmentId: rendezVousId,
-          recipientRole: recipientRole,
+          recipientRole: 'patient',
           data: {
             'doctorName': doctorName,
+            'startTime': startTime.toIso8601String(),
           },
         );
-        print('Sent notification for rejected appointment $rendezVousId to patient $patientId');
-        */
+
+      } else if (status == 'canceled') {
+        // Determine who is canceling (patient or doctor)
+        final isPatientCanceling = recipientRole == 'patient';
+
+        await firestore.collection('rendez_vous').doc(rendezVousId).update({
+          'status': status,
+        });
+
+        if (isPatientCanceling) {
+          // Notify doctor about patient's cancellation
+          await notificationRemoteDataSource.sendNotification(
+            title: 'Appointment Canceled',
+            body: '$patientName has canceled the appointment on ${startTime.toLocal().toString().substring(0, 16)}.',
+            senderId: patientId,
+            recipientId: doctorId,
+            type: NotificationType.appointmentCanceled,
+            appointmentId: rendezVousId,
+            recipientRole: 'doctor',
+            data: {
+              'patientName': patientName,
+              'startTime': startTime.toIso8601String(),
+            },
+          );
+        } else {
+          // Notify patient about doctor's cancellation
+          await notificationRemoteDataSource.sendNotification(
+            title: 'Appointment Canceled',
+            body: 'Dr. $doctorName has canceled your appointment on ${startTime.toLocal().toString().substring(0, 16)}.',
+            senderId: doctorId,
+            recipientId: patientId,
+            type: NotificationType.appointmentCanceled,
+            appointmentId: rendezVousId,
+            recipientRole: 'patient',
+            data: {
+              'doctorName': doctorName,
+              'startTime': startTime.toIso8601String(),
+            },
+          );
+        }
       } else {
-        // For other status updates, just update the status
-        await firestore
-            .collection('rendez_vous')
-            .doc(rendezVousId)
-            .update({'status': status});
+        // For other status updates
+        await firestore.collection('rendez_vous').doc(rendezVousId).update({
+          'status': status,
+        });
       }
+
+      print('Successfully updated appointment $rendezVousId to status $status');
     } on FirebaseException catch (e) {
       if (e.code == 'not-found') {
         throw ServerMessageException('Rendezvous not found');

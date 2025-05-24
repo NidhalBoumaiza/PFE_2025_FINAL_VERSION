@@ -185,11 +185,27 @@ class MessagingRemoteDataSourceImpl implements MessagingRemoteDataSource {
             : conversationData['doctorName'] as String;
 
         final notificationTitle = 'New Message from $senderName';
-        final notificationBody = message.type == 'text'
-            ? message.content.length > 100
-            ? '${message.content.substring(0, _findWordBoundary(message.content, 97))}...'
-            : message.content
-            : 'Sent a ${message.type} message';
+
+        // Improved message body based on message type
+        String notificationBody;
+        switch (message.type) {
+          case 'image':
+            notificationBody = '📷 Photo';
+            break;
+          case 'video':
+            notificationBody = '🎬 Video';
+            break;
+          case 'document':
+            notificationBody = '📄 Document';
+            break;
+          case 'audio':
+            notificationBody = '🎵 Audio';
+            break;
+          default: // text
+            notificationBody = message.content.length > 100
+                ? '${message.content.substring(0, _findWordBoundary(message.content, 97))}...'
+                : message.content;
+        }
 
         try {
           await notificationRemoteDataSource.sendNotification(
@@ -207,12 +223,16 @@ class MessagingRemoteDataSourceImpl implements MessagingRemoteDataSource {
               'senderName': senderName,
               'messageId': message.id,
               'messageType': message.type,
+              'click_action': 'FLUTTER_NOTIFICATION_CLICK',
+              // Include file URL if available
+              if (fileUrl != null) 'fileUrl': fileUrl,
+              if (fileName != null) 'fileName': fileName,
             },
           );
           print('Sent notification for message ${message.id} to recipient $recipientId');
         } catch (notificationError) {
           print('Failed to send notification for message ${message.id}: $notificationError');
-          // Log the error but don't throw to ensure message sending isn't blocked
+          // Consider retry mechanism or logging to analytics
         }
       } else {
         print('Conversation ${message.conversationId} not found, skipping notification');

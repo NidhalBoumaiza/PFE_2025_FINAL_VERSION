@@ -25,37 +25,99 @@ class PrescriptionRemoteDataSourceImpl implements PrescriptionRemoteDataSource {
     required this.notificationRemoteDataSource,
   });
 
+  Future<void> _sendPrescriptionNotification({
+    required String action,
+    required PrescriptionEntity prescription,
+    String? additionalMessage,
+  }) async {
+    try {
+      // Get doctor details
+      final doctorDoc = await firestore.collection('medecins').doc(prescription.doctorId).get();
+      final doctorName = doctorDoc.get('name') ?? 'Your doctor';
+
+      // Get patient details
+      final patientDoc = await firestore.collection('patients').doc(prescription.patientId).get();
+      final patientName = patientDoc.get('name') ?? 'Patient';
+
+      // Determine notification content based on action
+      String title;
+      String body;
+      NotificationType type;
+
+      switch (action) {
+        case 'created':
+          title = 'New Prescription';
+          body = 'Dr. $doctorName has created a new prescription for you.';
+          type = NotificationType.newPrescription;
+          break;
+        case 'updated':
+          title = 'Prescription Updated';
+          body = 'Dr. $doctorName has updated your prescription${additionalMessage != null ? ': $additionalMessage' : ''}';
+          type = NotificationType.prescriptionUpdated;
+          break;
+        case 'refilled':
+          title = 'Prescription Refilled';
+          body = 'Dr. $doctorName has refilled your prescription.';
+          type = NotificationType.prescriptionRefilled;
+          break;
+        case 'canceled':
+          title = 'Prescription Canceled';
+          body = 'Dr. $doctorName has canceled your prescription.';
+          type = NotificationType.prescriptionCanceled;
+          break;
+        default:
+          title = 'Prescription Update';
+          body = 'Your prescription has been updated by Dr. $doctorName';
+          type = NotificationType.prescriptionUpdated;
+      }
+
+      // Send notification
+      await notificationRemoteDataSource.sendNotification(
+        title: title,
+        body: body,
+        senderId: prescription.doctorId,
+        recipientId: prescription.patientId,
+        type: type,
+        prescriptionId: prescription.id,
+        appointmentId: prescription.appointmentId,
+        data: {
+          'doctorName': doctorName,
+          'patientName': patientName,
+          'action': action,
+          if (additionalMessage != null) 'additionalMessage': additionalMessage,
+        },
+        recipientRole: 'patient',
+      );
+
+      print('Sent $action notification for prescription ${prescription.id}');
+    } catch (e) {
+      print('Error sending $action notification: $e');
+      // Don't throw error to prevent blocking the main operation
+    }
+  }
+
   @override
   Future<PrescriptionModel> createPrescription(PrescriptionEntity prescription) async {
     try {
       final prescriptionModel = PrescriptionModel.fromEntity(prescription);
+
+      // Create prescription
       await firestore
           .collection('prescriptions')
           .doc(prescription.id)
           .set(prescriptionModel.toJson());
 
-      // Update the appointment status to completed
+      // Update appointment status
       await firestore.collection('rendez_vous').doc(prescription.appointmentId).update({
         'status': 'completed',
+        'hasPrescription': true,
       });
 
-      // Send notification to the patient
-      final doctorDoc = await firestore.collection('medecins').doc(prescription.doctorId).get();
-      final doctorName = doctorDoc.exists ? doctorDoc.data() != null?['name'] ?? 'Doctor' : 'Doctor' : 'Doctor';
-      await notificationRemoteDataSource.sendNotification(
-        title: 'New Prescription',
-        body: 'Dr. $doctorName has created a new prescription for you.',
-        senderId: prescription.doctorId,
-        recipientId: prescription.patientId,
-        type: NotificationType.newPrescription,
-        prescriptionId: prescription.id,
-        appointmentId: prescription.appointmentId,
-        data: {
-          'doctorName': doctorName,
-        },
-        recipientRole: 'patient',
+      // Send notification
+      await _sendPrescriptionNotification(
+        action: 'created',
+        prescription: prescription,
       );
-      print('Sent notification for new prescription ${prescription.id} to patient ${prescription.patientId}');
 
       return prescriptionModel;
     } catch (e) {
@@ -66,54 +128,38 @@ class PrescriptionRemoteDataSourceImpl implements PrescriptionRemoteDataSource {
   @override
   Future<PrescriptionModel> editPrescription(PrescriptionEntity prescription) async {
     try {
-      // Check if the prescription can be edited (12-hour window)
+      // Check if prescription exists and can be edited
       final doc = await firestore.collection('prescriptions').doc(prescription.id).get();
 
       if (!doc.exists) {
         throw ServerException('Prescription not found');
       }
 
-      final existingPrescription = PrescriptionModel.fromJson(doc.data() as Map<String, dynamic>);
-
-      // Check the edit time window
+      final existingPrescription = PrescriptionModel.fromJson(doc.data()!);
       final now = DateTime.now();
       final difference = now.difference(existingPrescription.date);
 
       if (difference.inHours >= 12) {
-        throw ServerException(
-            'Cannot edit prescription after 12 hours of creation'
-        );
+        throw ServerException('Cannot edit prescription after 12 hours of creation');
       }
 
+      // Update prescription
       final prescriptionModel = PrescriptionModel.fromEntity(prescription);
       await firestore
           .collection('prescriptions')
           .doc(prescription.id)
           .update(prescriptionModel.toJson());
 
-      // Send notification to the patient
-      final doctorDoc = await firestore.collection('medecins').doc(prescription.doctorId).get();
-      final doctorName = doctorDoc.exists ? doctorDoc.data() != null?['name'] ?? 'Doctor' : 'Doctor' : 'Doctor';
-      await notificationRemoteDataSource.sendNotification(
-        title: 'Prescription Updated',
-        body: 'Dr. $doctorName has updated your prescription.',
-        senderId: prescription.doctorId,
-        recipientId: prescription.patientId,
-        type: NotificationType.prescriptionUpdated,
-        prescriptionId: prescription.id,
-        appointmentId: prescription.appointmentId,
-        data: {
-          'doctorName': doctorName,
-        },
-        recipientRole: 'patient',
+      // Send notification with edit details
+      await _sendPrescriptionNotification(
+        action: 'updated',
+        prescription: prescription,
+        additionalMessage: 'Changes made to your medication',
       );
-      print('Sent notification for edited prescription ${prescription.id} to patient ${prescription.patientId}');
 
       return prescriptionModel;
     } catch (e) {
-      if (e is ServerException) {
-        throw e;
-      }
+      if (e is ServerException) rethrow;
       throw ServerException('Failed to edit prescription: $e');
     }
   }
@@ -196,30 +242,23 @@ class PrescriptionRemoteDataSourceImpl implements PrescriptionRemoteDataSource {
   Future<void> updatePrescription(PrescriptionEntity prescription) async {
     try {
       final prescriptionModel = PrescriptionModel.fromEntity(prescription);
+
+      // Update prescription
       await firestore
           .collection('prescriptions')
           .doc(prescription.id)
           .update(prescriptionModel.toJson());
 
-      // Send notification to the patient
-      final doctorDoc = await firestore.collection('medecins').doc(prescription.doctorId).get();
-      final doctorName = doctorDoc.exists ? doctorDoc.data() != null?['name'] ?? 'Doctor' : 'Doctor' : 'Doctor';
-      await notificationRemoteDataSource.sendNotification(
-        title: 'Prescription Updated',
-        body: 'Dr. $doctorName has updated your prescription.',
-        senderId: prescription.doctorId,
-        recipientId: prescription.patientId,
-        type: NotificationType.prescriptionUpdated,
-        prescriptionId: prescription.id,
-        appointmentId: prescription.appointmentId,
-        data: {
-          'doctorName': doctorName,
-        },
-        recipientRole: 'patient',
+      // Send notification
+      await _sendPrescriptionNotification(
+        action: 'updated',
+        prescription: prescription,
       );
-      print('Sent notification for updated prescription ${prescription.id} to patient ${prescription.patientId}');
     } catch (e) {
       throw ServerException('Failed to update prescription: $e');
     }
   }
+
+
+
 }

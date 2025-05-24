@@ -619,6 +619,15 @@ class _NotificationsPageState extends State<NotificationsPage> {
       case NotificationType.newMessage:
         // TODO: Handle this case.
         throw UnimplementedError();
+      case NotificationType.appointmentCanceled:
+        // TODO: Handle this case.
+        throw UnimplementedError();
+      case NotificationType.prescriptionCanceled:
+        // TODO: Handle this case.
+        throw UnimplementedError();
+      case NotificationType.prescriptionRefilled:
+        // TODO: Handle this case.
+        throw UnimplementedError();
     }
 
     return Column(
