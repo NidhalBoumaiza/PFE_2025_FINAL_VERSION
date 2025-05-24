@@ -12,6 +12,7 @@ import 'package:medical_app/features/notifications/presentation/bloc/notificatio
 import 'package:medical_app/features/notifications/presentation/bloc/notification_event.dart';
 import 'package:medical_app/features/notifications/presentation/bloc/notification_state.dart';
 import 'package:medical_app/features/rendez_vous/presentation/pages/appointment_details.dart';
+import 'package:medical_app/features/notifications/utils/notification_utils.dart';
 import 'package:medical_app/injection_container.dart' as di;
 
 class NotificationsPatient extends StatefulWidget {
@@ -27,7 +28,7 @@ class _NotificationsPatientState extends State<NotificationsPatient>
   late UserEntity _currentUser;
   bool _isLoading = true;
   final GlobalKey<RefreshIndicatorState> _refreshIndicatorKey =
-      GlobalKey<RefreshIndicatorState>();
+  GlobalKey<RefreshIndicatorState>();
 
   @override
   bool get wantKeepAlive => true;
@@ -212,47 +213,47 @@ class _NotificationsPatientState extends State<NotificationsPatient>
               onRefresh: _refreshNotifications,
               color: AppColors.primaryColor,
               child:
-                  state.notifications.isEmpty
-                      ? ListView(
-                        physics: const AlwaysScrollableScrollPhysics(),
+              state.notifications.isEmpty
+                  ? ListView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                children: [
+                  SizedBox(
+                    height: MediaQuery.of(context).size.height * 0.7,
+                    child: Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          SizedBox(
-                            height: MediaQuery.of(context).size.height * 0.7,
-                            child: Center(
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Icon(
-                                    Icons.notifications_off,
-                                    size: 80.sp,
-                                    color:
-                                        isDarkMode
-                                            ? theme.iconTheme.color
-                                                ?.withOpacity(0.4)
-                                            : Colors.grey[400],
-                                  ),
-                                  SizedBox(height: 16.h),
-                                  Text(
-                                    'no_notifications'.tr,
-                                    style: GoogleFonts.raleway(
-                                      fontSize: 16.sp,
-                                      color: theme.textTheme.bodyMedium?.color,
-                                    ),
-                                  ),
-                                ],
-                              ),
+                          Icon(
+                            Icons.notifications_off,
+                            size: 80.sp,
+                            color:
+                            isDarkMode
+                                ? theme.iconTheme.color
+                                ?.withOpacity(0.4)
+                                : Colors.grey[400],
+                          ),
+                          SizedBox(height: 16.h),
+                          Text(
+                            'no_notifications'.tr,
+                            style: GoogleFonts.raleway(
+                              fontSize: 16.sp,
+                              color: theme.textTheme.bodyMedium?.color,
                             ),
                           ),
                         ],
-                      )
-                      : Column(
-                        children: [
-                          _buildFilterChips(),
-                          Expanded(
-                            child: _buildNotificationList(state.notifications),
-                          ),
-                        ],
                       ),
+                    ),
+                  ),
+                ],
+              )
+                  : Column(
+                children: [
+                  _buildFilterChips(),
+                  Expanded(
+                    child: _buildNotificationList(state.notifications),
+                  ),
+                ],
+              ),
             );
           } else if (state is NotificationError) {
             return RefreshIndicator(
@@ -372,7 +373,7 @@ class _NotificationsPatientState extends State<NotificationsPatient>
       },
       selectedColor: AppColors.primaryColor,
       backgroundColor:
-          isDarkMode ? theme.cardColor.withOpacity(0.3) : Colors.grey[100],
+      isDarkMode ? theme.cardColor.withOpacity(0.3) : Colors.grey[100],
       checkmarkColor: Colors.white,
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
@@ -386,23 +387,23 @@ class _NotificationsPatientState extends State<NotificationsPatient>
     final isDarkMode = theme.brightness == Brightness.dark;
 
     final filteredNotifications =
-        _selectedFilter == 'all'
-            ? notifications
-            : notifications.where((n) {
-              // Filter by notification type based on the selected filter
-              switch (_selectedFilter) {
-                case 'appointment':
-                  return n.type == NotificationType.newAppointment ||
-                      n.type == NotificationType.appointmentAccepted ||
-                      n.type == NotificationType.appointmentRejected;
-                case 'prescription':
-                  return n.type == NotificationType.newPrescription;
-                case 'rating':
-                  return n.type == NotificationType.newRating;
-                default:
-                  return true;
-              }
-            }).toList();
+    _selectedFilter == 'all'
+        ? notifications
+        : notifications.where((n) {
+      // Filter by notification type based on the selected filter
+      switch (_selectedFilter) {
+        case 'appointment':
+          return n.type == NotificationType.newAppointment ||
+              n.type == NotificationType.appointmentAccepted ||
+              n.type == NotificationType.appointmentRejected;
+        case 'prescription':
+          return n.type == NotificationType.newPrescription;
+        case 'rating':
+          return n.type == NotificationType.newRating;
+        default:
+          return true;
+      }
+    }).toList();
 
     if (filteredNotifications.isEmpty) {
       return Center(
@@ -413,9 +414,9 @@ class _NotificationsPatientState extends State<NotificationsPatient>
               Icons.notifications_off,
               size: 48,
               color:
-                  isDarkMode
-                      ? theme.iconTheme.color?.withOpacity(0.4)
-                      : Colors.grey[400],
+              isDarkMode
+                  ? theme.iconTheme.color?.withOpacity(0.4)
+                  : Colors.grey[400],
             ),
             const SizedBox(height: 16),
             Text(
@@ -506,20 +507,20 @@ class _NotificationsPatientState extends State<NotificationsPatient>
           margin: EdgeInsets.only(bottom: 12.h),
           elevation: 1,
           color:
-              notification.isRead
-                  ? theme.cardColor
-                  : isDarkMode
-                  ? AppColors.primaryColor.withOpacity(0.15)
-                  : AppColors.primaryColor.withOpacity(0.05),
+          notification.isRead
+              ? theme.cardColor
+              : isDarkMode
+              ? AppColors.primaryColor.withOpacity(0.15)
+              : AppColors.primaryColor.withOpacity(0.05),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(10.r),
             side: BorderSide(
               color:
-                  notification.isRead
-                      ? isDarkMode
-                          ? Colors.grey.shade800
-                          : Colors.grey.shade300
-                      : AppColors.primaryColor.withOpacity(0.3),
+              notification.isRead
+                  ? isDarkMode
+                  ? Colors.grey.shade800
+                  : Colors.grey.shade300
+                  : AppColors.primaryColor.withOpacity(0.3),
               width: 1,
             ),
           ),
@@ -543,9 +544,9 @@ class _NotificationsPatientState extends State<NotificationsPatient>
                               style: GoogleFonts.raleway(
                                 fontSize: 14.sp,
                                 fontWeight:
-                                    notification.isRead
-                                        ? FontWeight.normal
-                                        : FontWeight.bold,
+                                notification.isRead
+                                    ? FontWeight.normal
+                                    : FontWeight.bold,
                                 color: theme.textTheme.bodyLarge?.color,
                               ),
                             ),
@@ -615,33 +616,33 @@ class _NotificationsPatientState extends State<NotificationsPatient>
         iconData = Icons.calendar_today;
         iconColor = AppColors.primaryColor;
         backgroundColor =
-            isDarkMode
-                ? AppColors.primaryColor.withOpacity(0.2)
-                : AppColors.primaryColor.withOpacity(0.1);
+        isDarkMode
+            ? AppColors.primaryColor.withOpacity(0.2)
+            : AppColors.primaryColor.withOpacity(0.1);
         break;
       case NotificationType.newPrescription:
         iconData = Icons.medical_services;
         iconColor = Colors.green;
         backgroundColor =
-            isDarkMode
-                ? Colors.green.withOpacity(0.2)
-                : Colors.green.withOpacity(0.1);
+        isDarkMode
+            ? Colors.green.withOpacity(0.2)
+            : Colors.green.withOpacity(0.1);
         break;
       case NotificationType.newRating:
         iconData = Icons.star;
         iconColor = Colors.amber;
         backgroundColor =
-            isDarkMode
-                ? Colors.amber.withOpacity(0.2)
-                : Colors.amber.withOpacity(0.1);
+        isDarkMode
+            ? Colors.amber.withOpacity(0.2)
+            : Colors.amber.withOpacity(0.1);
         break;
       default:
         iconData = Icons.notifications;
         iconColor = Colors.grey;
         backgroundColor =
-            isDarkMode
-                ? Colors.grey.withOpacity(0.2)
-                : Colors.grey.withOpacity(0.1);
+        isDarkMode
+            ? Colors.grey.withOpacity(0.2)
+            : Colors.grey.withOpacity(0.1);
     }
 
     return Container(
@@ -658,10 +659,10 @@ class _NotificationsPatientState extends State<NotificationsPatient>
         MaterialPageRoute(
           builder:
               (context) =>
-                  AppointmentDetailsPage(id: notification.appointmentId!),
+              AppointmentDetailsPage(id: notification.appointmentId!),
         ),
       ).then(
-        (_) => _refreshNotifications(showLoading: false),
+            (_) => _refreshNotifications(showLoading: false),
       ); // Refresh on return
     } else if (notification.prescriptionId != null) {
       // Navigate to prescription details

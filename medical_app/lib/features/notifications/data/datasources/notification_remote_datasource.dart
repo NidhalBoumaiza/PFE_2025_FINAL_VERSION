@@ -1,53 +1,53 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:dartz/dartz.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:medical_app/constants.dart'; // Import constants instead of main.dart
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+import 'package:medical_app/constants.dart';
 import 'package:medical_app/core/error/exceptions.dart';
 import 'package:medical_app/features/notifications/data/models/notification_model.dart';
 import 'package:medical_app/features/notifications/domain/entities/notification_entity.dart';
 import 'package:medical_app/features/notifications/utils/notification_utils.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:google_sign_in/google_sign_in.dart';
 
 abstract class NotificationRemoteDataSource {
-  /// Get all notifications for a specific user
+  /// Fetches all notifications for a user.
   Future<List<NotificationModel>> getNotifications(String userId);
 
-  /// Send a notification
-  Future<Unit> sendNotification({
+  /// Sends a notification to a recipient.
+  /// [recipientRole] specifies whether the recipient is 'patient' or 'doctor'.
+  Future<void> sendNotification({
     required String title,
     required String body,
     required String senderId,
     required String recipientId,
     required NotificationType type,
+    required String recipientRole,
     String? appointmentId,
     String? prescriptionId,
     String? ratingId,
     Map<String, dynamic>? data,
   });
 
-  /// Mark a notification as read
-  Future<Unit> markNotificationAsRead(String notificationId);
+  /// Marks a single notification as read.
+  Future<void> markNotificationAsRead(String notificationId);
 
-  /// Mark all notifications as read for a specific user
-  Future<Unit> markAllNotificationsAsRead(String userId);
+  /// Marks all notifications for a user as read.
+  Future<void> markAllNotificationsAsRead(String userId);
 
-  /// Delete a notification
-  Future<Unit> deleteNotification(String notificationId);
+  /// Deletes a notification.
+  Future<void> deleteNotification(String notificationId);
 
-  /// Get unread notifications count
+  /// Gets the count of unread notifications for a user.
   Future<int> getUnreadNotificationsCount(String userId);
 
-  /// Setup FCM to receive notifications
+  /// Sets up FCM and returns the FCM token.
   Future<String?> setupFCM();
 
-  /// Save FCM token to the server
-  Future<Unit> saveFCMToken(String userId, String token);
+  /// Saves the FCM token for a user.
+  Future<void> saveFCMToken(String userId, String token);
 
-  /// Stream of notifications for a specific user
+  /// Streams notifications for a user.
   Stream<List<NotificationModel>> notificationsStream(String userId);
 }
 
@@ -66,16 +66,16 @@ class NotificationRemoteDataSourceImpl implements NotificationRemoteDataSource {
   Future<List<NotificationModel>> getNotifications(String userId) async {
     try {
       final notificationsQuery =
-          await firestore
-              .collection('notifications')
-              .where('recipientId', isEqualTo: userId)
-              .orderBy('createdAt', descending: true)
-              .get();
+      await firestore
+          .collection('notifications')
+          .where('recipientId', isEqualTo: userId)
+          .orderBy('createdAt', descending: true)
+          .get();
 
       return notificationsQuery.docs
           .map(
             (doc) => NotificationModel.fromJson({'id': doc.id, ...doc.data()}),
-          )
+      )
           .toList();
     } catch (e) {
       throw ServerException('Failed to fetch notifications: $e');
@@ -83,43 +83,48 @@ class NotificationRemoteDataSourceImpl implements NotificationRemoteDataSource {
   }
 
   @override
-  Future<Unit> sendNotification({
+  Future<void> sendNotification({
     required String title,
     required String body,
     required String senderId,
     required String recipientId,
     required NotificationType type,
+    required String recipientRole,
     String? appointmentId,
     String? prescriptionId,
     String? ratingId,
     Map<String, dynamic>? data,
   }) async {
     try {
-      print('Sending notification to $recipientId from $senderId');
+      // Validate recipient role
+      if (!['patient', 'doctor'].contains(recipientRole)) {
+        throw ServerException('Invalid recipient role: $recipientRole');
+      }
 
-      // Get sender info to include name in notification
-      String senderName = '';
+      // Get sender info
+      String senderName = 'Unknown User';
       try {
-        final senderDoc =
-            await firestore.collection('users').doc(senderId).get();
-        if (senderDoc.exists) {
+        for (var collection in ['users', 'medecins', 'patients']) {
+          final senderDoc =
+          await firestore.collection(collection).doc(senderId).get();
+          if (senderDoc.exists) {
+            senderName =
+                '${senderDoc.data()?['name'] ?? ''} ${senderDoc.data()?['lastName'] ?? ''}'
+                    .trim();
+            if (senderName.isNotEmpty) break;
+          }
+        }
+        if (senderName == 'Unknown User' && data != null) {
           senderName =
-              '${senderDoc.data()?['name'] ?? ''} ${senderDoc.data()?['lastName'] ?? ''}'
-                  .trim();
+              data['doctorName'] ?? data['patientName'] ?? 'Unknown User';
         }
-
-        if (senderName.isEmpty && data != null) {
-          senderName = data['doctorName'] ?? data['patientName'] ?? '';
-        }
-
-        print('Sender name: $senderName');
       } catch (e) {
-        print('Error getting sender info: $e');
+        print('Error fetching sender info for senderId $senderId: $e');
       }
 
       // Create notification model
       final notification = NotificationModel(
-        id: '', // Firestore will generate ID
+        id: '',
         title: title,
         body: body,
         senderId: senderId,
@@ -131,9 +136,9 @@ class NotificationRemoteDataSourceImpl implements NotificationRemoteDataSource {
         createdAt: DateTime.now(),
         isRead: false,
         data:
-            data != null
-                ? {...data, 'senderName': senderName}
-                : {'senderName': senderName},
+        data != null
+            ? {...data, 'senderName': senderName}
+            : {'senderName': senderName},
       );
 
       // Save notification to Firestore
@@ -151,45 +156,28 @@ class NotificationRemoteDataSourceImpl implements NotificationRemoteDataSource {
         'data': notification.data,
       });
 
-      print('Notification saved to Firestore with ID: ${docRef.id}');
-
-      // Try to get recipient FCM token from users collection first
+      // Get recipient FCM token
       String? fcmToken;
-      final userDoc =
-          await firestore.collection('users').doc(recipientId).get();
-
-      if (userDoc.exists && userDoc.data()?['fcmToken'] != null) {
-        fcmToken = userDoc.data()?['fcmToken'];
-        print('Found FCM token for recipient in users collection: $fcmToken');
-      }
-
-      // If token not found or is empty, try role-specific collections
-      if (fcmToken == null || fcmToken.isEmpty) {
-        // Try medecins collection
-        final medecinDoc =
-            await firestore.collection('medecins').doc(recipientId).get();
-        if (medecinDoc.exists && medecinDoc.data()?['fcmToken'] != null) {
-          fcmToken = medecinDoc.data()?['fcmToken'];
-          print(
-            'Found FCM token for recipient in medecins collection: $fcmToken',
-          );
-        }
-
-        // If still not found, try patients collection
-        if (fcmToken == null || fcmToken.isEmpty) {
-          final patientDoc =
-              await firestore.collection('patients').doc(recipientId).get();
-          if (patientDoc.exists && patientDoc.data()?['fcmToken'] != null) {
-            fcmToken = patientDoc.data()?['fcmToken'];
+      try {
+        final collection = recipientRole == 'doctor' ? 'medecins' : 'patients';
+        final userDoc =
+        await firestore.collection(collection).doc(recipientId).get();
+        if (userDoc.exists) {
+          fcmToken = userDoc.data()?['fcmToken'] as String?;
+          if (fcmToken == null || fcmToken.isEmpty) {
             print(
-              'Found FCM token for recipient in patients collection: $fcmToken',
+              'No FCM token found for recipient $recipientId in $collection',
             );
           }
+        } else {
+          print('Recipient $recipientId not found in $collection');
         }
+      } catch (e) {
+        print('Error fetching FCM token for recipient $recipientId: $e');
       }
 
       if (fcmToken != null && fcmToken.isNotEmpty) {
-        // Create payload with enhanced data
+        // Create payload
         final payload = {
           'notification': {'title': title, 'body': body},
           'data': {
@@ -199,312 +187,140 @@ class NotificationRemoteDataSourceImpl implements NotificationRemoteDataSource {
             'recipientId': recipientId,
             'senderName': senderName,
             'click_action': 'FLUTTER_NOTIFICATION_CLICK',
+            if (appointmentId != null) 'appointmentId': appointmentId,
+            if (prescriptionId != null) 'prescriptionId': prescriptionId,
+            if (ratingId != null) 'ratingId': ratingId,
+            ...(data ?? {}),
           },
         };
 
-        if (appointmentId != null) {
-          payload['data'] = {
-            ...payload['data'] as Map<String, dynamic>,
-            'appointmentId': appointmentId,
-          };
-        }
-        if (prescriptionId != null) {
-          payload['data'] = {
-            ...payload['data'] as Map<String, dynamic>,
-            'prescriptionId': prescriptionId,
-          };
-        }
-        if (ratingId != null) {
-          payload['data'] = {
-            ...payload['data'] as Map<String, dynamic>,
-            'ratingId': ratingId,
-          };
-        }
-
-        // Add any additional data
-        if (data != null) {
-          payload['data'] = {
-            ...payload['data'] as Map<String, dynamic>,
-            ...data,
-          };
-        }
-
-        try {
-          // ATTEMPT 1: First attempt direct FCM sending (new method that bypasses Express)
-          bool directSuccess = await sendDirectFCMNotification(
-            fcmToken,
-            title,
-            body,
-            payload,
-          );
-
-          if (directSuccess) {
-            print('Notification sent successfully via direct FCM');
-          } else {
-            // ATTEMPT 2: If direct method fails, try through Cloud Functions via Firestore trigger
-            await firestore.collection('fcm_requests').add({
-              'token': fcmToken,
-              'payload': payload,
-              'timestamp': FieldValue.serverTimestamp(),
-            });
-            print('FCM request added to queue via Firestore');
-
-            // ATTEMPT 3: Try using Express server as final fallback
-            try {
-              // Convert all data values to strings
-              Map<String, String> stringData = {};
-              (payload['data'] as Map<String, dynamic>).forEach((key, value) {
-                if (value == null) {
-                  stringData[key] = '';
-                } else if (value is Map || value is List) {
-                  stringData[key] = jsonEncode(value);
-                } else {
-                  stringData[key] = value.toString();
-                }
-              });
-
-              final http.Response response = await http.post(
-                Uri.parse(AppConstants.sendNotification),
-                headers: {'Content-Type': 'application/json'},
-                body: jsonEncode({
-                  'token': fcmToken,
-                  'title': title,
-                  'body': body,
-                  'data': stringData,
-                }),
-              );
-
-              if (response.statusCode == 200) {
-                print('Notification sent successfully via Express server');
-              } else {
-                print(
-                  'Failed to send notification via Express: ${response.statusCode}, ${response.body}',
-                );
-              }
-            } catch (serverError) {
-              print(
-                'Error sending notification via Express server: $serverError',
-              );
-            }
-          }
-        } catch (e) {
-          print('Error during notification sending: $e');
-        }
+        // Send notification
+        await sendDirectFCMNotification(fcmToken, title, body, payload);
       } else {
         print(
-          'No FCM token found for recipient: $recipientId in any collection',
+          'No valid FCM token for recipient $recipientId, notification saved to Firestore',
         );
-        // This is not a failure state - we still created the notification in Firestore
-        // The user will see it when they open the app
       }
-
-      // Return success since we saved the notification to Firestore
-      return unit;
     } catch (e) {
-      print('Error sending notification: $e');
+      print('Error sending notification to recipient $recipientId: $e');
       throw ServerException('Failed to send notification: $e');
     }
   }
 
-  // Direct FCM notification method that uses the HTTP v1 API
-  Future<bool> sendDirectFCMNotification(
-    String token,
-    String title,
-    String body,
-    Map<String, dynamic> payload,
-  ) async {
+  /// Sends an FCM notification to the specified token.
+  /// Note: Client-side FCM sending is insecure for production; use a backend (e.g., Cloud Functions) instead.
+  Future<void> sendDirectFCMNotification(
+      String token,
+      String title,
+      String body,
+      Map<String, dynamic> payload,
+      ) async {
     try {
-      // Get an access token for FCM API
-      final String? accessToken = await getAccessToken();
-
-      if (accessToken == null) {
-        print(
-          'Failed to get access token for FCM, trying Express server v1 endpoint',
-        );
-        return await sendViaExpressServerV1(token, title, body, payload);
+      // Validate Firebase project ID
+      if (AppConstants.firebaseProjectId.isEmpty) {
+        throw ServerException('Firebase project ID is not configured');
       }
 
-      // Your Firebase project ID from constants
-      const String projectId = AppConstants.firebaseProjectId;
-
-      if (projectId == 'YOUR_FIREBASE_PROJECT_ID') {
-        print(
-          'Firebase Project ID not set - trying Express server v1 endpoint',
-        );
-        return await sendViaExpressServerV1(token, title, body, payload);
+      // Get Firebase Authentication ID token
+      final user = FirebaseAuth.instance.currentUser;
+      if (user == null) {
+        throw ServerException('No authenticated user found');
+      }
+      final idToken = await user.getIdToken();
+      if (idToken == null) {
+        throw ServerException('Failed to get ID token');
       }
 
-      // Format the notification payload for the HTTP v1 API
-      final Map<String, dynamic> fcmMessage = {
+      // Convert data payload to strings
+      final dataPayload = Map<String, String>.from(
+        payload['data'].map(
+              (key, value) => MapEntry(key, value?.toString() ?? ''),
+        ),
+      );
+
+      // Format FCM payload for HTTP v1 API
+      final fcmMessage = {
         'message': {
           'token': token,
           'notification': {'title': title, 'body': body},
-          'data':
-              payload['data'] != null
-                  ? Map<String, String>.from(
-                    payload['data'].map(
-                      (key, value) => MapEntry(key, value?.toString() ?? ''),
-                    ),
-                  )
-                  : {},
+          'data': dataPayload,
           'android': {
-            'priority': 'HIGH',
+            'priority': 'high',
             'notification': {
-              'channel_id': 'high_importance_channel',
-              'priority': 'HIGH',
+              'channel_id': AppConstants.notificationChannelId,
+              'priority': 'high',
               'default_sound': true,
               'default_vibrate_timings': true,
             },
           },
           'apns': {
             'payload': {
-              'aps': {'badge': 1, 'sound': 'default', 'content-available': 1},
+              'aps': {'badge': 1, 'sound': 'default'},
             },
           },
         },
       };
 
-      // Send the message using the HTTP v1 API
-      final http.Response response = await http.post(
+      // Send the message
+      final response = await http.post(
         Uri.parse(
-          'https://fcm.googleapis.com/v1/projects/$projectId/messages:send',
+          'https://fcm.googleapis.com/v1/projects/${AppConstants.firebaseProjectId}/messages:send',
         ),
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': 'Bearer $accessToken',
+          'Authorization': 'Bearer $idToken',
         },
         body: jsonEncode(fcmMessage),
       );
 
-      if (response.statusCode == 200) {
-        print(
-          'Successfully sent direct FCM notification using HTTP v1 API: ${response.body}',
+      if (response.statusCode != 200) {
+        throw ServerException(
+          'Failed to send FCM notification: ${response.statusCode}, ${response.body}',
         );
-        return true;
-      } else {
-        print(
-          'Error calling FCM API: ${response.statusCode}, ${response.body}, trying Express server',
-        );
-        return await sendViaExpressServerV1(token, title, body, payload);
       }
+      print('Successfully sent FCM notification to token $token');
     } catch (e) {
-      print(
-        'Exception sending direct FCM notification: $e, trying Express server',
-      );
-      return await sendViaExpressServerV1(token, title, body, payload);
-    }
-  }
-
-  // Send notification via Express server using v1 API
-  Future<bool> sendViaExpressServerV1(
-    String token,
-    String title,
-    String body,
-    Map<String, dynamic> payload,
-  ) async {
-    try {
-      final http.Response response = await http.post(
-        Uri.parse(AppConstants.sendNotificationV1),
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({
-          'token': token,
-          'title': title,
-          'body': body,
-          'data': payload['data'] ?? {},
-        }),
-      );
-
-      if (response.statusCode == 200) {
-        print('Successfully sent notification via Express server v1 endpoint');
-        return true;
-      } else {
-        print(
-          'Error sending notification via Express server: ${response.statusCode}, ${response.body}',
-        );
-        return false;
-      }
-    } catch (e) {
-      print('Exception sending notification via Express server: $e');
-      return false;
-    }
-  }
-
-  // Get an access token for FCM API using Firebase Authentication
-  Future<String?> getAccessToken() async {
-    try {
-      // Get the access token from our Express server
-      try {
-        final response = await http.get(
-          Uri.parse(AppConstants.getFcmToken),
-          headers: {'Content-Type': 'application/json'},
-        );
-
-        if (response.statusCode == 200) {
-          final data = json.decode(response.body);
-          if (data['status'] == 'success' && data['token'] != null) {
-            print('Successfully retrieved FCM token from Express server');
-            return data['token'];
-          } else {
-            print(
-              'Invalid response format from FCM token endpoint: ${response.body}',
-            );
-          }
-        } else {
-          print(
-            'Failed to get FCM token: HTTP ${response.statusCode}, ${response.body}',
-          );
-        }
-      } catch (e) {
-        print('Error getting token from server: $e');
-      }
-
-      // Return null to fallback to other notification methods
-      return null;
-    } catch (e) {
-      print('Error getting access token: $e');
-      return null;
+      print('Exception sending FCM notification to token $token: $e');
+      throw ServerException('Failed to send FCM notification: $e');
     }
   }
 
   @override
-  Future<Unit> markNotificationAsRead(String notificationId) async {
+  Future<void> markNotificationAsRead(String notificationId) async {
     try {
       await firestore.collection('notifications').doc(notificationId).update({
         'isRead': true,
       });
-      return unit;
     } catch (e) {
       throw ServerException('Failed to mark notification as read: $e');
     }
   }
 
   @override
-  Future<Unit> markAllNotificationsAsRead(String userId) async {
+  Future<void> markAllNotificationsAsRead(String userId) async {
     try {
       final batch = firestore.batch();
       final notificationsQuery =
-          await firestore
-              .collection('notifications')
-              .where('recipientId', isEqualTo: userId)
-              .where('isRead', isEqualTo: false)
-              .get();
+      await firestore
+          .collection('notifications')
+          .where('recipientId', isEqualTo: userId)
+          .where('isRead', isEqualTo: false)
+          .get();
 
       for (var doc in notificationsQuery.docs) {
         batch.update(doc.reference, {'isRead': true});
       }
 
       await batch.commit();
-      return unit;
     } catch (e) {
       throw ServerException('Failed to mark all notifications as read: $e');
     }
   }
 
   @override
-  Future<Unit> deleteNotification(String notificationId) async {
+  Future<void> deleteNotification(String notificationId) async {
     try {
       await firestore.collection('notifications').doc(notificationId).delete();
-      return unit;
     } catch (e) {
       throw ServerException('Failed to delete notification: $e');
     }
@@ -513,13 +329,14 @@ class NotificationRemoteDataSourceImpl implements NotificationRemoteDataSource {
   @override
   Future<int> getUnreadNotificationsCount(String userId) async {
     try {
+      // Requires Firestore SDK with aggregate query support
       final notificationsQuery =
-          await firestore
-              .collection('notifications')
-              .where('recipientId', isEqualTo: userId)
-              .where('isRead', isEqualTo: false)
-              .count()
-              .get();
+      await firestore
+          .collection('notifications')
+          .where('recipientId', isEqualTo: userId)
+          .where('isRead', isEqualTo: false)
+          .count()
+          .get();
 
       return notificationsQuery.count ?? 0;
     } catch (e) {
@@ -544,20 +361,29 @@ class NotificationRemoteDataSourceImpl implements NotificationRemoteDataSource {
       if (settings.authorizationStatus == AuthorizationStatus.authorized) {
         // Get FCM token
         final token = await firebaseMessaging.getToken();
+        if (token == null) {
+          throw ServerException('Failed to get FCM token');
+        }
 
-        // Initialize local notifications
+        // Initialize local notifications for Android
         const AndroidNotificationChannel channel = AndroidNotificationChannel(
-          'high_importance_channel',
+          AppConstants.notificationChannelId,
           'High Importance Notifications',
           description: 'This channel is used for important notifications.',
           importance: Importance.high,
         );
-
         await flutterLocalNotificationsPlugin
             .resolvePlatformSpecificImplementation<
-              AndroidFlutterLocalNotificationsPlugin
-            >()
+            AndroidFlutterLocalNotificationsPlugin
+        >()
             ?.createNotificationChannel(channel);
+
+        // Initialize local notifications for iOS
+        await flutterLocalNotificationsPlugin
+            .resolvePlatformSpecificImplementation<
+            IOSFlutterLocalNotificationsPlugin
+        >()
+            ?.requestPermissions(alert: true, badge: true, sound: true);
 
         return token;
       } else {
@@ -569,12 +395,11 @@ class NotificationRemoteDataSourceImpl implements NotificationRemoteDataSource {
   }
 
   @override
-  Future<Unit> saveFCMToken(String userId, String token) async {
+  Future<void> saveFCMToken(String userId, String token) async {
     try {
-      await firestore.collection('users').doc(userId).update({
+      await firestore.collection('users').doc(userId).set({
         'fcmToken': token,
-      });
-      return unit;
+      }, SetOptions(merge: true));
     } catch (e) {
       throw ServerException('Failed to save FCM token: $e');
     }
@@ -582,25 +407,25 @@ class NotificationRemoteDataSourceImpl implements NotificationRemoteDataSource {
 
   @override
   Stream<List<NotificationModel>> notificationsStream(String userId) {
-    try {
-      return firestore
-          .collection('notifications')
-          .where('recipientId', isEqualTo: userId)
-          .orderBy('createdAt', descending: true)
-          .snapshots()
-          .map(
-            (snapshot) =>
-                snapshot.docs
-                    .map(
-                      (doc) => NotificationModel.fromJson({
-                        'id': doc.id,
-                        ...doc.data(),
-                      }),
-                    )
-                    .toList(),
-          );
-    } catch (e) {
-      throw ServerException('Failed to get notifications stream: $e');
-    }
+    return firestore
+        .collection('notifications')
+        .where('recipientId', isEqualTo: userId)
+        .orderBy('createdAt', descending: true)
+        .snapshots()
+        .map(
+          (snapshot) =>
+          snapshot.docs
+              .map(
+                (doc) => NotificationModel.fromJson({
+              'id': doc.id,
+              ...doc.data(),
+            }),
+          )
+              .toList(),
+    )
+        .handleError((error) {
+      print('Error in notifications stream for user $userId: $error');
+      throw ServerException('Failed to stream notifications: $error');
+    });
   }
 }

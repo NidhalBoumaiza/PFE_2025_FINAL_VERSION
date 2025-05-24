@@ -7,7 +7,7 @@ class SaveFCMTokenUseCase {
 
   SaveFCMTokenUseCase(this.repository);
 
-  Future<Either<Failure, Unit>> call({
+  Future<Either<Failure, void>> call({
     required String userId,
     required String token,
   }) async {

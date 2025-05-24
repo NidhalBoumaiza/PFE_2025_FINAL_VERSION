@@ -14,6 +14,8 @@ import 'package:medical_app/features/rendez_vous/presentation/blocs/rendez-vous%
 import 'package:medical_app/features/rendez_vous/presentation/pages/appointment_details_page.dart';
 import 'package:medical_app/injection_container.dart' as di;
 
+import '../../utils/notification_utils.dart';
+
 class NotificationsMedecin extends StatefulWidget {
   const NotificationsMedecin({super.key});
 
@@ -26,7 +28,7 @@ class _NotificationsMedecinState extends State<NotificationsMedecin> {
   late UserEntity _currentUser;
   bool _isLoading = true;
   final GlobalKey<RefreshIndicatorState> _refreshIndicatorKey =
-      GlobalKey<RefreshIndicatorState>();
+  GlobalKey<RefreshIndicatorState>();
 
   @override
   void initState() {
@@ -218,47 +220,47 @@ class _NotificationsMedecinState extends State<NotificationsMedecin> {
               onRefresh: _refreshNotifications,
               color: AppColors.primaryColor,
               child:
-                  notifications.isEmpty
-                      ? ListView(
-                        physics: const AlwaysScrollableScrollPhysics(),
+              notifications.isEmpty
+                  ? ListView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                children: [
+                  SizedBox(
+                    height: MediaQuery.of(context).size.height * 0.7,
+                    child: Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          SizedBox(
-                            height: MediaQuery.of(context).size.height * 0.7,
-                            child: Center(
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Icon(
-                                    Icons.notifications_off,
-                                    size: 80.sp,
-                                    color:
-                                        isDarkMode
-                                            ? theme.iconTheme.color
-                                                ?.withOpacity(0.4)
-                                            : Colors.grey[400],
-                                  ),
-                                  SizedBox(height: 16.h),
-                                  Text(
-                                    'no_notifications'.tr,
-                                    style: GoogleFonts.raleway(
-                                      fontSize: 16.sp,
-                                      color: theme.textTheme.bodyMedium?.color,
-                                    ),
-                                  ),
-                                ],
-                              ),
+                          Icon(
+                            Icons.notifications_off,
+                            size: 80.sp,
+                            color:
+                            isDarkMode
+                                ? theme.iconTheme.color
+                                ?.withOpacity(0.4)
+                                : Colors.grey[400],
+                          ),
+                          SizedBox(height: 16.h),
+                          Text(
+                            'no_notifications'.tr,
+                            style: GoogleFonts.raleway(
+                              fontSize: 16.sp,
+                              color: theme.textTheme.bodyMedium?.color,
                             ),
                           ),
                         ],
-                      )
-                      : Column(
-                        children: [
-                          _buildFilterChips(),
-                          Expanded(
-                            child: _buildNotificationList(notifications),
-                          ),
-                        ],
                       ),
+                    ),
+                  ),
+                ],
+              )
+                  : Column(
+                children: [
+                  _buildFilterChips(),
+                  Expanded(
+                    child: _buildNotificationList(notifications),
+                  ),
+                ],
+              ),
             );
           } else if (state is NotificationError) {
             return RefreshIndicator(
@@ -375,7 +377,7 @@ class _NotificationsMedecinState extends State<NotificationsMedecin> {
       },
       selectedColor: AppColors.primaryColor,
       backgroundColor:
-          isDarkMode ? theme.cardColor.withOpacity(0.3) : Colors.grey.shade100,
+      isDarkMode ? theme.cardColor.withOpacity(0.3) : Colors.grey.shade100,
       checkmarkColor: Colors.white,
       padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.r)),
@@ -389,24 +391,24 @@ class _NotificationsMedecinState extends State<NotificationsMedecin> {
     final isDarkMode = theme.brightness == Brightness.dark;
 
     final filteredNotifications =
-        _selectedFilter == 'all'
-            ? notifications
-            : notifications.where((n) {
-              // Filter by notification type based on the selected filter
-              switch (_selectedFilter) {
-                case 'appointment':
-                  return n.type == NotificationType.newAppointment ||
-                      n.type == NotificationType.appointmentAccepted ||
-                      n.type == NotificationType.appointmentRejected;
-                case 'prescription':
-                  return n.type == NotificationType.newPrescription;
-                case 'message':
-                  // Puisque newMessage n'est pas défini, nous pouvons temporairement le supprimer ou utiliser un autre type
-                  return false; // À réactiver lorsque ce type sera disponible
-                default:
-                  return true;
-              }
-            }).toList();
+    _selectedFilter == 'all'
+        ? notifications
+        : notifications.where((n) {
+      // Filter by notification type based on the selected filter
+      switch (_selectedFilter) {
+        case 'appointment':
+          return n.type == NotificationType.newAppointment ||
+              n.type == NotificationType.appointmentAccepted ||
+              n.type == NotificationType.appointmentRejected;
+        case 'prescription':
+          return n.type == NotificationType.newPrescription;
+        case 'message':
+        // Puisque newMessage n'est pas défini, nous pouvons temporairement le supprimer ou utiliser un autre type
+          return false; // À réactiver lorsque ce type sera disponible
+        default:
+          return true;
+      }
+    }).toList();
 
     if (filteredNotifications.isEmpty) {
       return Center(
@@ -417,9 +419,9 @@ class _NotificationsMedecinState extends State<NotificationsMedecin> {
               Icons.notifications_off,
               size: 48.sp,
               color:
-                  isDarkMode
-                      ? theme.iconTheme.color?.withOpacity(0.4)
-                      : Colors.grey[400],
+              isDarkMode
+                  ? theme.iconTheme.color?.withOpacity(0.4)
+                  : Colors.grey[400],
             ),
             SizedBox(height: 16.h),
             Text(
@@ -472,22 +474,22 @@ class _NotificationsMedecinState extends State<NotificationsMedecin> {
           context: context,
           builder:
               (context) => AlertDialog(
-                title: Text('delete_notification'.tr),
-                content: Text('confirm_delete_notification'.tr),
-                actions: [
-                  TextButton(
-                    onPressed: () => Navigator.of(context).pop(false),
-                    child: Text('cancel'.tr),
-                  ),
-                  TextButton(
-                    onPressed: () => Navigator.of(context).pop(true),
-                    child: Text(
-                      'delete'.tr,
-                      style: const TextStyle(color: Colors.red),
-                    ),
-                  ),
-                ],
+            title: Text('delete_notification'.tr),
+            content: Text('confirm_delete_notification'.tr),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(false),
+                child: Text('cancel'.tr),
               ),
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(true),
+                child: Text(
+                  'delete'.tr,
+                  style: const TextStyle(color: Colors.red),
+                ),
+              ),
+            ],
+          ),
         );
       },
       onDismissed: (direction) {
@@ -516,9 +518,9 @@ class _NotificationsMedecinState extends State<NotificationsMedecin> {
         borderRadius: BorderRadius.circular(12.r),
         side: BorderSide(
           color:
-              notification.isRead
-                  ? Colors.transparent
-                  : AppColors.primaryColor.withOpacity(0.5),
+          notification.isRead
+              ? Colors.transparent
+              : AppColors.primaryColor.withOpacity(0.5),
           width: notification.isRead ? 0 : 1.5,
         ),
       ),
@@ -558,9 +560,9 @@ class _NotificationsMedecinState extends State<NotificationsMedecin> {
                                 style: GoogleFonts.raleway(
                                   fontSize: 16.sp,
                                   fontWeight:
-                                      notification.isRead
-                                          ? FontWeight.normal
-                                          : FontWeight.bold,
+                                  notification.isRead
+                                      ? FontWeight.normal
+                                      : FontWeight.bold,
                                   color: theme.textTheme.titleMedium?.color,
                                 ),
                                 maxLines: 1,
@@ -664,6 +666,15 @@ class _NotificationsMedecinState extends State<NotificationsMedecin> {
         icon = Icons.medical_services;
         color = AppColors.primaryColor;
         break;
+      case NotificationType.appointmentAssigned:
+        // TODO: Handle this case.
+        throw UnimplementedError();
+      case NotificationType.prescriptionUpdated:
+        // TODO: Handle this case.
+        throw UnimplementedError();
+      case NotificationType.newMessage:
+        // TODO: Handle this case.
+        throw UnimplementedError();
     }
 
     return Container(
@@ -721,9 +732,9 @@ class _NotificationsMedecinState extends State<NotificationsMedecin> {
             if (state is RendezVousErrorState || state is RendezVousError) {
               // Show error message
               String errorMessage =
-                  state is RendezVousErrorState
-                      ? state.message
-                      : (state as RendezVousError).message;
+              state is RendezVousErrorState
+                  ? state.message
+                  : (state as RendezVousError).message;
 
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
@@ -771,6 +782,7 @@ class _NotificationsMedecinState extends State<NotificationsMedecin> {
           doctorId: _currentUser.id!,
           patientName: patientName,
           doctorName: _currentUser.name + ' ' + _currentUser.lastName,
+          recipientRole: 'patient', // Added for notification
         ),
       );
     }
@@ -821,9 +833,9 @@ class _NotificationsMedecinState extends State<NotificationsMedecin> {
             if (state is RendezVousErrorState || state is RendezVousError) {
               // Show error message
               String errorMessage =
-                  state is RendezVousErrorState
-                      ? state.message
-                      : (state as RendezVousError).message;
+              state is RendezVousErrorState
+                  ? state.message
+                  : (state as RendezVousError).message;
 
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
@@ -871,6 +883,7 @@ class _NotificationsMedecinState extends State<NotificationsMedecin> {
           doctorId: _currentUser.id!,
           patientName: patientName,
           doctorName: _currentUser.name + ' ' + _currentUser.lastName,
+          recipientRole: 'patient', // Added for notification
         ),
       );
     }
@@ -893,9 +906,9 @@ class _NotificationsMedecinState extends State<NotificationsMedecin> {
               MaterialPageRoute(
                 builder:
                     (context) => AppointmentDetailsPage(
-                      appointment: appointment,
-                      isDoctor: true,
-                    ),
+                  appointment: appointment,
+                  isDoctor: true,
+                ),
               ),
             );
           }
@@ -909,22 +922,22 @@ class _NotificationsMedecinState extends State<NotificationsMedecin> {
         MaterialPageRoute(
           builder:
               (context) => Scaffold(
-                appBar: AppBar(
-                  title: Text('Loading...'),
-                  backgroundColor: AppColors.primaryColor,
-                ),
-                body: Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      CircularProgressIndicator(color: AppColors.primaryColor),
-                      SizedBox(height: 16),
-                      Text('Loading appointment details...'),
-                      blocListener,
-                    ],
-                  ),
-                ),
+            appBar: AppBar(
+              title: Text('Loading...'),
+              backgroundColor: AppColors.primaryColor,
+            ),
+            body: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  CircularProgressIndicator(color: AppColors.primaryColor),
+                  SizedBox(height: 16),
+                  Text('Loading appointment details...'),
+                  blocListener,
+                ],
               ),
+            ),
+          ),
         ),
       );
     } else if (notification.prescriptionId != null) {

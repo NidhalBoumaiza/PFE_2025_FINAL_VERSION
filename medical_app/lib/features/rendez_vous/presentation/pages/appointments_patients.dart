@@ -235,6 +235,7 @@ class _AppointmentsPatientsState extends State<AppointmentsPatients> {
                         doctorId: appointment.doctorId!,
                         patientName: appointment.patientName!,
                         doctorName: appointment.doctorName!,
+                        recipientRole: "doctor",
                       ),
                     );
                   }

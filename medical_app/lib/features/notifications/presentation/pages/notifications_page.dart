@@ -14,6 +14,7 @@ import 'package:medical_app/features/notifications/presentation/bloc/notificatio
 import 'package:medical_app/features/rendez_vous/domain/entities/rendez_vous_entity.dart';
 import 'package:medical_app/features/rendez_vous/presentation/blocs/rendez-vous%20BLoC/rendez_vous_bloc.dart';
 import 'package:medical_app/features/rendez_vous/presentation/pages/appointment_details.dart';
+import 'package:medical_app/features/notifications/utils/notification_utils.dart';
 import 'package:medical_app/injection_container.dart' as di;
 
 class NotificationsPage extends StatefulWidget {
@@ -173,14 +174,14 @@ class _NotificationsPageState extends State<NotificationsPage> {
                         padding: EdgeInsets.all(24.r),
                         decoration: BoxDecoration(
                           color:
-                              isDarkMode ? Colors.grey[800] : Colors.grey[100],
+                          isDarkMode ? Colors.grey[800] : Colors.grey[100],
                           shape: BoxShape.circle,
                         ),
                         child: Icon(
                           Icons.notifications_off_outlined,
                           size: 80.sp,
                           color:
-                              isDarkMode ? Colors.grey[400] : Colors.grey[500],
+                          isDarkMode ? Colors.grey[400] : Colors.grey[500],
                         ),
                       ),
                       SizedBox(height: 24.h),
@@ -318,9 +319,9 @@ class _NotificationsPageState extends State<NotificationsPage> {
     if (notification.data != null) {
       senderName =
           notification.data!['senderName'] ??
-          notification.data!['doctorName'] ??
-          notification.data!['patientName'] ??
-          '';
+              notification.data!['doctorName'] ??
+              notification.data!['patientName'] ??
+              '';
     }
 
     return Dismissible(
@@ -340,22 +341,22 @@ class _NotificationsPageState extends State<NotificationsPage> {
           context: context,
           builder:
               (context) => AlertDialog(
-                title: Text('delete_notification'.tr),
-                content: Text('confirm_delete_notification'.tr),
-                actions: [
-                  TextButton(
-                    onPressed: () => Navigator.of(context).pop(false),
-                    child: Text('cancel'.tr),
-                  ),
-                  TextButton(
-                    onPressed: () => Navigator.of(context).pop(true),
-                    child: Text(
-                      'delete'.tr,
-                      style: TextStyle(color: Colors.red),
-                    ),
-                  ),
-                ],
+            title: Text('delete_notification'.tr),
+            content: Text('confirm_delete_notification'.tr),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(false),
+                child: Text('cancel'.tr),
               ),
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(true),
+                child: Text(
+                  'delete'.tr,
+                  style: TextStyle(color: Colors.red),
+                ),
+              ),
+            ],
+          ),
         );
       },
       onDismissed: (direction) {
@@ -377,12 +378,12 @@ class _NotificationsPageState extends State<NotificationsPage> {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16.r),
           side:
-              notification.isRead
-                  ? BorderSide.none
-                  : BorderSide(
-                    color: AppColors.primaryColor.withOpacity(0.5),
-                    width: 1.5,
-                  ),
+          notification.isRead
+              ? BorderSide.none
+              : BorderSide(
+            color: AppColors.primaryColor.withOpacity(0.5),
+            width: 1.5,
+          ),
         ),
         child: InkWell(
           onTap: () {
@@ -416,11 +417,11 @@ class _NotificationsPageState extends State<NotificationsPage> {
                               style: GoogleFonts.raleway(
                                 fontSize: 16.sp,
                                 fontWeight:
-                                    notification.isRead
-                                        ? FontWeight.w600
-                                        : FontWeight.bold,
+                                notification.isRead
+                                    ? FontWeight.w600
+                                    : FontWeight.bold,
                                 color:
-                                    isDarkMode ? Colors.white : Colors.black87,
+                                isDarkMode ? Colors.white : Colors.black87,
                               ),
                             ),
                             SizedBox(height: 6.h),
@@ -429,9 +430,9 @@ class _NotificationsPageState extends State<NotificationsPage> {
                               style: GoogleFonts.raleway(
                                 fontSize: 14.sp,
                                 color:
-                                    isDarkMode
-                                        ? Colors.grey[300]
-                                        : Colors.black54,
+                                isDarkMode
+                                    ? Colors.grey[300]
+                                    : Colors.black54,
                                 height: 1.3,
                               ),
                               maxLines: 2,
@@ -451,9 +452,9 @@ class _NotificationsPageState extends State<NotificationsPage> {
                                     ),
                                     decoration: BoxDecoration(
                                       color:
-                                          isDarkMode
-                                              ? Colors.blue.withOpacity(0.2)
-                                              : Colors.blue.withOpacity(0.1),
+                                      isDarkMode
+                                          ? Colors.blue.withOpacity(0.2)
+                                          : Colors.blue.withOpacity(0.1),
                                       borderRadius: BorderRadius.circular(20.r),
                                     ),
                                     child: Row(
@@ -483,9 +484,9 @@ class _NotificationsPageState extends State<NotificationsPage> {
                                   ),
                                   decoration: BoxDecoration(
                                     color:
-                                        isDarkMode
-                                            ? Colors.grey.withOpacity(0.2)
-                                            : Colors.grey.withOpacity(0.1),
+                                    isDarkMode
+                                        ? Colors.grey.withOpacity(0.2)
+                                        : Colors.grey.withOpacity(0.1),
                                     borderRadius: BorderRadius.circular(20.r),
                                   ),
                                   child: Row(
@@ -495,9 +496,9 @@ class _NotificationsPageState extends State<NotificationsPage> {
                                         Icons.access_time,
                                         size: 12.sp,
                                         color:
-                                            isDarkMode
-                                                ? Colors.grey[400]
-                                                : Colors.grey[700],
+                                        isDarkMode
+                                            ? Colors.grey[400]
+                                            : Colors.grey[700],
                                       ),
                                       SizedBox(width: 4.w),
                                       Text(
@@ -507,9 +508,9 @@ class _NotificationsPageState extends State<NotificationsPage> {
                                         style: GoogleFonts.raleway(
                                           fontSize: 12.sp,
                                           color:
-                                              isDarkMode
-                                                  ? Colors.grey[400]
-                                                  : Colors.grey[700],
+                                          isDarkMode
+                                              ? Colors.grey[400]
+                                              : Colors.grey[700],
                                         ),
                                       ),
                                     ],
@@ -609,6 +610,15 @@ class _NotificationsPageState extends State<NotificationsPage> {
         color = AppColors.primaryColor;
         label = 'prescription'.tr;
         break;
+      case NotificationType.appointmentAssigned:
+        // TODO: Handle this case.
+        throw UnimplementedError();
+      case NotificationType.prescriptionUpdated:
+        // TODO: Handle this case.
+        throw UnimplementedError();
+      case NotificationType.newMessage:
+        // TODO: Handle this case.
+        throw UnimplementedError();
     }
 
     return Column(
@@ -673,7 +683,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
                 ),
                 onPressed: () {
                   if (notification.appointmentId != null) {
-                    _acceptAppointment(notification.appointmentId!);
+                    _acceptAppointment(notification);
                   }
                 },
                 style: ElevatedButton.styleFrom(
@@ -704,7 +714,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
                 ),
                 onPressed: () {
                   if (notification.appointmentId != null) {
-                    _rejectAppointment(notification.appointmentId!);
+                    _rejectAppointment(notification);
                   }
                 },
                 style: ElevatedButton.styleFrom(
@@ -750,28 +760,41 @@ class _NotificationsPageState extends State<NotificationsPage> {
     }
   }
 
-  void _acceptAppointment(String appointmentId) {
+  void _acceptAppointment(NotificationEntity notification) {
+    // Get patient information from notification data
+    String patientId = notification.senderId;
+    String patientName = '';
+    if (notification.data != null && notification.data!['patientName'] != null) {
+      patientName = notification.data!['patientName'];
+    }
+
     context.read<RendezVousBloc>().add(
       UpdateRendezVousStatus(
-        rendezVousId: appointmentId,
+        rendezVousId: notification.appointmentId!,
         status: 'accepted',
-        patientId: '', // This would need to be fetched
+        patientId: patientId,
         doctorId: _currentUser.id!,
-        patientName: '', // This would need to be fetched
+        patientName: patientName,
         doctorName: _currentUser.name + ' ' + _currentUser.lastName,
+        recipientRole: 'patient',
       ),
     );
 
     // Send notification to patient
-    final notification = context.read<NotificationBloc>();
-    notification.add(
+    final notificationBloc = context.read<NotificationBloc>();
+    notificationBloc.add(
       SendNotificationEvent(
         title: 'appointment_accepted'.tr,
         body: 'appointment_accepted_message'.tr,
         senderId: _currentUser.id!,
-        recipientId: '', // You need to get the patient ID from the appointment
+        recipientId: patientId,
         type: NotificationType.appointmentAccepted,
-        appointmentId: appointmentId,
+        appointmentId: notification.appointmentId,
+        recipientRole: 'patient',
+        data: {
+          'patientName': patientName,
+          'doctorName': _currentUser.name + ' ' + _currentUser.lastName,
+        },
       ),
     );
 
@@ -784,28 +807,41 @@ class _NotificationsPageState extends State<NotificationsPage> {
     );
   }
 
-  void _rejectAppointment(String appointmentId) {
+  void _rejectAppointment(NotificationEntity notification) {
+    // Get patient information from notification data
+    String patientId = notification.senderId;
+    String patientName = '';
+    if (notification.data != null && notification.data!['patientName'] != null) {
+      patientName = notification.data!['patientName'];
+    }
+
     context.read<RendezVousBloc>().add(
       UpdateRendezVousStatus(
-        rendezVousId: appointmentId,
+        rendezVousId: notification.appointmentId!,
         status: 'rejected',
-        patientId: '', // This would need to be fetched
+        patientId: patientId,
         doctorId: _currentUser.id!,
-        patientName: '', // This would need to be fetched
+        patientName: patientName,
         doctorName: _currentUser.name + ' ' + _currentUser.lastName,
+        recipientRole: 'patient',
       ),
     );
 
     // Send notification to patient
-    final notification = context.read<NotificationBloc>();
-    notification.add(
+    final notificationBloc = context.read<NotificationBloc>();
+    notificationBloc.add(
       SendNotificationEvent(
         title: 'appointment_rejected'.tr,
         body: 'appointment_rejected_message'.tr,
         senderId: _currentUser.id!,
-        recipientId: '', // You need to get the patient ID from the appointment
+        recipientId: patientId,
         type: NotificationType.appointmentRejected,
-        appointmentId: appointmentId,
+        appointmentId: notification.appointmentId,
+        recipientRole: 'patient',
+        data: {
+          'patientName': patientName,
+          'doctorName': _currentUser.name + ' ' + _currentUser.lastName,
+        },
       ),
     );
 
@@ -826,7 +862,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
         MaterialPageRoute(
           builder:
               (context) =>
-                  AppointmentDetailsPage(id: notification.appointmentId!),
+              AppointmentDetailsPage(id: notification.appointmentId!),
         ),
       );
     } else if (notification.prescriptionId != null) {

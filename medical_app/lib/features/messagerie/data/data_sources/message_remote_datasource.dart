@@ -4,6 +4,8 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:medical_app/core/error/exceptions.dart';
 import 'package:medical_app/features/messagerie/data/models/message_model.dart';
 import 'package:medical_app/features/messagerie/domain/entities/conversation_entity.dart';
+import 'package:medical_app/features/notifications/data/datasources/notification_remote_datasource.dart';
+import 'package:medical_app/features/notifications/utils/notification_utils.dart';
 import '../models/conversation_mode.dart';
 
 // Interface for messaging data source
@@ -19,10 +21,12 @@ abstract class MessagingRemoteDataSource {
 class MessagingRemoteDataSourceImpl implements MessagingRemoteDataSource {
   final FirebaseFirestore firestore;
   final FirebaseStorage storage;
+  final NotificationRemoteDataSource notificationRemoteDataSource;
 
   MessagingRemoteDataSourceImpl({
     required this.firestore,
     required this.storage,
+    required this.notificationRemoteDataSource,
   });
 
   @override
@@ -38,15 +42,21 @@ class MessagingRemoteDataSourceImpl implements MessagingRemoteDataSource {
       return snapshot.docs.map((doc) {
         final data = doc.data();
         print('Conversation data: $data');
+        // Validate required fields
+        final patientId = data['patientId'] as String? ?? '';
+        final doctorId = data['doctorId'] as String? ?? '';
+        if (patientId.isEmpty || doctorId.isEmpty) {
+          print('Warning: Conversation ${doc.id} has empty patientId or doctorId');
+        }
         return ConversationModel(
           id: doc.id,
-          patientId: data['patientId'] as String? ?? '',
-          doctorId: data['doctorId'] as String? ?? '',
+          patientId: patientId,
+          doctorId: doctorId,
           patientName: data['patientName'] as String? ?? 'Unknown Patient',
           doctorName: data['doctorName'] as String? ?? 'Unknown Doctor',
           lastMessage: data['lastMessage'] as String? ?? '',
           lastMessageType: data['lastMessageType'] as String? ?? 'text',
-          lastMessageTime: ConversationModel.parseDateTime(data['lastMessageTime'] as String?),
+          lastMessageTime: ConversationModel.parseDateTime(data['lastMessageTime'] as String?) ?? DateTime.now(),
           lastMessageUrl: data['lastMessageUrl'] as String?,
           lastMessageRead: _isMessageReadByUser(data, userId, isDoctor),
         );
@@ -73,15 +83,21 @@ class MessagingRemoteDataSourceImpl implements MessagingRemoteDataSource {
         print('Stream received ${snapshot.docs.length} conversations');
         return snapshot.docs.map((doc) {
           final data = doc.data();
+          // Validate required fields
+          final patientId = data['patientId'] as String? ?? '';
+          final doctorId = data['doctorId'] as String? ?? '';
+          if (patientId.isEmpty || doctorId.isEmpty) {
+            print('Warning: Conversation ${doc.id} has empty patientId or doctorId');
+          }
           return ConversationModel(
             id: doc.id,
-            patientId: data['patientId'] as String? ?? '',
-            doctorId: data['doctorId'] as String? ?? '',
+            patientId: patientId,
+            doctorId: doctorId,
             patientName: data['patientName'] as String? ?? 'Unknown Patient',
             doctorName: data['doctorName'] as String? ?? 'Unknown Doctor',
             lastMessage: data['lastMessage'] as String? ?? '',
             lastMessageType: data['lastMessageType'] as String? ?? 'text',
-            lastMessageTime: ConversationModel.parseDateTime(data['lastMessageTime'] as String?),
+            lastMessageTime: ConversationModel.parseDateTime(data['lastMessageTime'] as String?) ?? DateTime.now(),
             lastMessageUrl: data['lastMessageUrl'] as String?,
             lastMessageRead: _isMessageReadByUser(data, userId, isDoctor),
           );
@@ -103,7 +119,7 @@ class MessagingRemoteDataSourceImpl implements MessagingRemoteDataSource {
     if (lastMessageSenderId == userId) {
       return true;
     }
-    
+
     // Otherwise, check if the user is in the 'readBy' list of the last message
     final List<String> readBy = List<String>.from(data['lastMessageReadBy'] ?? []);
     return readBy.contains(userId);
@@ -118,6 +134,9 @@ class MessagingRemoteDataSourceImpl implements MessagingRemoteDataSource {
       // Upload file if provided
       if (file != null) {
         print('Uploading file for message ${message.id}');
+        if (file.path.isEmpty) {
+          throw ServerException('Invalid file path for message ${message.id}');
+        }
         final ref = storage.ref().child('conversations').child(message.conversationId).child(message.id);
         final uploadTask = await ref.putFile(file);
         fileUrl = await uploadTask.ref.getDownloadURL();
@@ -148,8 +167,56 @@ class MessagingRemoteDataSourceImpl implements MessagingRemoteDataSource {
         'lastMessageType': message.type,
         'lastMessageTime': message.timestamp.toIso8601String(),
         'lastMessageUrl': fileUrl ?? '',
+        'lastMessageSenderId': message.senderId,
+        'lastMessageReadBy': [message.senderId],
       });
       print('Updated conversation ${message.conversationId} lastMessage');
+
+      // Send notification to the recipient
+      final conversationDoc = await firestore.collection('conversations').doc(message.conversationId).get();
+      if (conversationDoc.exists) {
+        final conversationData = conversationDoc.data()!;
+        final recipientId = message.senderId == conversationData['patientId']
+            ? conversationData['doctorId'] as String
+            : conversationData['patientId'] as String;
+        final recipientRole = message.senderId == conversationData['patientId'] ? 'doctor' : 'patient';
+        final senderName = message.senderId == conversationData['patientId']
+            ? conversationData['patientName'] as String
+            : conversationData['doctorName'] as String;
+
+        final notificationTitle = 'New Message from $senderName';
+        final notificationBody = message.type == 'text'
+            ? message.content.length > 100
+            ? '${message.content.substring(0, _findWordBoundary(message.content, 97))}...'
+            : message.content
+            : 'Sent a ${message.type} message';
+
+        try {
+          await notificationRemoteDataSource.sendNotification(
+            title: notificationTitle,
+            body: notificationBody,
+            senderId: message.senderId,
+            recipientId: recipientId,
+            type: NotificationType.newMessage,
+            recipientRole: recipientRole,
+            appointmentId: null,
+            prescriptionId: null,
+            ratingId: null,
+            data: {
+              'conversationId': message.conversationId,
+              'senderName': senderName,
+              'messageId': message.id,
+              'messageType': message.type,
+            },
+          );
+          print('Sent notification for message ${message.id} to recipient $recipientId');
+        } catch (notificationError) {
+          print('Failed to send notification for message ${message.id}: $notificationError');
+          // Log the error but don't throw to ensure message sending isn't blocked
+        }
+      } else {
+        print('Conversation ${message.conversationId} not found, skipping notification');
+      }
     } catch (e) {
       print('Error sending message ${message.id}: $e');
       if (e is FirebaseException) {
@@ -157,6 +224,13 @@ class MessagingRemoteDataSourceImpl implements MessagingRemoteDataSource {
       }
       throw ServerException('Failed to send message: $e');
     }
+  }
+
+  // Helper method to find word boundary for truncation
+  int _findWordBoundary(String text, int maxLength) {
+    if (text.length <= maxLength) return maxLength;
+    int boundary = text.lastIndexOf(' ', maxLength);
+    return boundary == -1 ? maxLength : boundary;
   }
 
   @override

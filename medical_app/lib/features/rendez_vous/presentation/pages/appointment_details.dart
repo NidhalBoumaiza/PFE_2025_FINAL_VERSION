@@ -221,7 +221,7 @@ class _AppointmentDetailsPageState extends State<AppointmentDetailsPage> {
                     patientId: appointment.patientId ?? '',
                     doctorId: appointment.doctorId ?? '',
                     patientName: appointment.patientName ?? '',
-                    doctorName: appointment.doctorName ?? '',
+                    doctorName: appointment.doctorName ?? '', recipientRole: "patient",
                   ),
                 );
                 Navigator.pop(context);
@@ -254,6 +254,7 @@ class _AppointmentDetailsPageState extends State<AppointmentDetailsPage> {
                     doctorId: appointment.doctorId ?? '',
                     patientName: appointment.patientName ?? '',
                     doctorName: appointment.doctorName ?? '',
+                    recipientRole:  "patient",
                   ),
                 );
                 Navigator.pop(context);

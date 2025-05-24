@@ -1,5 +1,7 @@
 import 'package:medical_app/features/notifications/domain/entities/notification_entity.dart';
 
+import '../../utils/notification_utils.dart';
+
 class NotificationModel extends NotificationEntity {
   const NotificationModel({
     required String id,

@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
 import 'package:medical_app/features/notifications/domain/entities/notification_entity.dart';
+import 'package:medical_app/features/notifications/utils/notification_utils.dart';
 
 abstract class NotificationEvent extends Equatable {
   const NotificationEvent();
@@ -23,6 +24,7 @@ class SendNotificationEvent extends NotificationEvent {
   final String senderId;
   final String recipientId;
   final NotificationType type;
+  final String recipientRole;
   final String? appointmentId;
   final String? prescriptionId;
   final String? ratingId;
@@ -34,6 +36,7 @@ class SendNotificationEvent extends NotificationEvent {
     required this.senderId,
     required this.recipientId,
     required this.type,
+    required this.recipientRole,
     this.appointmentId,
     this.prescriptionId,
     this.ratingId,
@@ -41,7 +44,14 @@ class SendNotificationEvent extends NotificationEvent {
   });
 
   @override
-  List<Object> get props => [title, body, senderId, recipientId, type];
+  List<Object> get props => [
+    title,
+    body,
+    senderId,
+    recipientId,
+    type,
+    recipientRole,
+  ];
 }
 
 class MarkNotificationAsReadEvent extends NotificationEvent {

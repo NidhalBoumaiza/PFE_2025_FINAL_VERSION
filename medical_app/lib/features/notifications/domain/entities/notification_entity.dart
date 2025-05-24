@@ -1,12 +1,5 @@
 import 'package:equatable/equatable.dart';
-
-enum NotificationType {
-  newAppointment,
-  appointmentAccepted,
-  appointmentRejected,
-  newRating,
-  newPrescription
-}
+import 'package:medical_app/features/notifications/utils/notification_utils.dart';
 
 class NotificationEntity extends Equatable {
   final String id;
@@ -39,17 +32,17 @@ class NotificationEntity extends Equatable {
 
   @override
   List<Object?> get props => [
-        id,
-        title,
-        body,
-        senderId,
-        recipientId,
-        type,
-        appointmentId,
-        prescriptionId,
-        ratingId,
-        createdAt,
-        isRead,
-        data,
-      ];
-} 
+    id,
+    title,
+    body,
+    senderId,
+    recipientId,
+    type,
+    appointmentId,
+    prescriptionId,
+    ratingId,
+    createdAt,
+    isRead,
+    data,
+  ];
+}

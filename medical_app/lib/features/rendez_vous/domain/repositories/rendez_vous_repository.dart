@@ -16,6 +16,7 @@ abstract class RendezVousRepository {
       String doctorId,
       String patientName,
       String doctorName,
+      String recipientRole,
       );
 
   Future<Either<Failure, Unit>> createRendezVous(RendezVousEntity rendezVous);

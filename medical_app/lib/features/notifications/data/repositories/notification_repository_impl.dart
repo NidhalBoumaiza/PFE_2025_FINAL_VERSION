@@ -4,7 +4,9 @@ import 'package:medical_app/core/error/failures.dart';
 import 'package:medical_app/core/network/network_info.dart';
 import 'package:medical_app/features/notifications/data/datasources/notification_remote_datasource.dart';
 import 'package:medical_app/features/notifications/domain/entities/notification_entity.dart';
-import 'package:medical_app/features/notifications/domain/repositories/notification_repository.dart';
+
+import '../../domain/repositories/notification_repository.dart';
+import '../../utils/notification_utils.dart';
 
 class NotificationRepositoryImpl implements NotificationRepository {
   final NotificationRemoteDataSource remoteDataSource;
@@ -30,12 +32,13 @@ class NotificationRepositoryImpl implements NotificationRepository {
   }
 
   @override
-  Future<Either<Failure, Unit>> sendNotification({
+  Future<Either<Failure, void>> sendNotification({
     required String title,
     required String body,
     required String senderId,
     required String recipientId,
     required NotificationType type,
+    required String recipientRole,
     String? appointmentId,
     String? prescriptionId,
     String? ratingId,
@@ -49,12 +52,13 @@ class NotificationRepositoryImpl implements NotificationRepository {
           senderId: senderId,
           recipientId: recipientId,
           type: type,
+          recipientRole: recipientRole,
           appointmentId: appointmentId,
           prescriptionId: prescriptionId,
           ratingId: ratingId,
           data: data,
         );
-        return const Right(unit);
+        return const Right(null);
       } on ServerException catch (e) {
         return Left(ServerFailure());
       }
@@ -64,11 +68,11 @@ class NotificationRepositoryImpl implements NotificationRepository {
   }
 
   @override
-  Future<Either<Failure, Unit>> markNotificationAsRead(String notificationId) async {
+  Future<Either<Failure, void>> markNotificationAsRead(String notificationId) async {
     if (await networkInfo.isConnected) {
       try {
         await remoteDataSource.markNotificationAsRead(notificationId);
-        return const Right(unit);
+        return const Right(null);
       } on ServerException catch (e) {
         return Left(ServerFailure());
       }
@@ -78,11 +82,11 @@ class NotificationRepositoryImpl implements NotificationRepository {
   }
 
   @override
-  Future<Either<Failure, Unit>> markAllNotificationsAsRead(String userId) async {
+  Future<Either<Failure, void>> markAllNotificationsAsRead(String userId) async {
     if (await networkInfo.isConnected) {
       try {
         await remoteDataSource.markAllNotificationsAsRead(userId);
-        return const Right(unit);
+        return const Right(null);
       } on ServerException catch (e) {
         return Left(ServerFailure());
       }
@@ -92,11 +96,11 @@ class NotificationRepositoryImpl implements NotificationRepository {
   }
 
   @override
-  Future<Either<Failure, Unit>> deleteNotification(String notificationId) async {
+  Future<Either<Failure, void>> deleteNotification(String notificationId) async {
     if (await networkInfo.isConnected) {
       try {
         await remoteDataSource.deleteNotification(notificationId);
-        return const Right(unit);
+        return const Right(null);
       } on ServerException catch (e) {
         return Left(ServerFailure());
       }
@@ -134,11 +138,11 @@ class NotificationRepositoryImpl implements NotificationRepository {
   }
 
   @override
-  Future<Either<Failure, Unit>> saveFCMToken(String userId, String token) async {
+  Future<Either<Failure, void>> saveFCMToken(String userId, String token) async {
     if (await networkInfo.isConnected) {
       try {
         await remoteDataSource.saveFCMToken(userId, token);
-        return const Right(unit);
+        return const Right(null);
       } on ServerException catch (e) {
         return Left(ServerFailure());
       }
@@ -151,4 +155,4 @@ class NotificationRepositoryImpl implements NotificationRepository {
   Stream<List<NotificationEntity>> notificationsStream(String userId) {
     return remoteDataSource.notificationsStream(userId);
   }
-} 
+}

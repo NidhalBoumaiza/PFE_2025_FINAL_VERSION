@@ -265,13 +265,13 @@ Future<void> init() async {
   );
   sl.registerLazySingleton<RendezVousRemoteDataSource>(
     () =>
-        RendezVousRemoteDataSourceImpl(firestore: sl(), localDataSource: sl()),
+        RendezVousRemoteDataSourceImpl(firestore: sl(), localDataSource: sl(), notificationRemoteDataSource: sl()),
   );
   sl.registerLazySingleton<RendezVousLocalDataSource>(
     () => RendezVousLocalDataSourceImpl(sharedPreferences: sl()),
   );
   sl.registerLazySingleton<MessagingRemoteDataSource>(
-    () => MessagingRemoteDataSourceImpl(firestore: sl(), storage: sl()),
+    () => MessagingRemoteDataSourceImpl(firestore: sl(), storage: sl(), notificationRemoteDataSource: sl()),
   );
   sl.registerLazySingleton<MessagingLocalDataSource>(
     () => MessagingLocalDataSourceImpl(),
@@ -284,7 +284,7 @@ Future<void> init() async {
 
   // Prescription DataSource
   sl.registerLazySingleton<PrescriptionRemoteDataSource>(
-    () => PrescriptionRemoteDataSourceImpl(firestore: sl()),
+    () => PrescriptionRemoteDataSourceImpl(firestore: sl(), notificationRemoteDataSource: sl()),
   );
 
   // Notification Data Sources
@@ -331,7 +331,7 @@ Future<void> init() async {
     () => RatingRepositoryImpl(remoteDataSource: sl(), networkInfo: sl()),
   );
   sl.registerLazySingleton<RatingRemoteDataSource>(
-    () => RatingRemoteDataSourceImpl(firestore: sl()),
+    () => RatingRemoteDataSourceImpl(firestore: sl(), notificationRemoteDataSource: sl()),
   );
 
   // Dossier Medical

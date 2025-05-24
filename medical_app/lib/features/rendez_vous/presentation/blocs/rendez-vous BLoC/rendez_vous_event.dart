@@ -25,6 +25,7 @@ class UpdateRendezVousStatus extends RendezVousEvent {
   final String doctorId;
   final String patientName;
   final String doctorName;
+  final String recipientRole;
 
   const UpdateRendezVousStatus({
     required this.rendezVousId,
@@ -33,6 +34,7 @@ class UpdateRendezVousStatus extends RendezVousEvent {
     required this.doctorId,
     required this.patientName,
     required this.doctorName,
+    required this.recipientRole,
   });
 
   @override
@@ -43,6 +45,7 @@ class UpdateRendezVousStatus extends RendezVousEvent {
     doctorId,
     patientName,
     doctorName,
+    recipientRole,
   ];
 }
 

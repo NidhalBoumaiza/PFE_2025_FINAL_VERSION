@@ -83,6 +83,7 @@ class RendezVousRepositoryImpl implements RendezVousRepository {
       String doctorId,
       String patientName,
       String doctorName,
+      String recipientRole,
       ) async {
     if (await networkInfo.isConnected) {
       try {
@@ -93,6 +94,7 @@ class RendezVousRepositoryImpl implements RendezVousRepository {
           doctorId,
           patientName,
           doctorName,
+          recipientRole,
         );
         return const Right(unit);
       } on ServerException {

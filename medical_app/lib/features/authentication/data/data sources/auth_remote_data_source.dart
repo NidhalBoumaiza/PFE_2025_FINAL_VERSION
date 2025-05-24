@@ -218,11 +218,20 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
             phoneNumber: user.phoneNumber,
             dateOfBirth: user.dateOfBirth,
             antecedent: user.antecedent,
+            bloodType: user.bloodType,
+            height: user.height,
+            weight: user.weight,
+            allergies: user.allergies,
+            chronicDiseases: user.chronicDiseases,
+            emergencyContact: user.emergencyContact,
+            address: user.address,
+            location: user.location,
             accountStatus: false,
             verificationCode: randomNumber,
             validationCodeExpiresAt: DateTime.now().add(
               const Duration(minutes: 60),
             ),
+            fcmToken: user.fcmToken,
           );
         } else if (user is MedecinModel) {
           updatedUser = MedecinModel(

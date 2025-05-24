@@ -78,6 +78,7 @@ class _RendezVousMedecinState extends State<RendezVousMedecin> {
         doctorId: doctorId,
         patientName: patientName,
         doctorName: doctorName,
+        recipientRole: 'patient',
       ));
     }
   }

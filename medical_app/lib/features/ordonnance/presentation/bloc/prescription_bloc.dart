@@ -2,6 +2,7 @@ import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:uuid/uuid.dart';
 
+import '../../../notifications/utils/notification_utils.dart';
 import '../../domain/entities/prescription_entity.dart';
 import '../../domain/usecases/create_prescription_use_case.dart';
 import '../../domain/usecases/edit_prescription_use_case.dart';
@@ -191,7 +192,7 @@ class PrescriptionBloc extends Bloc<PrescriptionEvent, PrescriptionState> {
           recipientId: prescription.patientId!,
           type: NotificationType.newPrescription,
           prescriptionId: prescription.id,
-          appointmentId: prescription.appointmentId,
+          appointmentId: prescription.appointmentId, recipientRole: 'patient',
         ),
       );
     }

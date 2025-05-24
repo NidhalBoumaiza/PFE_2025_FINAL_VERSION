@@ -14,6 +14,7 @@ class UpdateRendezVousStatusUseCase {
     required String doctorId,
     required String patientName,
     required String doctorName,
+    required String recipientRole,
   }) async {
     return await rendezVousRepository.updateRendezVousStatus(
       rendezVousId,
@@ -22,6 +23,7 @@ class UpdateRendezVousStatusUseCase {
       doctorId,
       patientName,
       doctorName,
+      recipientRole,
     );
   }
 }

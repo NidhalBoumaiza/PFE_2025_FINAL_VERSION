@@ -1,25 +1,15 @@
-import 'package:medical_app/features/notifications/domain/entities/notification_entity.dart';
+enum NotificationType {
+  newAppointment,
+  appointmentAccepted,
+  appointmentRejected,
+  appointmentAssigned,
+  newPrescription,
+  prescriptionUpdated,
+  newMessage,
+  newRating,
+}
 
 class NotificationUtils {
-  /// Convert a string to NotificationType enum
-  static NotificationType stringToNotificationType(String type) {
-    switch (type) {
-      case 'newAppointment':
-        return NotificationType.newAppointment;
-      case 'appointmentAccepted':
-        return NotificationType.appointmentAccepted;
-      case 'appointmentRejected':
-        return NotificationType.appointmentRejected;
-      case 'newRating':
-        return NotificationType.newRating;
-      case 'newPrescription':
-        return NotificationType.newPrescription;
-      default:
-        return NotificationType.newAppointment;
-    }
-  }
-
-  /// Convert NotificationType enum to string
   static String notificationTypeToString(NotificationType type) {
     switch (type) {
       case NotificationType.newAppointment:
@@ -28,26 +18,39 @@ class NotificationUtils {
         return 'appointmentAccepted';
       case NotificationType.appointmentRejected:
         return 'appointmentRejected';
-      case NotificationType.newRating:
-        return 'newRating';
+      case NotificationType.appointmentAssigned:
+        return 'appointmentAssigned';
       case NotificationType.newPrescription:
         return 'newPrescription';
+      case NotificationType.prescriptionUpdated:
+        return 'prescriptionUpdated';
+      case NotificationType.newMessage:
+        return 'newMessage';
+      case NotificationType.newRating:
+        return 'newRating';
     }
   }
 
-  /// Get notification title based on type
-  static String getNotificationTitle(NotificationType type) {
+  static NotificationType stringToNotificationType(String type) {
     switch (type) {
-      case NotificationType.newAppointment:
-        return 'New Appointment';
-      case NotificationType.appointmentAccepted:
-        return 'Appointment Accepted';
-      case NotificationType.appointmentRejected:
-        return 'Appointment Rejected';
-      case NotificationType.newRating:
-        return 'New Rating';
-      case NotificationType.newPrescription:
-        return 'New Prescription';
+      case 'newAppointment':
+        return NotificationType.newAppointment;
+      case 'appointmentAccepted':
+        return NotificationType.appointmentAccepted;
+      case 'appointmentRejected':
+        return NotificationType.appointmentRejected;
+      case 'appointmentAssigned':
+        return NotificationType.appointmentAssigned;
+      case 'newPrescription':
+        return NotificationType.newPrescription;
+      case 'prescriptionUpdated':
+        return NotificationType.prescriptionUpdated;
+      case 'newMessage':
+        return NotificationType.newMessage;
+      case 'newRating':
+        return NotificationType.newRating;
+      default:
+        return NotificationType.newAppointment;
     }
   }
 }

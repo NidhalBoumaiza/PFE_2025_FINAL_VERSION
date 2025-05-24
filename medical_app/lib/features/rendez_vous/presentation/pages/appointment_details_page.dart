@@ -205,6 +205,9 @@ class _AppointmentDetailsPageState extends State<AppointmentDetailsPage> {
                         doctorId: widget.appointment.doctorId!,
                         patientName: widget.appointment.patientName!,
                         doctorName: widget.appointment.doctorName!,
+                        recipientRole: widget.isDoctor
+                            ? "patient"
+                            : "doctor", // Send notification to the other party
                       ),
                     );
                   }

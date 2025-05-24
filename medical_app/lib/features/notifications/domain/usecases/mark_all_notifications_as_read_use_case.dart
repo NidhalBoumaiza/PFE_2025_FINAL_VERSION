@@ -7,7 +7,7 @@ class MarkAllNotificationsAsReadUseCase {
 
   MarkAllNotificationsAsReadUseCase(this.repository);
 
-  Future<Either<Failure, Unit>> call({required String userId}) async {
+  Future<Either<Failure, void>> call({required String userId}) async {
     return await repository.markAllNotificationsAsRead(userId);
   }
-} 
+}
