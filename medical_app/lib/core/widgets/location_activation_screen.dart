@@ -76,11 +76,12 @@ class _LocationActivationScreenState extends State<LocationActivationScreen> {
       bool serviceEnabled = await LocationService.isLocationServiceEnabled();
       if (!serviceEnabled) {
         await Geolocator.openLocationSettings();
-        // Return and wait for user to enable location services
-        setState(() {
-          _isLoading = false;
-        });
-        return;
+        // Wait until the user enables location services
+        bool enabled = false;
+        while (!enabled) {
+          await Future.delayed(const Duration(seconds: 1));
+          enabled = await LocationService.isLocationServiceEnabled();
+        }
       }
 
       // Request permission

@@ -20,10 +20,10 @@ class SignupMedecinScreen extends StatefulWidget {
 class _SignupMedecinScreenState extends State<SignupMedecinScreen> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final TextEditingController numLicenceController = TextEditingController();
-  final TextEditingController consultationFeeController =
-      TextEditingController();
-  final TextEditingController appointmentDurationController =
-      TextEditingController(text: "30");
+  final TextEditingController consultationFeeController = TextEditingController();
+  final TextEditingController appointmentDurationController = TextEditingController(text: "30");
+  final TextEditingController educationController = TextEditingController();
+  final TextEditingController experienceController = TextEditingController();
   String? selectedSpecialty;
 
   @override
@@ -31,7 +31,31 @@ class _SignupMedecinScreenState extends State<SignupMedecinScreen> {
     numLicenceController.dispose();
     consultationFeeController.dispose();
     appointmentDurationController.dispose();
+    educationController.dispose();
+    experienceController.dispose();
     super.dispose();
+  }
+
+  // Helper to parse education/experience input into List<Map<String, String>>
+  List<Map<String, String>>? parseListInput(String? input) {
+    if (input == null || input.isEmpty) return null;
+    try {
+      // Expect input like: "Degree:MD,Year:2010;Degree:PhD,Year:2015"
+      final entries = input.split(';').where((e) => e.isNotEmpty).map((entry) {
+        final parts = entry.split(',').map((e) => e.trim()).toList();
+        final map = <String, String>{};
+        for (var part in parts) {
+          final keyValue = part.split(':');
+          if (keyValue.length == 2) {
+            map[keyValue[0]] = keyValue[1];
+          }
+        }
+        return map;
+      }).toList();
+      return entries.isNotEmpty ? entries : null;
+    } catch (e) {
+      return null;
+    }
   }
 
   @override
@@ -156,21 +180,18 @@ class _SignupMedecinScreenState extends State<SignupMedecinScreen> {
                                 size: 22.sp,
                               ),
                             ),
-                            items:
-                                getTranslatedSpecialties()
-                                    .map(
-                                      (specialty) => DropdownMenuItem(
-                                        value: specialty,
-                                        child: Text(
-                                          specialty,
-                                          style: GoogleFonts.raleway(
-                                            fontSize: 15.sp,
-                                            color: Colors.black87,
-                                          ),
-                                        ),
-                                      ),
-                                    )
-                                    .toList(),
+                            items: getTranslatedSpecialties().map(
+                                  (specialty) => DropdownMenuItem(
+                                value: specialty,
+                                child: Text(
+                                  specialty,
+                                  style: GoogleFonts.raleway(
+                                    fontSize: 15.sp,
+                                    color: Colors.black87,
+                                  ),
+                                ),
+                              ),
+                            ).toList(),
                             onChanged: (value) {
                               setState(() {
                                 selectedSpecialty = value;
@@ -357,6 +378,15 @@ class _SignupMedecinScreenState extends State<SignupMedecinScreen> {
                                 size: 22.sp,
                               ),
                             ),
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return "consultation_fee_required".tr;
+                              }
+                              if (double.tryParse(value) == null || double.parse(value) <= 0) {
+                                return "invalid_consultation_fee".tr;
+                              }
+                              return null;
+                            },
                           ),
                         ),
 
@@ -443,6 +473,185 @@ class _SignupMedecinScreenState extends State<SignupMedecinScreen> {
                               ),
                               suffixText: "minutes".tr,
                             ),
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return "consultation_duration_required".tr;
+                              }
+                              if (int.tryParse(value) == null || int.parse(value) <= 0) {
+                                return "invalid_consultation_duration".tr;
+                              }
+                              return null;
+                            },
+                          ),
+                        ),
+
+                        SizedBox(height: 24.h),
+
+                        // Education label
+                        Text(
+                          "education_label".tr,
+                          style: GoogleFonts.raleway(
+                            fontSize: 16.sp,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.black87,
+                          ),
+                        ),
+
+                        SizedBox(height: 10.h),
+
+                        // Education field
+                        Container(
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(16.r),
+                            color: Colors.white,
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.grey.withOpacity(0.1),
+                                spreadRadius: 1,
+                                blurRadius: 4,
+                                offset: const Offset(0, 1),
+                              ),
+                            ],
+                          ),
+                          child: TextFormField(
+                            controller: educationController,
+                            style: GoogleFonts.raleway(
+                              fontSize: 15.sp,
+                              color: Colors.black87,
+                            ),
+                            maxLines: 3,
+                            decoration: InputDecoration(
+                              filled: true,
+                              fillColor: Colors.white,
+                              contentPadding: EdgeInsets.symmetric(
+                                horizontal: 20.w,
+                                vertical: 16.h,
+                              ),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(16.r),
+                                borderSide: BorderSide.none,
+                              ),
+                              enabledBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(16.r),
+                                borderSide: BorderSide.none,
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(16.r),
+                                borderSide: BorderSide(
+                                  color: AppColors.primaryColor,
+                                  width: 1,
+                                ),
+                              ),
+                              errorBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(16.r),
+                                borderSide: const BorderSide(
+                                  color: Colors.red,
+                                  width: 1,
+                                ),
+                              ),
+                              focusedErrorBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(16.r),
+                                borderSide: const BorderSide(
+                                  color: Colors.red,
+                                  width: 1,
+                                ),
+                              ),
+                              hintText: "education_hint".tr, // e.g., "Degree:MD,Year:2010;Degree:PhD,Year:2015"
+                              hintStyle: GoogleFonts.raleway(
+                                color: Colors.grey[400],
+                                fontSize: 15.sp,
+                              ),
+                              prefixIcon: Icon(
+                                Icons.school_outlined,
+                                color: AppColors.primaryColor,
+                                size: 22.sp,
+                              ),
+                            ),
+                          ),
+                        ),
+
+                        SizedBox(height: 24.h),
+
+                        // Experience label
+                        Text(
+                          "experience_label".tr,
+                          style: GoogleFonts.raleway(
+                            fontSize: 16.sp,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.black87,
+                          ),
+                        ),
+
+                        SizedBox(height: 10.h),
+
+                        // Experience field
+                        Container(
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(16.r),
+                            color: Colors.white,
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.grey.withOpacity(0.1),
+                                spreadRadius: 1,
+                                blurRadius: 4,
+                                offset: const Offset(0, 1),
+                              ),
+                            ],
+                          ),
+                          child: TextFormField(
+                            controller: experienceController,
+                            style: GoogleFonts.raleway(
+                              fontSize: 15.sp,
+                              color: Colors.black87,
+                            ),
+                            maxLines: 3,
+                            decoration: InputDecoration(
+                              filled: true,
+                              fillColor: Colors.white,
+                              contentPadding: EdgeInsets.symmetric(
+                                horizontal: 20.w,
+                                vertical: 16.h,
+                              ),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(16.r),
+                                borderSide: BorderSide.none,
+                              ),
+                              enabledBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(16.r),
+                                borderSide: BorderSide.none,
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(16.r),
+                                borderSide: BorderSide(
+                                  color: AppColors.primaryColor,
+                                  width: 1,
+                                ),
+                              ),
+                              errorBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(16.r),
+                                borderSide: const BorderSide(
+                                  color: Colors.red,
+                                  width: 1,
+                                ),
+                              ),
+                              focusedErrorBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(16.r),
+                                borderSide: const BorderSide(
+                                  color: Colors.red,
+                                  width: 1,
+                                ),
+                              ),
+                              hintText: "experience_hint".tr, // e.g., "Role:Surgeon,Years:5;Role:Consultant,Years:3"
+                              hintStyle: GoogleFonts.raleway(
+                                color: Colors.grey[400],
+                                fontSize: 15.sp,
+                              ),
+                              prefixIcon: Icon(
+                                Icons.work_outline,
+                                color: AppColors.primaryColor,
+                                size: 22.sp,
+                              ),
+                            ),
                           ),
                         ),
                       ],
@@ -476,18 +685,12 @@ class _SignupMedecinScreenState extends State<SignupMedecinScreen> {
                             dateOfBirth: widget.medecinEntity.dateOfBirth,
                             speciality: selectedSpecialty!,
                             numLicence: numLicenceController.text,
-                            appointmentDuration:
-                                int.tryParse(
-                                  appointmentDurationController.text,
-                                ) ??
-                                30,
-                            consultationFee: double.tryParse(
-                              consultationFeeController.text,
-                            ),
+                            appointmentDuration: int.tryParse(appointmentDurationController.text) ?? 30,
+                            consultationFee: double.tryParse(consultationFeeController.text) ?? 0.0,
+                            education: parseListInput(educationController.text),
+                            experience: parseListInput(experienceController.text),
                           );
-                          Get.to(
-                            () => PasswordScreen(entity: updatedMedecinEntity),
-                          );
+                          Get.to(() => PasswordScreen(entity: updatedMedecinEntity));
                         }
                       },
                       child: Text(

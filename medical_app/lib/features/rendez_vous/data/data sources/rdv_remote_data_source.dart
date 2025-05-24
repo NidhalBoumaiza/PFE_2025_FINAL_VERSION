@@ -270,7 +270,7 @@ class RendezVousRemoteDataSourceImpl implements RendezVousRemoteDataSource {
           recipientId: rendezVous.doctorId!,
           type: NotificationType.newAppointment,
           appointmentId: docRef.id,
-          recipientRole: 'medecin',
+          recipientRole: 'doctor',
           data: {
             'patientName': rendezVous.patientName,
             'startTime': rendezVous.startTime.toIso8601String(),
@@ -387,7 +387,7 @@ class RendezVousRemoteDataSourceImpl implements RendezVousRemoteDataSource {
         recipientId: doctorId,
         type: NotificationType.newAppointment,
         appointmentId: rendezVousId,
-        recipientRole: 'medecin',
+        recipientRole: 'doctor',
         data: {
           'patientName': patientName,
           'startTime': startTime.toIso8601String(),

@@ -1,6 +1,6 @@
-import '../../domain/entities/medecin_entity.dart';
-import './user_model.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:medical_app/features/authentication/domain/entities/medecin_entity.dart';
+import 'package:medical_app/features/authentication/data/models/user_model.dart';
 
 class MedecinModel extends UserModel {
   final String speciality;
@@ -32,41 +32,39 @@ class MedecinModel extends UserModel {
     this.experience,
     this.consultationFee,
   }) : super(
-         id: id,
-         name: name,
-         lastName: lastName,
-         email: email,
-         role: role,
-         gender: gender,
-         phoneNumber: phoneNumber,
-         dateOfBirth: dateOfBirth,
-         accountStatus: accountStatus,
-         verificationCode: verificationCode,
-         validationCodeExpiresAt: validationCodeExpiresAt,
-         fcmToken: fcmToken,
-         address: address,
-         location: location,
-       );
+    id: id,
+    name: name,
+    lastName: lastName,
+    email: email,
+    role: role,
+    gender: gender,
+    phoneNumber: phoneNumber,
+    dateOfBirth: dateOfBirth,
+    accountStatus: accountStatus,
+    verificationCode: verificationCode,
+    validationCodeExpiresAt: validationCodeExpiresAt,
+    fcmToken: fcmToken,
+    address: address,
+    location: location,
+  );
 
   factory MedecinModel.fromJson(Map<String, dynamic> json) {
     // Handle potential null or wrong types for each field
     final String id = json['id'] is String ? json['id'] as String : '';
     final String name = json['name'] is String ? json['name'] as String : '';
     final String lastName =
-        json['lastName'] is String ? json['lastName'] as String : '';
+    json['lastName'] is String ? json['lastName'] as String : '';
     final String email = json['email'] is String ? json['email'] as String : '';
     final String role =
-        json['role'] is String ? json['role'] as String : 'medecin';
+    json['role'] is String ? json['role'] as String : 'medecin';
     final String gender =
-        json['gender'] is String ? json['gender'] as String : 'Homme';
+    json['gender'] is String ? json['gender'] as String : 'Homme';
     final String phoneNumber =
-        json['phoneNumber'] is String ? json['phoneNumber'] as String : '';
+    json['phoneNumber'] is String ? json['phoneNumber'] as String : '';
     final String speciality =
-        json['speciality'] is String
-            ? json['speciality'] as String
-            : 'Généraliste';
+    json['speciality'] is String ? json['speciality'] as String : '';
     final String numLicence =
-        json['numLicence'] is String ? json['numLicence'] as String : '';
+    json['numLicence'] is String ? json['numLicence'] as String : '';
 
     // Handle appointment duration with robust type checking
     int appointmentDuration = 30; // Default value
@@ -117,9 +115,8 @@ class MedecinModel extends UserModel {
     if (json['validationCodeExpiresAt'] is String &&
         (json['validationCodeExpiresAt'] as String).isNotEmpty) {
       try {
-        validationCodeExpiresAt = DateTime.parse(
-          json['validationCodeExpiresAt'] as String,
-        );
+        validationCodeExpiresAt =
+            DateTime.parse(json['validationCodeExpiresAt'] as String);
       } catch (_) {
         validationCodeExpiresAt = null;
       }
@@ -135,7 +132,7 @@ class MedecinModel extends UserModel {
     if (json['address'] is Map) {
       address = Map<String, String?>.from(
         (json['address'] as Map).map(
-          (key, value) => MapEntry(key.toString(), value?.toString()),
+              (key, value) => MapEntry(key.toString(), value?.toString()),
         ),
       );
     }
@@ -152,7 +149,7 @@ class MedecinModel extends UserModel {
           (json['education'] as List).where((item) => item is Map).map((item) {
             return Map<String, String>.from(
               (item as Map).map(
-                (key, value) => MapEntry(key.toString(), value.toString()),
+                    (key, value) => MapEntry(key.toString(), value.toString()),
               ),
             );
           }).toList();
@@ -165,7 +162,7 @@ class MedecinModel extends UserModel {
           (json['experience'] as List).where((item) => item is Map).map((item) {
             return Map<String, String>.from(
               (item as Map).map(
-                (key, value) => MapEntry(key.toString(), value.toString()),
+                    (key, value) => MapEntry(key.toString(), value.toString()),
               ),
             );
           }).toList();
@@ -210,13 +207,11 @@ class MedecinModel extends UserModel {
     );
   }
 
-  /// Creates a valid MedecinModel from potentially corrupted document data
-  /// This can help recover accounts when data is malformed
   static MedecinModel recoverFromCorruptDoc(
-    Map<String, dynamic>? docData,
-    String userId,
-    String userEmail,
-  ) {
+      Map<String, dynamic>? docData,
+      String userId,
+      String userEmail,
+      ) {
     // Default values for required fields if missing or corrupted
     final Map<String, dynamic> safeData = {
       'id': userId,
@@ -226,7 +221,7 @@ class MedecinModel extends UserModel {
       'role': 'medecin',
       'gender': 'Homme',
       'phoneNumber': '',
-      'speciality': 'Généraliste',
+      'speciality': '',
       'numLicence': '',
       'appointmentDuration': 30,
       'accountStatus': true,
@@ -261,9 +256,8 @@ class MedecinModel extends UserModel {
       } else if (docData['appointmentDuration'] is String &&
           (docData['appointmentDuration'] as String).isNotEmpty) {
         try {
-          safeData['appointmentDuration'] = int.parse(
-            docData['appointmentDuration'] as String,
-          );
+          safeData['appointmentDuration'] =
+              int.parse(docData['appointmentDuration'] as String);
         } catch (_) {
           // Keep default value if parsing fails
         }
@@ -286,9 +280,8 @@ class MedecinModel extends UserModel {
       } else if (docData['consultationFee'] is String &&
           (docData['consultationFee'] as String).isNotEmpty) {
         try {
-          safeData['consultationFee'] = double.parse(
-            docData['consultationFee'] as String,
-          );
+          safeData['consultationFee'] =
+              double.parse(docData['consultationFee'] as String);
         } catch (_) {
           // Invalid format, don't add to safeData
         }
@@ -298,9 +291,8 @@ class MedecinModel extends UserModel {
       if (docData['dateOfBirth'] is String &&
           (docData['dateOfBirth'] as String).isNotEmpty) {
         try {
-          DateTime dateOfBirth = DateTime.parse(
-            docData['dateOfBirth'] as String,
-          );
+          DateTime dateOfBirth =
+          DateTime.parse(docData['dateOfBirth'] as String);
           safeData['dateOfBirth'] = dateOfBirth.toIso8601String();
         } catch (_) {
           // Invalid date format, don't add to safeData
@@ -324,18 +316,36 @@ class MedecinModel extends UserModel {
     data['speciality'] = speciality;
     data['numLicence'] = numLicence;
     data['appointmentDuration'] = appointmentDuration;
-
-    if (education != null) {
-      data['education'] = education;
-    }
-    if (experience != null) {
-      data['experience'] = experience;
-    }
-    if (consultationFee != null) {
-      data['consultationFee'] = consultationFee;
-    }
-
+    if (education != null) data['education'] = education;
+    if (experience != null) data['experience'] = experience;
+    if (consultationFee != null) data['consultationFee'] = consultationFee;
     return data;
+  }
+
+  Map<String, dynamic> toFirestore() {
+    return {
+      if (id != null) 'id': id,
+      'name': name,
+      'lastName': lastName,
+      'email': email,
+      'role': role,
+      'gender': gender,
+      'phoneNumber': phoneNumber,
+      if (dateOfBirth != null) 'dateOfBirth': dateOfBirth!.toIso8601String(),
+      if (accountStatus != null) 'accountStatus': accountStatus,
+      if (verificationCode != null) 'verificationCode': verificationCode,
+      if (validationCodeExpiresAt != null)
+        'validationCodeExpiresAt': validationCodeExpiresAt!.toIso8601String(),
+      if (fcmToken != null) 'fcmToken': fcmToken,
+      if (address != null) 'address': address,
+      if (location != null) 'location': location,
+      'speciality': speciality,
+      'numLicence': numLicence,
+      'appointmentDuration': appointmentDuration,
+      if (education != null) 'education': education,
+      if (experience != null) 'experience': experience,
+      if (consultationFee != null) 'consultationFee': consultationFee,
+    };
   }
 
   MedecinEntity toEntity() {
@@ -397,7 +407,7 @@ class MedecinModel extends UserModel {
       accountStatus: accountStatus ?? this.accountStatus,
       verificationCode: verificationCode ?? this.verificationCode,
       validationCodeExpiresAt:
-          validationCodeExpiresAt ?? this.validationCodeExpiresAt,
+      validationCodeExpiresAt ?? this.validationCodeExpiresAt,
       speciality: speciality ?? this.speciality,
       numLicence: numLicence ?? this.numLicence,
       appointmentDuration: appointmentDuration ?? this.appointmentDuration,

@@ -46,19 +46,19 @@ class RendezVousBloc extends Bloc<RendezVousEvent, RendezVousState> {
   }
 
   Future<void> _onFetchRendezVous(
-      FetchRendezVous event,
-      Emitter<RendezVousState> emit,
-      ) async {
+    FetchRendezVous event,
+    Emitter<RendezVousState> emit,
+  ) async {
     emit(RendezVousLoading());
 
     if (event.appointmentId != null) {
       try {
         // Fetch a specific appointment by ID
         final documentSnapshot =
-        await FirebaseFirestore.instance
-            .collection('rendez_vous')
-            .doc(event.appointmentId)
-            .get();
+            await FirebaseFirestore.instance
+                .collection('rendez_vous')
+                .doc(event.appointmentId)
+                .get();
 
         if (documentSnapshot.exists) {
           final data = documentSnapshot.data() as Map<String, dynamic>;
@@ -69,15 +69,15 @@ class RendezVousBloc extends Bloc<RendezVousEvent, RendezVousState> {
             doctorId: data['doctorId'] as String?,
             doctorName: data['doctorName'] as String?,
             startTime:
-            data['startTime'] is Timestamp
-                ? (data['startTime'] as Timestamp).toDate()
-                : DateTime.parse(data['startTime'] as String),
+                data['startTime'] is Timestamp
+                    ? (data['startTime'] as Timestamp).toDate()
+                    : DateTime.parse(data['startTime'] as String),
             endTime:
-            data['endTime'] is Timestamp
-                ? (data['endTime'] as Timestamp).toDate()
-                : data['endTime'] != null
-                ? DateTime.parse(data['endTime'] as String)
-                : null,
+                data['endTime'] is Timestamp
+                    ? (data['endTime'] as Timestamp).toDate()
+                    : data['endTime'] != null
+                    ? DateTime.parse(data['endTime'] as String)
+                    : null,
             status: data['status'] as String,
             speciality: data['speciality'] as String?,
           );
@@ -99,16 +99,16 @@ class RendezVousBloc extends Bloc<RendezVousEvent, RendezVousState> {
     );
     emit(
       failureOrRendezVous.fold(
-            (failure) => RendezVousError(_mapFailureToMessage(failure)),
-            (rendezVous) => RendezVousLoaded(rendezVous),
+        (failure) => RendezVousError(_mapFailureToMessage(failure)),
+        (rendezVous) => RendezVousLoaded(rendezVous),
       ),
     );
   }
 
   Future<void> _onUpdateRendezVousStatus(
-      UpdateRendezVousStatus event,
-      Emitter<RendezVousState> emit,
-      ) async {
+    UpdateRendezVousStatus event,
+    Emitter<RendezVousState> emit,
+  ) async {
     try {
       emit(UpdatingRendezVousState());
 
@@ -152,8 +152,8 @@ class RendezVousBloc extends Bloc<RendezVousEvent, RendezVousState> {
 
       emit(
         failureOrUnit.fold(
-              (failure) => RendezVousError(_mapFailureToMessage(failure)),
-              (_) => RendezVousStatusUpdatedState(
+          (failure) => RendezVousError(_mapFailureToMessage(failure)),
+          (_) => RendezVousStatusUpdatedState(
             id: event.rendezVousId,
             status: event.status,
           ),
@@ -165,16 +165,16 @@ class RendezVousBloc extends Bloc<RendezVousEvent, RendezVousState> {
   }
 
   Future<void> _onCreateRendezVous(
-      CreateRendezVous event,
-      Emitter<RendezVousState> emit,
-      ) async {
+    CreateRendezVous event,
+    Emitter<RendezVousState> emit,
+  ) async {
     try {
       emit(AddingRendezVousState());
       final result = await createRendezVousUseCase(event.rendezVous);
 
       result.fold(
-            (failure) => emit(RendezVousErrorState(message: failure.message)),
-            (_) {
+        (failure) => emit(RendezVousErrorState(message: failure.message)),
+        (_) {
           // Send notification to doctor about new appointment
           _sendNewAppointmentNotification(event.rendezVous);
 
@@ -188,9 +188,9 @@ class RendezVousBloc extends Bloc<RendezVousEvent, RendezVousState> {
   }
 
   Future<void> _onFetchDoctorsBySpecialty(
-      FetchDoctorsBySpecialty event,
-      Emitter<RendezVousState> emit,
-      ) async {
+    FetchDoctorsBySpecialty event,
+    Emitter<RendezVousState> emit,
+  ) async {
     emit(RendezVousLoading());
     final failureOrDoctors = await fetchDoctorsBySpecialtyUseCase(
       event.specialty,
@@ -198,16 +198,16 @@ class RendezVousBloc extends Bloc<RendezVousEvent, RendezVousState> {
     );
     emit(
       failureOrDoctors.fold(
-            (failure) => RendezVousError(_mapFailureToMessage(failure)),
-            (doctors) => DoctorsLoaded(doctors),
+        (failure) => RendezVousError(_mapFailureToMessage(failure)),
+        (doctors) => DoctorsLoaded(doctors),
       ),
     );
   }
 
   Future<void> _onAssignDoctorToRendezVous(
-      AssignDoctorToRendezVous event,
-      Emitter<RendezVousState> emit,
-      ) async {
+    AssignDoctorToRendezVous event,
+    Emitter<RendezVousState> emit,
+  ) async {
     emit(RendezVousLoading());
     final failureOrUnit = await assignDoctorToRendezVousUseCase(
       event.rendezVousId,
@@ -216,16 +216,16 @@ class RendezVousBloc extends Bloc<RendezVousEvent, RendezVousState> {
     );
     emit(
       failureOrUnit.fold(
-            (failure) => RendezVousError(_mapFailureToMessage(failure)),
-            (_) => RendezVousDoctorAssigned(),
+        (failure) => RendezVousError(_mapFailureToMessage(failure)),
+        (_) => RendezVousDoctorAssigned(),
       ),
     );
   }
 
   Future<void> _onCheckAndUpdatePastAppointments(
-      CheckAndUpdatePastAppointments event,
-      Emitter<RendezVousState> emit,
-      ) async {
+    CheckAndUpdatePastAppointments event,
+    Emitter<RendezVousState> emit,
+  ) async {
     print(
       'Starting CheckAndUpdatePastAppointments for user: ${event.userId}, role: ${event.userRole}',
     );
@@ -366,12 +366,12 @@ class RendezVousBloc extends Bloc<RendezVousEvent, RendezVousState> {
         SendNotificationEvent(
           title: 'Nouveau rendez-vous',
           body:
-          '${rendezVous.patientName ?? "Un patient"} a demandé un rendez-vous pour le $formattedDate à $formattedTime',
+              '${rendezVous.patientName ?? "Un patient"} a demandé un rendez-vous pour le $formattedDate à $formattedTime',
           senderId: rendezVous.patientId!,
           recipientId: rendezVous.doctorId!,
           type: NotificationType.newAppointment,
           appointmentId: rendezVous.id,
-          recipientRole: 'medecin',
+          recipientRole: 'doctor',
           data: notificationData,
         ),
       );
@@ -399,7 +399,8 @@ class RendezVousBloc extends Bloc<RendezVousEvent, RendezVousState> {
       String? fcmToken;
 
       // Try medecins collection first
-      final doctorDoc = await firestore.collection('medecins').doc(doctorId).get();
+      final doctorDoc =
+          await firestore.collection('medecins').doc(doctorId).get();
       if (doctorDoc.exists && doctorDoc.data()?['fcmToken'] != null) {
         fcmToken = doctorDoc.data()?['fcmToken'] as String?;
       }
@@ -414,7 +415,7 @@ class RendezVousBloc extends Bloc<RendezVousEvent, RendezVousState> {
 
       if (fcmToken != null && fcmToken.isNotEmpty) {
         // Add recipientRole to data for consistency
-        data['recipientRole'] = 'medecin';
+        data['recipientRole'] = 'doctor';
         // Send the notification directly to FCM via server
         await _sendNotificationViaServer(
           token: fcmToken,
@@ -489,7 +490,7 @@ class RendezVousBloc extends Bloc<RendezVousEvent, RendezVousState> {
         SendNotificationEvent(
           title: 'Appointment Accepted',
           body:
-          'Dr. ${rendezVous.doctorName ?? "Unknown"} has accepted your appointment for ${rendezVous.startTime.toString().substring(0, 10)} at ${_formatTime(rendezVous.startTime)}',
+              'Dr. ${rendezVous.doctorName ?? "Unknown"} has accepted your appointment for ${rendezVous.startTime.toString().substring(0, 10)} at ${_formatTime(rendezVous.startTime)}',
           senderId: rendezVous.doctorId!,
           recipientId: rendezVous.patientId!,
           type: NotificationType.appointmentAccepted,
@@ -514,7 +515,7 @@ class RendezVousBloc extends Bloc<RendezVousEvent, RendezVousState> {
         SendNotificationEvent(
           title: 'Appointment Rejected',
           body:
-          'Dr. ${rendezVous.doctorName ?? "Unknown"} has rejected your appointment for ${rendezVous.startTime.toString().substring(0, 10)} at ${_formatTime(rendezVous.startTime)}',
+              'Dr. ${rendezVous.doctorName ?? "Unknown"} has rejected your appointment for ${rendezVous.startTime.toString().substring(0, 10)} at ${_formatTime(rendezVous.startTime)}',
           senderId: rendezVous.doctorId!,
           recipientId: rendezVous.patientId!,
           type: NotificationType.appointmentRejected,

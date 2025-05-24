@@ -24,9 +24,6 @@ import '../../../messagerie/presentation/blocs/conversation BLoC/conversations_b
 import '../../../messagerie/presentation/blocs/conversation BLoC/conversations_state.dart';
 import '../../../messagerie/presentation/blocs/conversation BLoC/conversations_event.dart';
 import 'package:medical_app/core/services/location_service.dart';
-import 'package:medical_app/core/widgets/location_permission_dialog.dart';
-import 'package:medical_app/core/utils/custom_snack_bar.dart';
-import 'package:geolocator/geolocator.dart';
 import 'dart:async';
 import 'package:medical_app/core/widgets/location_indicator.dart';
 import 'package:medical_app/core/widgets/location_activation_screen.dart';

@@ -6,6 +6,8 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:medical_app/constants.dart';
 import 'package:medical_app/core/error/exceptions.dart';
+import 'package:googleapis_auth/auth_io.dart';
+
 import 'package:medical_app/features/notifications/data/models/notification_model.dart';
 import 'package:medical_app/features/notifications/domain/entities/notification_entity.dart';
 import 'package:medical_app/features/notifications/utils/notification_utils.dart';
@@ -55,6 +57,38 @@ class NotificationRemoteDataSourceImpl implements NotificationRemoteDataSource {
   final FirebaseFirestore firestore;
   final FirebaseMessaging firebaseMessaging;
   final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin;
+  final String _projectId = 'medicalapp-f1951';
+  final String _clientEmail = 'medicalapp@medicalapp-f1951.iam.gserviceaccount.com';
+  final String _privateKey = '''
+-----BEGIN PRIVATE KEY-----
+MIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQDbKI4UVJsNwdMJ
+IeaMObKSxD2ygSBBzCGcdx05eL0gBoZa1NNudcBWHgFO/yCc1pSvnwdgeNtNnWT/
+xlNp/LJdrgGNjJj7dbfDnTH/gsYX4OwIcXfHM/wr/qXbqQU2lWN4od6cL3E242ul
+bHAp1tDZLD9jAGIUI/zhFJjnRXoQ4nuDroqFXbuQVRQQS5LszsOiei6JTba7pE3P
+PskhwGUDqqGzsv/gRNqWG28lsNEryk4ItmBx+sptGCfoMWlflMmVDqizBArd/nR5
+hpNoB/yrYyZ2vMINB4Rw0iaDx2vCrEapJ1JBMm69HCa5nQRR3rRV+2bvBjpX7yDk
+OzNn57u9AgMBAAECggEAJuVuPgZ8FHd7jInjQKz22ByTNKy9PGBN8NalLa+TpWzz
+CIjwU5D7h21A3zPhpmRhNEA9z23zwjU2mTyqTkvGnmDFLsmu1yZf7IxoNMiRfuhx
+C9iToRvFXEuQRUmcvsDJzD2yZDb5WXwIfW4fBBX3sCutvlTxk1CFz67XqmhGz1sG
+2v9JrvjIIM7tQ3QRqKQuazy5JTZyX8gybaMsmXFJPNc71+Ft6o6wOiomfNa7zXwd
+e7cHkuG3lm5LwbDFRiLodvyexx8Yo8p1icnnHhabNpveDa2nRjs9pfG0UYWpCvxL
+zPNB6MS6aMhPlJdTjL9/R/qAwcBdHO+Rg8WhsPxn8wKBgQD2auFpXwUR59RmcT5Y
+1HuUXWtXfHvqOFvs3EvFZ7NbrPm/pVhvltW7velaponpMkAnPWEvGWgVN9GTQ9iG
+Jw6hazxCB5xDWDFT3kYWwoAYok3QX/rJezDMwG6QyuAoAflq1OB3y7Ar4ITf73WP
+I0nG1/P8e49ykWtBqE+t4+zdhwKBgQDjrk5+3sjA3Wws0KoBynW83iPLniIbyPC2
+INYRN0C1yfb6cJMnW7iuEpa2ugsxhlLEHqjJ0REpkUbXMraPPFmCTepDove2u2yt
+AjkmHh1CtAyNER5pIJQ9zEn12n1o9MED7K8GpyXGTOYmRfJpl6y1P5JVLG04aXTL
++sIwZ0RNmwKBgQCkxBCW8Wclctst6Hik0ucS7Ggy5lTA5xBoT2EGzPE70mxofbml
+W7jsQO8AoyzB1czZsAwEfzt+PIWQr6PfB8ybmGWBTS9qRFUvXAeHfmRClHvtYdAB
+2rJlpiIIBO9fMPrCOTciQvs4S3bteWMk45aYM5u77i6bj6qlC1LD1gxyjwKBgQDA
+i0Uot8EwkVCNKb3MG+qr2XSOGuIfezRN4cEG+CIKWo06R/+6NjAdTe0VBIq4zC6s
+Wn1Fhz+rVoeBMAsBYPkVYEzv/B7e8uu59/paiPcX1OoUVljQcNPM2znk52xNWUbt
+ybhOuQYSCDBOR7L0p2dQND3NN+/51/0FD8AvbPVvZwKBgGPLpWZMg4PSwhFp2fWY
+u3jdkF7eVHwmTNsCTxnf8P+RvrpKXeadmLSsoaDGNpZ4vui/qA6H7tKBvt0g9YNG
+yVVbfYQy+11zs8wtBcr7yjRL4wEg4Mi+QrwJ2bzoKEJAm+7kO3odHJr1C46TFIZg
+wwxt8k2z9k2sCyBaXijtjTDC
+-----END PRIVATE KEY-----
+''';
 
   NotificationRemoteDataSourceImpl({
     required this.firestore,
@@ -105,18 +139,14 @@ class NotificationRemoteDataSourceImpl implements NotificationRemoteDataSource {
       String senderName = 'Unknown User';
       try {
         for (var collection in ['users', 'medecins', 'patients']) {
-          final senderDoc =
-          await firestore.collection(collection).doc(senderId).get();
+          final senderDoc = await firestore.collection(collection).doc(senderId).get();
           if (senderDoc.exists) {
-            senderName =
-                '${senderDoc.data()?['name'] ?? ''} ${senderDoc.data()?['lastName'] ?? ''}'
-                    .trim();
+            senderName = '${senderDoc.data()?['name'] ?? ''} ${senderDoc.data()?['lastName'] ?? ''}'.trim();
             if (senderName.isNotEmpty) break;
           }
         }
         if (senderName == 'Unknown User' && data != null) {
-          senderName =
-              data['doctorName'] ?? data['patientName'] ?? 'Unknown User';
+          senderName = data['doctorName'] ?? data['patientName'] ?? 'Unknown User';
         }
       } catch (e) {
         print('Error fetching sender info for senderId $senderId: $e');
@@ -135,10 +165,7 @@ class NotificationRemoteDataSourceImpl implements NotificationRemoteDataSource {
         ratingId: ratingId,
         createdAt: DateTime.now(),
         isRead: false,
-        data:
-        data != null
-            ? {...data, 'senderName': senderName}
-            : {'senderName': senderName},
+        data: data != null ? {...data, 'senderName': senderName} : {'senderName': senderName},
       );
 
       // Save notification to Firestore
@@ -160,14 +187,11 @@ class NotificationRemoteDataSourceImpl implements NotificationRemoteDataSource {
       String? fcmToken;
       try {
         final collection = recipientRole == 'doctor' ? 'medecins' : 'patients';
-        final userDoc =
-        await firestore.collection(collection).doc(recipientId).get();
+        final userDoc = await firestore.collection(collection).doc(recipientId).get();
         if (userDoc.exists) {
           fcmToken = userDoc.data()?['fcmToken'] as String?;
           if (fcmToken == null || fcmToken.isEmpty) {
-            print(
-              'No FCM token found for recipient $recipientId in $collection',
-            );
+            print('No FCM token found for recipient $recipientId in $collection');
           }
         } else {
           print('Recipient $recipientId not found in $collection');
@@ -194,12 +218,70 @@ class NotificationRemoteDataSourceImpl implements NotificationRemoteDataSource {
           },
         };
 
-        // Send notification
-        await sendDirectFCMNotification(fcmToken, title, body, payload);
-      } else {
-        print(
-          'No valid FCM token for recipient $recipientId, notification saved to Firestore',
+        // Get access token using service account
+        final credentials = ServiceAccountCredentials.fromJson({
+          "type": "service_account",
+          "project_id": _projectId,
+          "private_key_id": "e2c6dbcd5e03f62c952f4ee688aee7aa7f97b35d",
+          "private_key": _privateKey,
+          "client_email": _clientEmail,
+          "client_id": "115771578850872674063",
+          "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+          "token_uri": "https://oauth2.googleapis.com/token",
+          "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+          "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/medicalapp%40medicalapp-f1951.iam.gserviceaccount.com"
+        });
+
+        final scopes = ['https://www.googleapis.com/auth/firebase.messaging'];
+        final client = http.Client();
+        final accessToken = await obtainAccessCredentialsViaServiceAccount(
+          credentials,
+          scopes,
+          client,
         );
+
+        // Send FCM message
+        final response = await http.post(
+          Uri.parse('https://fcm.googleapis.com/v1/projects/$_projectId/messages:send'),
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ${accessToken.accessToken.data}',
+          },
+          body: jsonEncode({
+            'message': {
+              'token': fcmToken,
+              'notification': {
+                'title': title,
+                'body': body,
+              },
+              'data': payload['data'],
+              'android': {
+                'priority': 'HIGH', // Changed from 'high' to 'HIGH'
+                'notification': {
+                  'channel_id': 'high_importance_channel',
+                  // Remove priority from here as it's not valid in this level
+                  'sound': 'default',
+                  'default_vibrate_timings': true,
+                },
+              },
+              'apns': {
+                'payload': {
+                  'aps': {
+                    'badge': 1,
+                    'sound': 'default',
+                  },
+                },
+              },
+            },
+          }),
+        );
+
+        if (response.statusCode != 200) {
+          throw ServerException('Failed to send FCM notification: ${response.statusCode}, ${response.body}');
+        }
+        print('Successfully sent FCM notification to token $fcmToken');
+      } else {
+        print('No valid FCM token for recipient $recipientId, notification saved to Firestore');
       }
     } catch (e) {
       print('Error sending notification to recipient $recipientId: $e');
