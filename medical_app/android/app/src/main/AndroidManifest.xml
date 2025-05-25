@@ -36,17 +36,9 @@
               />
             <meta-data android:name="com.google.android.geo.API_KEY"
                 android:value="AIzaSyCyFbbtuqs1CIezXzXPkE1HA7nCh83uXWY"/>
-            <meta-data
-                android:name="com.google.firebase.messaging.default_notification_channel_id"
-                android:value="high_importance_channel" />
 
-            <service
-                android:name=".MyFirebaseMessagingService"
-                android:exported="false">
-                <intent-filter>
-                    <action android:name="com.google.firebase.MESSAGING_EVENT" />
-                </intent-filter>
-            </service>
+
+
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
