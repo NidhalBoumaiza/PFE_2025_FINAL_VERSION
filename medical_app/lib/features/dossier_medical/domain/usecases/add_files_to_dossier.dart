@@ -3,18 +3,20 @@ import 'package:medical_app/core/error/failures.dart';
 import '../entities/dossier_files_entity.dart';
 import '../repositories/dossier_medical_repository.dart';
 
-class GetDossierMedical {
+class AddFilesToDossier {
   final DossierMedicalRepository repository;
 
-  GetDossierMedical(this.repository);
+  AddFilesToDossier(this.repository);
 
   Future<Either<Failure, DossierFilesEntity>> call({
     required String patientId,
-    String? doctorId,
+    required List<String> filePaths,
+    required Map<String, String> descriptions,
   }) async {
-    return await repository.getDossierMedical(
+    return await repository.addFilesToDossier(
       patientId: patientId,
-      doctorId: doctorId,
+      filePaths: filePaths,
+      descriptions: descriptions,
     );
   }
 }

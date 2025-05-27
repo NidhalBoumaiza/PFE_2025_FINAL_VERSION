@@ -362,7 +362,7 @@ class _AppointmentsPatientsState extends State<AppointmentsPatients> {
     if (currentUser == null || currentUser!.id == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Vous devez être connecté pour prendre un rendez-vous'),
+          content: Text('login_required_for_appointment'.tr),
           backgroundColor: Colors.red,
         ),
       );
@@ -419,14 +419,14 @@ class _AppointmentsPatientsState extends State<AppointmentsPatients> {
             context: context,
             builder:
                 (context) => AlertDialog(
-                  title: Text('Dossier médical requis'),
+                  title: Text('medical_record_required_title'.tr),
                   content: Text(
-                    'Pour prendre un rendez-vous, vous devez d\'abord créer votre dossier médical.',
+                    'medical_record_required_message'.tr,
                   ),
                   actions: [
                     TextButton(
                       onPressed: () => Navigator.pop(context),
-                      child: Text('Annuler'),
+                      child: Text('cancel'.tr),
                     ),
                     ElevatedButton(
                       onPressed: () {
@@ -442,7 +442,7 @@ class _AppointmentsPatientsState extends State<AppointmentsPatients> {
                           ),
                         );
                       },
-                      child: Text('Créer mon dossier'),
+                      child: Text('create_medical_record'.tr),
                     ),
                   ],
                 ),

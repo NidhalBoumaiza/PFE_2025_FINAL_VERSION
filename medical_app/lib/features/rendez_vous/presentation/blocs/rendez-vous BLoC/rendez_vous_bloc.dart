@@ -195,6 +195,9 @@ class RendezVousBloc extends Bloc<RendezVousEvent, RendezVousState> {
     final failureOrDoctors = await fetchDoctorsBySpecialtyUseCase(
       event.specialty,
       event.startTime,
+      searchRadiusKm: event.searchRadiusKm,
+      userLatitude: event.userLatitude,
+      userLongitude: event.userLongitude,
     );
     emit(
       failureOrDoctors.fold(

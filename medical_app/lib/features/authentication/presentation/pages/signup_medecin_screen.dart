@@ -2,8 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import '../../../../core/utils/app_colors.dart';
 import '../../../../core/widgets/reusable_text_field_widget.dart';
+import '../../../../core/widgets/location_picker_widget.dart';
+import '../../../../core/widgets/office_location_map_widget.dart';
 import '../../domain/entities/medecin_entity.dart';
 import '../../../../core/specialties.dart';
 import 'password_screen.dart';
@@ -20,11 +23,17 @@ class SignupMedecinScreen extends StatefulWidget {
 class _SignupMedecinScreenState extends State<SignupMedecinScreen> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final TextEditingController numLicenceController = TextEditingController();
-  final TextEditingController consultationFeeController = TextEditingController();
-  final TextEditingController appointmentDurationController = TextEditingController(text: "30");
+  final TextEditingController consultationFeeController =
+      TextEditingController();
+  final TextEditingController appointmentDurationController =
+      TextEditingController(text: "30");
   final TextEditingController educationController = TextEditingController();
   final TextEditingController experienceController = TextEditingController();
   String? selectedSpecialty;
+
+  // Location fields
+  LatLng? _selectedLocation;
+  String _selectedAddress = '';
 
   @override
   void dispose() {
@@ -41,21 +50,41 @@ class _SignupMedecinScreenState extends State<SignupMedecinScreen> {
     if (input == null || input.isEmpty) return null;
     try {
       // Expect input like: "Degree:MD,Year:2010;Degree:PhD,Year:2015"
-      final entries = input.split(';').where((e) => e.isNotEmpty).map((entry) {
-        final parts = entry.split(',').map((e) => e.trim()).toList();
-        final map = <String, String>{};
-        for (var part in parts) {
-          final keyValue = part.split(':');
-          if (keyValue.length == 2) {
-            map[keyValue[0]] = keyValue[1];
-          }
-        }
-        return map;
-      }).toList();
+      final entries =
+          input.split(';').where((e) => e.isNotEmpty).map((entry) {
+            final parts = entry.split(',').map((e) => e.trim()).toList();
+            final map = <String, String>{};
+            for (var part in parts) {
+              final keyValue = part.split(':');
+              if (keyValue.length == 2) {
+                map[keyValue[0]] = keyValue[1];
+              }
+            }
+            return map;
+          }).toList();
       return entries.isNotEmpty ? entries : null;
     } catch (e) {
       return null;
     }
+  }
+
+  void _openLocationPicker() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder:
+            (context) => LocationPickerWidget(
+              initialLocation: _selectedLocation,
+              title: 'select_office_location',
+              onLocationSelected: (location, address) {
+                setState(() {
+                  _selectedLocation = location;
+                  _selectedAddress = address;
+                });
+              },
+            ),
+      ),
+    );
   }
 
   @override
@@ -180,18 +209,21 @@ class _SignupMedecinScreenState extends State<SignupMedecinScreen> {
                                 size: 22.sp,
                               ),
                             ),
-                            items: getTranslatedSpecialties().map(
-                                  (specialty) => DropdownMenuItem(
-                                value: specialty,
-                                child: Text(
-                                  specialty,
-                                  style: GoogleFonts.raleway(
-                                    fontSize: 15.sp,
-                                    color: Colors.black87,
-                                  ),
-                                ),
-                              ),
-                            ).toList(),
+                            items:
+                                getTranslatedSpecialties()
+                                    .map(
+                                      (specialty) => DropdownMenuItem(
+                                        value: specialty,
+                                        child: Text(
+                                          specialty,
+                                          style: GoogleFonts.raleway(
+                                            fontSize: 15.sp,
+                                            color: Colors.black87,
+                                          ),
+                                        ),
+                                      ),
+                                    )
+                                    .toList(),
                             onChanged: (value) {
                               setState(() {
                                 selectedSpecialty = value;
@@ -203,6 +235,141 @@ class _SignupMedecinScreenState extends State<SignupMedecinScreen> {
                               }
                               return null;
                             },
+                          ),
+                        ),
+
+                        SizedBox(height: 24.h),
+
+                        // Office Location Section
+                        Text(
+                          "office_location_label".tr,
+                          style: GoogleFonts.raleway(
+                            fontSize: 16.sp,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.black87,
+                          ),
+                        ),
+
+                        SizedBox(height: 10.h),
+
+                        // Location selection card
+                        Card(
+                          elevation: 2,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16.r),
+                          ),
+                          child: Padding(
+                            padding: EdgeInsets.all(16.w),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                if (_selectedLocation != null) ...[
+                                  // Show selected location map
+                                  OfficeLocationMapWidget(
+                                    latitude: _selectedLocation!.latitude,
+                                    longitude: _selectedLocation!.longitude,
+                                    address: _selectedAddress,
+                                    height: 150,
+                                    isInteractive: true,
+                                    onTap: _openLocationPicker,
+                                  ),
+                                  SizedBox(height: 12.h),
+                                  Row(
+                                    children: [
+                                      Icon(
+                                        Icons.location_on,
+                                        color: AppColors.primaryColor,
+                                        size: 16.sp,
+                                      ),
+                                      SizedBox(width: 8.w),
+                                      Expanded(
+                                        child: Text(
+                                          _selectedAddress.isNotEmpty
+                                              ? _selectedAddress
+                                              : 'location_selected'.tr,
+                                          style: GoogleFonts.raleway(
+                                            fontSize: 12.sp,
+                                            color: Colors.grey[600],
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ] else ...[
+                                  // Show location selection button
+                                  Container(
+                                    width: double.infinity,
+                                    height: 120.h,
+                                    decoration: BoxDecoration(
+                                      color: Colors.grey[50],
+                                      borderRadius: BorderRadius.circular(12.r),
+                                      border: Border.all(
+                                        color: Colors.grey[300]!,
+                                        style: BorderStyle.solid,
+                                      ),
+                                    ),
+                                    child: Column(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        Icon(
+                                          Icons.add_location_alt,
+                                          size: 40.sp,
+                                          color: AppColors.primaryColor,
+                                        ),
+                                        SizedBox(height: 8.h),
+                                        Text(
+                                          'tap_to_select_office_location'.tr,
+                                          style: GoogleFonts.raleway(
+                                            fontSize: 14.sp,
+                                            color: Colors.grey[600],
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+
+                                SizedBox(height: 12.h),
+
+                                // Location selection button
+                                SizedBox(
+                                  width: double.infinity,
+                                  child: OutlinedButton.icon(
+                                    onPressed: _openLocationPicker,
+                                    icon: Icon(
+                                      _selectedLocation != null
+                                          ? Icons.edit_location
+                                          : Icons.location_searching,
+                                      size: 20.sp,
+                                    ),
+                                    label: Text(
+                                      _selectedLocation != null
+                                          ? 'change_location'.tr
+                                          : 'select_office_location'.tr,
+                                      style: GoogleFonts.raleway(
+                                        fontSize: 14.sp,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                    style: OutlinedButton.styleFrom(
+                                      foregroundColor: AppColors.primaryColor,
+                                      side: BorderSide(
+                                        color: AppColors.primaryColor,
+                                      ),
+                                      padding: EdgeInsets.symmetric(
+                                        vertical: 12.h,
+                                      ),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(
+                                          12.r,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
                         ),
 
@@ -382,7 +549,8 @@ class _SignupMedecinScreenState extends State<SignupMedecinScreen> {
                               if (value == null || value.isEmpty) {
                                 return "consultation_fee_required".tr;
                               }
-                              if (double.tryParse(value) == null || double.parse(value) <= 0) {
+                              if (double.tryParse(value) == null ||
+                                  double.parse(value) <= 0) {
                                 return "invalid_consultation_fee".tr;
                               }
                               return null;
@@ -477,7 +645,8 @@ class _SignupMedecinScreenState extends State<SignupMedecinScreen> {
                               if (value == null || value.isEmpty) {
                                 return "consultation_duration_required".tr;
                               }
-                              if (int.tryParse(value) == null || int.parse(value) <= 0) {
+                              if (int.tryParse(value) == null ||
+                                  int.parse(value) <= 0) {
                                 return "invalid_consultation_duration".tr;
                               }
                               return null;
@@ -556,7 +725,9 @@ class _SignupMedecinScreenState extends State<SignupMedecinScreen> {
                                   width: 1,
                                 ),
                               ),
-                              hintText: "education_hint".tr, // e.g., "Degree:MD,Year:2010;Degree:PhD,Year:2015"
+                              hintText:
+                                  "education_hint"
+                                      .tr, // e.g., "Degree:MD,Year:2010;Degree:PhD,Year:2015"
                               hintStyle: GoogleFonts.raleway(
                                 color: Colors.grey[400],
                                 fontSize: 15.sp,
@@ -641,7 +812,9 @@ class _SignupMedecinScreenState extends State<SignupMedecinScreen> {
                                   width: 1,
                                 ),
                               ),
-                              hintText: "experience_hint".tr, // e.g., "Role:Surgeon,Years:5;Role:Consultant,Years:3"
+                              hintText:
+                                  "experience_hint"
+                                      .tr, // e.g., "Role:Surgeon,Years:5;Role:Consultant,Years:3"
                               hintStyle: GoogleFonts.raleway(
                                 color: Colors.grey[400],
                                 fontSize: 15.sp,
@@ -675,6 +848,25 @@ class _SignupMedecinScreenState extends State<SignupMedecinScreen> {
                       ),
                       onPressed: () {
                         if (_formKey.currentState!.validate()) {
+                          // Prepare location data
+                          Map<String, dynamic>? locationData;
+                          Map<String, String?>? addressData;
+
+                          if (_selectedLocation != null) {
+                            locationData = {
+                              'latitude': _selectedLocation!.latitude,
+                              'longitude': _selectedLocation!.longitude,
+                            };
+                            addressData = {
+                              'formatted_address':
+                                  _selectedAddress.isNotEmpty
+                                      ? _selectedAddress
+                                      : null,
+                              'coordinates':
+                                  '${_selectedLocation!.latitude}, ${_selectedLocation!.longitude}',
+                            };
+                          }
+
                           final updatedMedecinEntity = MedecinEntity(
                             name: widget.medecinEntity.name,
                             lastName: widget.medecinEntity.lastName,
@@ -685,12 +877,26 @@ class _SignupMedecinScreenState extends State<SignupMedecinScreen> {
                             dateOfBirth: widget.medecinEntity.dateOfBirth,
                             speciality: selectedSpecialty!,
                             numLicence: numLicenceController.text,
-                            appointmentDuration: int.tryParse(appointmentDurationController.text) ?? 30,
-                            consultationFee: double.tryParse(consultationFeeController.text) ?? 0.0,
+                            appointmentDuration:
+                                int.tryParse(
+                                  appointmentDurationController.text,
+                                ) ??
+                                30,
+                            consultationFee:
+                                double.tryParse(
+                                  consultationFeeController.text,
+                                ) ??
+                                0.0,
                             education: parseListInput(educationController.text),
-                            experience: parseListInput(experienceController.text),
+                            experience: parseListInput(
+                              experienceController.text,
+                            ),
+                            location: locationData,
+                            address: addressData,
                           );
-                          Get.to(() => PasswordScreen(entity: updatedMedecinEntity));
+                          Get.to(
+                            () => PasswordScreen(entity: updatedMedecinEntity),
+                          );
                         }
                       },
                       child: Text(

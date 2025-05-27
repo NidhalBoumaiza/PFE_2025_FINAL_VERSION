@@ -58,7 +58,8 @@ class NotificationRemoteDataSourceImpl implements NotificationRemoteDataSource {
   final FirebaseMessaging firebaseMessaging;
   final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin;
   final String _projectId = 'medicalapp-f1951';
-  final String _clientEmail = 'medicalapp@medicalapp-f1951.iam.gserviceaccount.com';
+  final String _clientEmail =
+      'medicalapp@medicalapp-f1951.iam.gserviceaccount.com';
   final String _privateKey = '''
 -----BEGIN PRIVATE KEY-----
 MIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQDbKI4UVJsNwdMJ
@@ -135,24 +136,36 @@ wwxt8k2z9k2sCyBaXijtjTDC
         throw ServerException('Invalid recipient role: $recipientRole');
       }
 
-      // Get sender info
+      // Get sender info with better error handling
       String senderName = 'Unknown User';
+      String? senderPhoto;
       try {
         for (var collection in ['users', 'medecins', 'patients']) {
-          final senderDoc = await firestore.collection(collection).doc(senderId).get();
+          final senderDoc =
+              await firestore.collection(collection).doc(senderId).get();
           if (senderDoc.exists) {
-            senderName = '${senderDoc.data()?['name'] ?? ''} ${senderDoc.data()?['lastName'] ?? ''}'.trim();
+            final senderData = senderDoc.data();
+            senderName =
+                '${senderData?['name'] ?? ''} ${senderData?['lastName'] ?? ''}'
+                    .trim();
+            senderPhoto = senderData?['photoUrl'] as String?;
             if (senderName.isNotEmpty) break;
           }
         }
         if (senderName == 'Unknown User' && data != null) {
-          senderName = data['doctorName'] ?? data['patientName'] ?? 'Unknown User';
+          senderName =
+              data['doctorName'] ?? data['patientName'] ?? 'Unknown User';
         }
       } catch (e) {
         print('Error fetching sender info for senderId $senderId: $e');
       }
 
-      // Create notification model
+      // Get notification priority and sound
+      final priority = NotificationUtils.getNotificationPriority(type);
+      final sound = NotificationUtils.getNotificationSound(type);
+      final icon = NotificationUtils.getNotificationIcon(type);
+
+      // Create enhanced notification model
       final notification = NotificationModel(
         id: '',
         title: title,
@@ -165,33 +178,77 @@ wwxt8k2z9k2sCyBaXijtjTDC
         ratingId: ratingId,
         createdAt: DateTime.now(),
         isRead: false,
-        data: data != null ? {...data, 'senderName': senderName} : {'senderName': senderName},
+        data: {
+          'senderName': senderName,
+          'priority': priority,
+          'sound': sound,
+          'icon': icon,
+          if (senderPhoto != null) 'senderPhoto': senderPhoto,
+          ...(data ?? {}),
+        },
       );
 
-      // Save notification to Firestore
-      final docRef = await firestore.collection('notifications').add({
+      // Save notification to Firestore with retry logic
+      DocumentReference? docRef;
+      int retryCount = 0;
+      const maxRetries = 3;
+
+      while (retryCount < maxRetries) {
+        try {
+          docRef = await firestore.collection('notifications').add({
         'title': notification.title,
         'body': notification.body,
         'senderId': notification.senderId,
         'recipientId': notification.recipientId,
-        'type': NotificationUtils.notificationTypeToString(notification.type),
+            'type': NotificationUtils.notificationTypeToString(
+              notification.type,
+            ),
         'appointmentId': notification.appointmentId,
         'prescriptionId': notification.prescriptionId,
         'ratingId': notification.ratingId,
         'createdAt': notification.createdAt.toIso8601String(),
         'isRead': notification.isRead,
         'data': notification.data,
+            'priority': priority,
       });
+          break;
+        } catch (e) {
+          retryCount++;
+          if (retryCount >= maxRetries) {
+            throw ServerException(
+              'Failed to save notification after $maxRetries attempts: $e',
+            );
+          }
+          await Future.delayed(Duration(milliseconds: 500 * retryCount));
+        }
+      }
 
-      // Get recipient FCM token
+      if (docRef == null) {
+        throw ServerException('Failed to create notification document');
+      }
+
+      // Get recipient FCM token with better error handling
       String? fcmToken;
+      String? recipientLanguage = 'fr'; // Default language
       try {
         final collection = recipientRole == 'doctor' ? 'medecins' : 'patients';
-        final userDoc = await firestore.collection(collection).doc(recipientId).get();
+        final userDoc =
+            await firestore.collection(collection).doc(recipientId).get();
         if (userDoc.exists) {
-          fcmToken = userDoc.data()?['fcmToken'] as String?;
+          final userData = userDoc.data();
+          fcmToken = userData?['fcmToken'] as String?;
+          recipientLanguage = userData?['preferredLanguage'] as String? ?? 'fr';
+
           if (fcmToken == null || fcmToken.isEmpty) {
-            print('No FCM token found for recipient $recipientId in $collection');
+            print(
+              'No FCM token found for recipient $recipientId in $collection',
+            );
+            // Try to get from users collection as fallback
+            final fallbackDoc =
+                await firestore.collection('users').doc(recipientId).get();
+            if (fallbackDoc.exists) {
+              fcmToken = fallbackDoc.data()?['fcmToken'] as String?;
+            }
           }
         } else {
           print('Recipient $recipientId not found in $collection');
@@ -201,23 +258,47 @@ wwxt8k2z9k2sCyBaXijtjTDC
       }
 
       if (fcmToken != null && fcmToken.isNotEmpty) {
-        // Create payload
-        final payload = {
-          'notification': {'title': title, 'body': body},
-          'data': {
-            'notificationId': docRef.id,
-            'type': NotificationUtils.notificationTypeToString(type),
-            'senderId': senderId,
-            'recipientId': recipientId,
-            'senderName': senderName,
-            'click_action': 'FLUTTER_NOTIFICATION_CLICK',
-            if (appointmentId != null) 'appointmentId': appointmentId,
-            if (prescriptionId != null) 'prescriptionId': prescriptionId,
-            if (ratingId != null) 'ratingId': ratingId,
-            ...(data ?? {}),
-          },
-        };
+        await _sendFCMNotificationWithRetry(
+          fcmToken: fcmToken,
+          title: title,
+          body: body,
+          type: type,
+          priority: priority,
+          sound: sound,
+          icon: icon,
+          docRef: docRef,
+          data: notification.data ?? {},
+          recipientLanguage: recipientLanguage ?? 'fr',
+        );
+      } else {
+        print(
+          'No valid FCM token for recipient $recipientId, notification saved to Firestore only',
+        );
+      }
+    } catch (e) {
+      print('Error sending notification to recipient $recipientId: $e');
+      throw ServerException('Failed to send notification: $e');
+    }
+  }
 
+  /// Enhanced FCM sending with retry logic and better error handling
+  Future<void> _sendFCMNotificationWithRetry({
+    required String fcmToken,
+    required String title,
+    required String body,
+    required NotificationType type,
+    required String priority,
+    required String sound,
+    required String icon,
+    required DocumentReference docRef,
+    required Map<String, dynamic> data,
+    required String recipientLanguage,
+  }) async {
+    int retryCount = 0;
+    const maxRetries = 3;
+
+    while (retryCount < maxRetries) {
+      try {
         // Get access token using service account
         final credentials = ServiceAccountCredentials.fromJson({
           "type": "service_account",
@@ -228,8 +309,10 @@ wwxt8k2z9k2sCyBaXijtjTDC
           "client_id": "115771578850872674063",
           "auth_uri": "https://accounts.google.com/o/oauth2/auth",
           "token_uri": "https://oauth2.googleapis.com/token",
-          "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
-          "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/medicalapp%40medicalapp-f1951.iam.gserviceaccount.com"
+          "auth_provider_x509_cert_url":
+              "https://www.googleapis.com/oauth2/v1/certs",
+          "client_x509_cert_url":
+              "https://www.googleapis.com/robot/v1/metadata/x509/medicalapp%40medicalapp-f1951.iam.gserviceaccount.com",
         });
 
         final scopes = ['https://www.googleapis.com/auth/firebase.messaging'];
@@ -240,130 +323,160 @@ wwxt8k2z9k2sCyBaXijtjTDC
           client,
         );
 
-        // Send FCM message
-        final response = await http.post(
-          Uri.parse('https://fcm.googleapis.com/v1/projects/$_projectId/messages:send'),
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': 'Bearer ${accessToken.accessToken.data}',
-          },
-          body: jsonEncode({
+        // Enhanced FCM payload
+        final fcmPayload = {
             'message': {
               'token': fcmToken,
+            'notification': {'title': title, 'body': body},
+            'data': {
+              'notificationId': docRef.id,
+              'type': NotificationUtils.notificationTypeToString(type),
+              'priority': priority,
+              'sound': sound,
+              'icon': icon,
+              'click_action': 'FLUTTER_NOTIFICATION_CLICK',
+              'language': recipientLanguage,
+              ...data.map(
+                (key, value) => MapEntry(key, value?.toString() ?? ''),
+              ),
+            },
+            'android': {
+              'priority': priority == 'max' ? 'HIGH' : 'NORMAL',
               'notification': {
-                'title': title,
-                'body': body,
+                'channel_id': _getChannelId(type),
+                'sound': sound == 'default' ? 'default' : '$sound.mp3',
+                'default_vibrate_timings': true,
+                'priority': priority == 'max' ? 'max' : 'high',
+                'visibility': priority == 'max' ? 'public' : 'private',
+                'icon': icon,
+                'color': _getNotificationColor(type),
               },
-              'data': payload['data'],
-              'android': {
-                'priority': 'HIGH', // Changed from 'high' to 'HIGH'
-                'notification': {
-                  'channel_id': 'high_importance_channel',
-                  // Remove priority from here as it's not valid in this level
-                  'sound': 'default',
-                  'default_vibrate_timings': true,
-                },
+              'data': {'click_action': 'FLUTTER_NOTIFICATION_CLICK'},
               },
               'apns': {
                 'payload': {
                   'aps': {
                     'badge': 1,
-                    'sound': 'default',
-                  },
+                  'sound': sound == 'default' ? 'default' : '$sound.caf',
+                  'alert': {'title': title, 'body': body},
+                  'category': NotificationUtils.notificationTypeToString(type),
                 },
               },
+              'headers': {
+                'apns-priority': priority == 'max' ? '10' : '5',
+                'apns-collapse-id': NotificationUtils.notificationTypeToString(
+                  type,
+                ),
+              },
             },
-          }),
-        );
-
-        if (response.statusCode != 200) {
-          throw ServerException('Failed to send FCM notification: ${response.statusCode}, ${response.body}');
-        }
-        print('Successfully sent FCM notification to token $fcmToken');
-      } else {
-        print('No valid FCM token for recipient $recipientId, notification saved to Firestore');
-      }
-    } catch (e) {
-      print('Error sending notification to recipient $recipientId: $e');
-      throw ServerException('Failed to send notification: $e');
-    }
-  }
-
-  /// Sends an FCM notification to the specified token.
-  /// Note: Client-side FCM sending is insecure for production; use a backend (e.g., Cloud Functions) instead.
-  Future<void> sendDirectFCMNotification(
-      String token,
-      String title,
-      String body,
-      Map<String, dynamic> payload,
-      ) async {
-    try {
-      // Validate Firebase project ID
-      if (AppConstants.firebaseProjectId.isEmpty) {
-        throw ServerException('Firebase project ID is not configured');
-      }
-
-      // Get Firebase Authentication ID token
-      final user = FirebaseAuth.instance.currentUser;
-      if (user == null) {
-        throw ServerException('No authenticated user found');
-      }
-      final idToken = await user.getIdToken();
-      if (idToken == null) {
-        throw ServerException('Failed to get ID token');
-      }
-
-      // Convert data payload to strings
-      final dataPayload = Map<String, String>.from(
-        payload['data'].map(
-              (key, value) => MapEntry(key, value?.toString() ?? ''),
-        ),
-      );
-
-      // Format FCM payload for HTTP v1 API
-      final fcmMessage = {
-        'message': {
-          'token': token,
-          'notification': {'title': title, 'body': body},
-          'data': dataPayload,
-          'android': {
-            'priority': 'high',
+            'webpush': {
+              'headers': {'Urgency': priority == 'max' ? 'high' : 'normal'},
             'notification': {
-              'channel_id': AppConstants.notificationChannelId,
-              'priority': 'high',
-              'default_sound': true,
-              'default_vibrate_timings': true,
-            },
-          },
-          'apns': {
-            'payload': {
-              'aps': {'badge': 1, 'sound': 'default'},
+                'title': title,
+                'body': body,
+                'icon': '/icons/$icon.png',
+                'badge': '/icons/badge.png',
+                'tag': NotificationUtils.notificationTypeToString(type),
+                'requireInteraction': priority == 'max',
             },
           },
         },
       };
 
-      // Send the message
+        // Send FCM message
       final response = await http.post(
         Uri.parse(
-          'https://fcm.googleapis.com/v1/projects/${AppConstants.firebaseProjectId}/messages:send',
+            'https://fcm.googleapis.com/v1/projects/$_projectId/messages:send',
         ),
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': 'Bearer $idToken',
+            'Authorization': 'Bearer ${accessToken.accessToken.data}',
         },
-        body: jsonEncode(fcmMessage),
-      );
-
-      if (response.statusCode != 200) {
-        throw ServerException(
-          'Failed to send FCM notification: ${response.statusCode}, ${response.body}',
+          body: jsonEncode(fcmPayload),
         );
+
+        if (response.statusCode == 200) {
+          print('Successfully sent FCM notification to token $fcmToken');
+          break;
+        } else if (response.statusCode == 404 || response.statusCode == 410) {
+          // Token is invalid, remove it from user document
+          await _removeInvalidFCMToken(fcmToken);
+          throw ServerException('Invalid FCM token, removed from user');
+        } else {
+          throw ServerException(
+            'FCM error: ${response.statusCode}, ${response.body}',
+          );
+        }
+      } catch (e) {
+        retryCount++;
+        if (retryCount >= maxRetries) {
+        throw ServerException(
+            'Failed to send FCM notification after $maxRetries attempts: $e',
+          );
+        }
+        await Future.delayed(Duration(milliseconds: 1000 * retryCount));
       }
-      print('Successfully sent FCM notification to token $token');
+    }
+  }
+
+  /// Get notification channel ID based on type
+  String _getChannelId(NotificationType type) {
+    switch (type) {
+      case NotificationType.emergencyAlert:
+        return 'emergency_channel';
+      case NotificationType.appointmentReminder:
+      case NotificationType.medicationReminder:
+        return 'reminder_channel';
+      case NotificationType.appointmentAccepted:
+      case NotificationType.appointmentRejected:
+      case NotificationType.appointmentCanceled:
+        return 'appointment_channel';
+      case NotificationType.newPrescription:
+      case NotificationType.prescriptionUpdated:
+        return 'prescription_channel';
+      default:
+        return 'default_channel';
+      }
+  }
+
+  /// Get notification color based on type
+  String _getNotificationColor(NotificationType type) {
+    switch (type) {
+      case NotificationType.emergencyAlert:
+        return '#FF0000'; // Red
+      case NotificationType.appointmentAccepted:
+        return '#4CAF50'; // Green
+      case NotificationType.appointmentRejected:
+      case NotificationType.appointmentCanceled:
+        return '#F44336'; // Red
+      case NotificationType.newPrescription:
+        return '#2196F3'; // Blue
+      case NotificationType.appointmentReminder:
+      case NotificationType.medicationReminder:
+        return '#FF9800'; // Orange
+      default:
+        return '#2FA7BB'; // App primary color
+    }
+  }
+
+  /// Remove invalid FCM token from user documents
+  Future<void> _removeInvalidFCMToken(String invalidToken) async {
+    try {
+      // Search in all user collections and remove the invalid token
+      for (var collection in ['users', 'medecins', 'patients']) {
+        final query =
+            await firestore
+                .collection(collection)
+                .where('fcmToken', isEqualTo: invalidToken)
+                .get();
+
+        for (var doc in query.docs) {
+          await doc.reference.update({'fcmToken': FieldValue.delete()});
+          print('Removed invalid FCM token from ${doc.id} in $collection');
+        }
+      }
     } catch (e) {
-      print('Exception sending FCM notification to token $token: $e');
-      throw ServerException('Failed to send FCM notification: $e');
+      print('Error removing invalid FCM token: $e');
     }
   }
 

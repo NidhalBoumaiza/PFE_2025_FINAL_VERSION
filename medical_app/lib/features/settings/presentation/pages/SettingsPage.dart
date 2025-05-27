@@ -6,14 +6,19 @@ import 'package:medical_app/features/authentication/data/data%20sources/auth_loc
 import 'package:medical_app/features/authentication/data/models/medecin_model.dart';
 import 'package:medical_app/features/authentication/data/models/user_model.dart';
 import 'package:medical_app/features/authentication/domain/entities/user_entity.dart';
+import 'package:medical_app/features/authentication/domain/entities/medecin_entity.dart';
 import 'package:medical_app/features/profile/presentation/pages/blocs/BLoC%20update%20profile/update_user_bloc.dart';
-import 'package:medical_app/features/profile/presentation/pages/edit_profile_screen.dart';
+import 'package:medical_app/features/profile/presentation/pages/edit_doctor_profile_page.dart';
+import 'package:medical_app/features/profile/presentation/pages/edit_patient_profile_page.dart';
 import 'package:medical_app/widgets/theme_cubit_switch.dart';
 import 'package:medical_app/i18n/app_translation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../authentication/presentation/pages/login_screen.dart';
 import 'package:medical_app/injection_container.dart' as di;
 import 'change_password_screen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:medical_app/features/authentication/domain/entities/patient_entity.dart';
+import 'package:medical_app/features/authentication/data/models/patient_model.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
@@ -23,6 +28,35 @@ class SettingsPage extends StatefulWidget {
 }
 
 class _SettingsPageState extends State<SettingsPage> {
+  // Notification settings state
+  bool _appointmentNotifications = true;
+  bool _messageNotifications = true;
+  bool _prescriptionNotifications = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadNotificationSettings();
+  }
+
+  // Load notification settings from SharedPreferences
+  Future<void> _loadNotificationSettings() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _appointmentNotifications =
+          prefs.getBool('appointment_notifications') ?? true;
+      _messageNotifications = prefs.getBool('message_notifications') ?? true;
+      _prescriptionNotifications =
+          prefs.getBool('prescription_notifications') ?? true;
+    });
+  }
+
+  // Save notification setting to SharedPreferences
+  Future<void> _saveNotificationSetting(String key, bool value) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(key, value);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -145,29 +179,72 @@ class _SettingsPageState extends State<SettingsPage> {
     return Card(
       elevation: 1,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Column(
-          children: [
-            _buildSwitchSetting(
-              title: "appointments".tr,
-              icon: Icons.calendar_today,
-              value: true,
+      child: Column(
+        children: [
+          ListTile(
+            leading: const Icon(
+              Icons.notifications,
+              color: AppColors.primaryColor,
             ),
-            const Divider(height: 1),
-            _buildSwitchSetting(
-              title: "messages".tr,
-              icon: Icons.message,
-              value: true,
+            title: Text(
+              "notification_settings".tr,
+              style: GoogleFonts.raleway(fontSize: 14),
             ),
-            const Divider(height: 1),
-            _buildSwitchSetting(
-              title: "prescriptions".tr,
-              icon: Icons.description,
-              value: true,
+            subtitle: Text(
+              "manage_notification_preferences".tr,
+              style: GoogleFonts.raleway(fontSize: 12, color: Colors.grey[600]),
             ),
-          ],
-        ),
+            trailing: const Icon(Icons.chevron_right, size: 20),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 8,
+            ),
+            onTap: () {
+              showDialog(
+                context: context,
+                builder:
+                    (context) => AlertDialog(
+                      title: Text("notification_settings".tr),
+                      content: Text("notification_settings_coming_soon".tr),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.pop(context),
+                          child: Text("ok".tr),
+                        ),
+                      ],
+                    ),
+              );
+            },
+          ),
+          const Divider(height: 1),
+          Padding(
+            padding: const EdgeInsets.all(12),
+            child: Column(
+              children: [
+                _buildSwitchSetting(
+                  title: "appointments".tr,
+                  icon: Icons.calendar_today,
+                  value: _appointmentNotifications,
+                  settingKey: 'appointment_notifications',
+                ),
+                const Divider(height: 1),
+                _buildSwitchSetting(
+                  title: "messages".tr,
+                  icon: Icons.message,
+                  value: _messageNotifications,
+                  settingKey: 'message_notifications',
+                ),
+                const Divider(height: 1),
+                _buildSwitchSetting(
+                  title: "prescriptions".tr,
+                  icon: Icons.description,
+                  value: _prescriptionNotifications,
+                  settingKey: 'prescription_notifications',
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -178,71 +255,113 @@ class _SettingsPageState extends State<SettingsPage> {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: Column(
         children: [
-          ListTile(
-            leading: const Icon(Icons.person, color: AppColors.primaryColor),
-            title: Text(
-              "edit_profile".tr,
-              style: GoogleFonts.raleway(fontSize: 14),
-            ),
-            trailing: const Icon(Icons.chevron_right, size: 20),
-            contentPadding: const EdgeInsets.symmetric(
-              horizontal: 16,
-              vertical: 8,
-            ),
-            onTap: () async {
-              try {
-                final authLocalDataSource = di.sl<AuthLocalDataSource>();
-                final userModel = await authLocalDataSource.getUser();
+          // Edit Profile option for all users
+          FutureBuilder<UserEntity?>(
+            future: _getCurrentUser(),
+            builder: (context, snapshot) {
+              if (snapshot.hasData) {
+                final user = snapshot.data!;
+                final isDoctor = user.role == 'medecin';
 
-                // Convert UserModel to UserEntity
-                UserEntity userEntity = UserEntity(
-                  id: userModel.id,
-                  name: userModel.name,
-                  lastName: userModel.lastName,
-                  email: userModel.email,
-                  role: userModel.role,
-                  gender: userModel.gender,
-                  phoneNumber: userModel.phoneNumber,
-                  dateOfBirth: userModel.dateOfBirth,
-                );
-
-                final updatedUser = await Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => EditProfileScreen(user: userEntity),
-                  ),
-                );
-
-                if (updatedUser != null && updatedUser is UserEntity) {
-                  // Dispatch update event to the BLoC
-                  context.read<UpdateUserBloc>().add(
-                    UpdateUserEvent(updatedUser),
-                  );
-
-                  // Cache updated user
-                  await authLocalDataSource.cacheUser(
-                    userModel.copyWith(
-                      name: updatedUser.name,
-                      lastName: updatedUser.lastName,
-                      phoneNumber: updatedUser.phoneNumber,
-                      gender: updatedUser.gender,
-                      dateOfBirth: updatedUser.dateOfBirth,
+                return Column(
+                  children: [
+                    ListTile(
+                      leading: const Icon(
+                        Icons.edit,
+                        color: AppColors.primaryColor,
+                      ),
+                      title: Text(
+                        "edit_profile".tr,
+                        style: GoogleFonts.raleway(fontSize: 14),
+                      ),
+                      subtitle: Text(
+                        isDoctor
+                            ? "edit_profile_and_office_location".tr
+                            : "update_your_personal_information".tr,
+                        style: GoogleFonts.raleway(
+                          fontSize: 12,
+                          color: Colors.grey[600],
+                        ),
+                      ),
+                      trailing: const Icon(Icons.chevron_right, size: 20),
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 8,
+                      ),
+                      onTap: () async {
+                        if (isDoctor && user is MedecinEntity) {
+                          // Use specialized doctor profile editor with location features
+                          final result = await Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder:
+                                  (context) =>
+                                      EditDoctorProfilePage(doctor: user),
+                            ),
+                          );
+                          if (result != null) {
+                            // Handle updated doctor profile if needed
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  'profile_updated_successfully'.tr,
+                                ),
+                                backgroundColor: AppColors.primaryColor,
+                              ),
+                            );
+                          }
+                        } else if (user is PatientEntity) {
+                          // Use specialized patient profile editor
+                          final result = await Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder:
+                                  (context) =>
+                                      EditPatientProfilePage(patient: user),
+                            ),
+                          );
+                          if (result != null) {
+                            // Handle updated patient profile if needed
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  'profile_updated_successfully'.tr,
+                                ),
+                                backgroundColor: AppColors.primaryColor,
+                              ),
+                            );
+                          }
+                        } else {
+                          // This shouldn't happen as we handle both doctors and patients above
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text('error_updating_profile'.tr),
+                              backgroundColor: Colors.red,
+                            ),
+                          );
+                        }
+                      },
                     ),
-                  );
-                }
-              } catch (e) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('failed_to_load_profile'.tr)),
+                    const Divider(height: 1),
+                  ],
                 );
               }
+              return const SizedBox.shrink();
             },
           ),
-          const Divider(height: 1),
+
           ListTile(
-            leading: const Icon(Icons.lock, color: AppColors.primaryColor),
+            leading: const Icon(
+              Icons.lock_outline,
+              color: AppColors.primaryColor,
+            ),
             title: Text(
               "change_password".tr,
               style: GoogleFonts.raleway(fontSize: 14),
+            ),
+            subtitle: Text(
+              "update_your_password".tr,
+              style: GoogleFonts.raleway(fontSize: 12, color: Colors.grey[600]),
             ),
             trailing: const Icon(Icons.chevron_right, size: 20),
             contentPadding: const EdgeInsets.symmetric(
@@ -265,20 +384,17 @@ class _SettingsPageState extends State<SettingsPage> {
               "logout".tr,
               style: GoogleFonts.raleway(fontSize: 14, color: Colors.red),
             ),
+            subtitle: Text(
+              "sign_out_of_your_account".tr,
+              style: GoogleFonts.raleway(fontSize: 12, color: Colors.grey[600]),
+            ),
+            trailing: const Icon(Icons.chevron_right, size: 20),
             contentPadding: const EdgeInsets.symmetric(
               horizontal: 16,
               vertical: 8,
             ),
             onTap: () {
-              // Logique de déconnexion
-              ScaffoldMessenger.of(
-                context,
-              ).showSnackBar(SnackBar(content: Text("logout_success".tr)));
-              // Rediriger vers la page de connexion
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(builder: (context) => LoginScreen()),
-              );
+              _showLogoutDialog();
             },
           ),
         ],
@@ -286,10 +402,75 @@ class _SettingsPageState extends State<SettingsPage> {
     );
   }
 
+  Future<UserEntity?> _getCurrentUser() async {
+    try {
+      final authLocalDataSource = di.sl<AuthLocalDataSource>();
+      final userModel = await authLocalDataSource.getUser();
+
+      // Convert UserModel to appropriate entity
+      if (userModel is MedecinModel) {
+        return MedecinEntity(
+          id: userModel.id,
+          name: userModel.name,
+          lastName: userModel.lastName,
+          email: userModel.email,
+          role: userModel.role,
+          gender: userModel.gender,
+          phoneNumber: userModel.phoneNumber,
+          dateOfBirth: userModel.dateOfBirth,
+          speciality: userModel.speciality,
+          numLicence: userModel.numLicence,
+          appointmentDuration: userModel.appointmentDuration,
+          consultationFee: userModel.consultationFee,
+          education: userModel.education,
+          experience: userModel.experience,
+          location: userModel.location,
+          address: userModel.address,
+          accountStatus: userModel.accountStatus,
+          verificationCode: userModel.verificationCode,
+          validationCodeExpiresAt: userModel.validationCodeExpiresAt,
+          fcmToken: userModel.fcmToken,
+        );
+      } else if (userModel is PatientModel) {
+        return PatientEntity(
+          id: userModel.id,
+          name: userModel.name,
+          lastName: userModel.lastName,
+          email: userModel.email,
+          role: userModel.role,
+          gender: userModel.gender,
+          phoneNumber: userModel.phoneNumber,
+          dateOfBirth: userModel.dateOfBirth,
+          antecedent: userModel.antecedent,
+          bloodType: userModel.bloodType,
+          height: userModel.height,
+          weight: userModel.weight,
+          allergies: userModel.allergies,
+          chronicDiseases: userModel.chronicDiseases,
+          emergencyContact: userModel.emergencyContact,
+        );
+      } else {
+        return UserEntity(
+          id: userModel.id,
+          name: userModel.name,
+          lastName: userModel.lastName,
+          email: userModel.email,
+          role: userModel.role,
+          gender: userModel.gender,
+          phoneNumber: userModel.phoneNumber,
+          dateOfBirth: userModel.dateOfBirth,
+        );
+      }
+    } catch (e) {
+      return null;
+    }
+  }
+
   Widget _buildSwitchSetting({
     required String title,
     required IconData icon,
     required bool value,
+    String? settingKey,
   }) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
@@ -305,9 +486,36 @@ class _SettingsPageState extends State<SettingsPage> {
           ),
           Switch(
             value: value,
-            onChanged: (val) {
-              // Implement notification settings logic
-              setState(() {});
+            onChanged: (val) async {
+              if (settingKey != null) {
+                await _saveNotificationSetting(settingKey, val);
+                setState(() {
+                  switch (settingKey) {
+                    case 'appointment_notifications':
+                      _appointmentNotifications = val;
+                      break;
+                    case 'message_notifications':
+                      _messageNotifications = val;
+                      break;
+                    case 'prescription_notifications':
+                      _prescriptionNotifications = val;
+                      break;
+                  }
+                });
+
+                // Show feedback to user
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(
+                      val
+                          ? '$title ${"notifications".tr} ${"enabled".tr}'
+                          : '$title ${"notifications".tr} ${"disabled".tr}',
+                    ),
+                    duration: const Duration(seconds: 2),
+                    backgroundColor: AppColors.primaryColor,
+                  ),
+                );
+              }
             },
             activeColor: AppColors.primaryColor,
           ),
@@ -337,9 +545,41 @@ class _SettingsPageState extends State<SettingsPage> {
               "copyright".tr,
               style: GoogleFonts.raleway(fontSize: 12, color: Colors.grey[600]),
             ),
+            const SizedBox(height: 16),
           ],
         ),
       ),
+    );
+  }
+
+  void _showLogoutDialog() {
+    showDialog(
+      context: context,
+      builder:
+          (context) => AlertDialog(
+            title: Text("logout".tr),
+            content: Text("logout_confirmation".tr),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: Text("cancel".tr),
+              ),
+              TextButton(
+                onPressed: () {
+                  // Logique de déconnexion
+                  ScaffoldMessenger.of(
+                    context,
+                  ).showSnackBar(SnackBar(content: Text("logout_success".tr)));
+                  // Rediriger vers la page de connexion
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(builder: (context) => LoginScreen()),
+                  );
+                },
+                child: Text("logout".tr),
+              ),
+            ],
+          ),
     );
   }
 }

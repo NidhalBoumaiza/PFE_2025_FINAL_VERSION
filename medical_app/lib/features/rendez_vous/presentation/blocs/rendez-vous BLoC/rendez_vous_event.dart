@@ -61,11 +61,26 @@ class CreateRendezVous extends RendezVousEvent {
 class FetchDoctorsBySpecialty extends RendezVousEvent {
   final String specialty;
   final DateTime startTime;
+  final double? searchRadiusKm;
+  final double? userLatitude;
+  final double? userLongitude;
 
-  const FetchDoctorsBySpecialty(this.specialty, this.startTime);
+  const FetchDoctorsBySpecialty(
+    this.specialty,
+    this.startTime, {
+    this.searchRadiusKm,
+    this.userLatitude,
+    this.userLongitude,
+  });
 
   @override
-  List<Object> get props => [specialty, startTime];
+  List<Object?> get props => [
+    specialty,
+    startTime,
+    searchRadiusKm,
+    userLatitude,
+    userLongitude,
+  ];
 }
 
 class AssignDoctorToRendezVous extends RendezVousEvent {
@@ -74,10 +89,10 @@ class AssignDoctorToRendezVous extends RendezVousEvent {
   final String doctorName;
 
   const AssignDoctorToRendezVous(
-      this.rendezVousId,
-      this.doctorId,
-      this.doctorName,
-      );
+    this.rendezVousId,
+    this.doctorId,
+    this.doctorName,
+  );
 
   @override
   List<Object> get props => [rendezVousId, doctorId, doctorName];

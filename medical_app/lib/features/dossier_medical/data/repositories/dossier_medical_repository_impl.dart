@@ -1,11 +1,10 @@
 import 'dart:io';
-
 import 'package:dartz/dartz.dart';
 import 'package:medical_app/core/error/exceptions.dart';
 import 'package:medical_app/core/error/failures.dart';
 import 'package:medical_app/core/network/network_info.dart';
 import 'package:medical_app/features/dossier_medical/data/datasources/dossier_medical_remote_datasource.dart';
-import 'package:medical_app/features/dossier_medical/domain/entities/dossier_medical_entity.dart';
+import 'package:medical_app/features/dossier_medical/domain/entities/dossier_files_entity.dart';
 import 'package:medical_app/features/dossier_medical/domain/repositories/dossier_medical_repository.dart';
 
 class DossierMedicalRepositoryImpl implements DossierMedicalRepository {
@@ -18,13 +17,15 @@ class DossierMedicalRepositoryImpl implements DossierMedicalRepository {
   });
 
   @override
-  Future<Either<Failure, DossierMedicalEntity>> getDossierMedical(
-    String patientId,
-  ) async {
+  Future<Either<Failure, DossierFilesEntity>> getDossierMedical({
+    required String patientId,
+    required String? doctorId,
+  }) async {
     if (await networkInfo.isConnected) {
       try {
         final remoteDossier = await remoteDataSource.getDossierMedical(
-          patientId,
+          patientId: patientId,
+          doctorId: doctorId,
         );
         return Right(remoteDossier);
       } on ServerException catch (e) {
@@ -36,11 +37,11 @@ class DossierMedicalRepositoryImpl implements DossierMedicalRepository {
   }
 
   @override
-  Future<Either<Failure, DossierMedicalEntity>> addFileToDossier(
-    String patientId,
-    String filePath,
-    String description,
-  ) async {
+  Future<Either<Failure, DossierFilesEntity>> addFileToDossier({
+    required String patientId,
+    required String filePath,
+    required String description,
+  }) async {
     if (await networkInfo.isConnected) {
       try {
         final file = File(filePath);
@@ -49,9 +50,9 @@ class DossierMedicalRepositoryImpl implements DossierMedicalRepository {
         }
 
         final remoteDossier = await remoteDataSource.addFileToDossier(
-          patientId,
-          file,
-          description,
+          patientId: patientId,
+          file: file,
+          description: description,
         );
         return Right(remoteDossier);
       } on ServerException catch (e) {
@@ -65,11 +66,11 @@ class DossierMedicalRepositoryImpl implements DossierMedicalRepository {
   }
 
   @override
-  Future<Either<Failure, DossierMedicalEntity>> addFilesToDossier(
-    String patientId,
-    List<String> filePaths,
-    Map<String, String> descriptions,
-  ) async {
+  Future<Either<Failure, DossierFilesEntity>> addFilesToDossier({
+    required String patientId,
+    required List<String> filePaths,
+    required Map<String, String> descriptions,
+  }) async {
     if (await networkInfo.isConnected) {
       try {
         final files = <File>[];
@@ -82,9 +83,9 @@ class DossierMedicalRepositoryImpl implements DossierMedicalRepository {
         }
 
         final remoteDossier = await remoteDataSource.addFilesToDossier(
-          patientId,
-          files,
-          descriptions,
+          patientId: patientId,
+          files: files,
+          descriptions: descriptions,
         );
         return Right(remoteDossier);
       } on ServerException catch (e) {
@@ -98,13 +99,13 @@ class DossierMedicalRepositoryImpl implements DossierMedicalRepository {
   }
 
   @override
-  Future<Either<Failure, Unit>> deleteFile(
-    String patientId,
-    String fileId,
-  ) async {
+  Future<Either<Failure, Unit>> deleteFile({
+    required String patientId,
+    required String fileId,
+  }) async {
     if (await networkInfo.isConnected) {
       try {
-        await remoteDataSource.deleteFile(patientId, fileId);
+        await remoteDataSource.deleteFile(patientId: patientId, fileId: fileId);
         return const Right(unit);
       } on ServerException catch (e) {
         return Left(ServerFailure(message: e.message));
@@ -115,17 +116,17 @@ class DossierMedicalRepositoryImpl implements DossierMedicalRepository {
   }
 
   @override
-  Future<Either<Failure, Unit>> updateFileDescription(
-    String patientId,
-    String fileId,
-    String description,
-  ) async {
+  Future<Either<Failure, Unit>> updateFileDescription({
+    required String patientId,
+    required String fileId,
+    required String description,
+  }) async {
     if (await networkInfo.isConnected) {
       try {
         await remoteDataSource.updateFileDescription(
-          patientId,
-          fileId,
-          description,
+          patientId: patientId,
+          fileId: fileId,
+          description: description,
         );
         return const Right(unit);
       } on ServerException catch (e) {
@@ -137,11 +138,36 @@ class DossierMedicalRepositoryImpl implements DossierMedicalRepository {
   }
 
   @override
-  Future<Either<Failure, bool>> hasDossierMedical(String patientId) async {
+  Future<Either<Failure, bool>> hasDossierMedical({
+    required String patientId,
+  }) async {
     if (await networkInfo.isConnected) {
       try {
-        final result = await remoteDataSource.hasDossierMedical(patientId);
+        final result = await remoteDataSource.hasDossierMedical(
+          patientId: patientId,
+        );
         return Right(result);
+      } on ServerException catch (e) {
+        return Left(ServerFailure(message: e.message));
+      }
+    } else {
+      return const Left(NetworkFailure(message: 'No Internet connection'));
+    }
+  }
+
+  @override
+  Future<Either<Failure, bool>> checkDoctorAccessToPatientFiles({
+    required String doctorId,
+    required String patientId,
+  }) async {
+    if (await networkInfo.isConnected) {
+      try {
+        final hasAccess = await remoteDataSource
+            .checkDoctorAccessToPatientFiles(
+              doctorId: doctorId,
+              patientId: patientId,
+            );
+        return Right(hasAccess);
       } on ServerException catch (e) {
         return Left(ServerFailure(message: e.message));
       }

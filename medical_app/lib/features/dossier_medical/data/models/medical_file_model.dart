@@ -1,4 +1,4 @@
-import '../../domain/entities/medical_file_entity.dart';
+import 'package:medical_app/features/dossier_medical/domain/entities/medical_file_entity.dart';
 
 class MedicalFileModel extends MedicalFileEntity {
   const MedicalFileModel({
@@ -11,29 +11,32 @@ class MedicalFileModel extends MedicalFileEntity {
     required String description,
     required DateTime createdAt,
   }) : super(
-         id: id,
-         filename: filename,
-         originalName: originalName,
-         path: path,
-         mimetype: mimetype,
-         size: size,
-         description: description,
-         createdAt: createdAt,
-       );
+    id: id,
+    filename: filename,
+    originalName: originalName,
+    path: path,
+    mimetype: mimetype,
+    size: size,
+    description: description,
+    createdAt: createdAt,
+  );
 
   factory MedicalFileModel.fromJson(Map<String, dynamic> json) {
+    final id = json['_id'] ?? json['id'];
+    if (id == null || id.isEmpty) {
+      throw FormatException('Missing or empty id in Firestore data: $json');
+    }
     return MedicalFileModel(
-      id: json['_id'] ?? json['id'] ?? '',
+      id: id,
       filename: json['filename'] ?? '',
       originalName: json['originalName'] ?? '',
       path: json['path'] ?? '',
-      mimetype: json['mimetype'] ?? '',
-      size: json['size'] is int ? json['size'] : 0,
+      mimetype: json['mimetype'] ?? 'application/octet-stream',
+      size: (json['size'] is int ? json['size'] : 0) as int,
       description: json['description'] ?? '',
-      createdAt:
-          json['createdAt'] != null
-              ? DateTime.parse(json['createdAt'])
-              : DateTime.now(),
+      createdAt: json['createdAt'] != null
+          ? DateTime.tryParse(json['createdAt'] as String) ?? DateTime.now()
+          : DateTime.now(),
     );
   }
 
@@ -60,6 +63,20 @@ class MedicalFileModel extends MedicalFileEntity {
       size: entity.size,
       description: entity.description,
       createdAt: entity.createdAt,
+    );
+  }
+
+  @override
+  MedicalFileEntity toEntity() {
+    return MedicalFileEntity(
+      id: id,
+      filename: filename,
+      originalName: originalName,
+      path: path,
+      mimetype: mimetype,
+      size: size,
+      description: description,
+      createdAt: createdAt,
     );
   }
 }

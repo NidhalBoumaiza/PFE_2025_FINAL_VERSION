@@ -1,46 +1,69 @@
 import 'package:bloc/bloc.dart';
+import 'package:medical_app/features/dossier_medical/domain/usecases/add_file_to_dossier.dart';
+import 'package:medical_app/features/dossier_medical/domain/usecases/add_files_to_dossier.dart';
+import 'package:medical_app/features/dossier_medical/domain/usecases/delete_file.dart';
 import 'package:medical_app/features/dossier_medical/domain/usecases/get_dossier_medical.dart';
 import 'package:medical_app/features/dossier_medical/domain/usecases/has_dossier_medical.dart';
-import '../../../authentication/domain/entities/patient_entity.dart';
-import '../../domain/repositories/dossier_medical_repository.dart';
+import 'package:medical_app/features/dossier_medical/domain/usecases/update_file_description.dart';
 import 'dossier_medical_event.dart';
 import 'dossier_medical_state.dart';
 
+// BLoC for managing medical dossier operations with security checks
 class DossierMedicalBloc
     extends Bloc<DossierMedicalEvent, DossierMedicalState> {
-  final DossierMedicalRepository repository;
+  final GetDossierMedical getDossierMedical;
+  final HasDossierMedical hasDossierMedical;
+  final AddFileToDossier addFileToDossier;
+  final AddFilesToDossier addFilesToDossier;
+  final DeleteFile deleteFile;
+  final UpdateFileDescription updateFileDescription;
 
-  DossierMedicalBloc({required this.repository})
-    : super(const DossierMedicalInitial()) {
-    on<FetchDossierMedical>(_onFetchDossierMedical);
-    on<CheckDossierMedicalExists>(_onCheckDossierMedicalExists);
-    on<UploadSingleFile>(_onUploadSingleFile);
-    on<UploadMultipleFiles>(_onUploadMultipleFiles);
-    on<DeleteFile>(_onDeleteFile);
-    on<UpdateFileDescription>(_onUpdateFileDescription);
+  // Store the current doctorId for refresh operations
+  String? _currentDoctorId;
+
+  DossierMedicalBloc({
+    required this.getDossierMedical,
+    required this.hasDossierMedical,
+    required this.addFileToDossier,
+    required this.addFilesToDossier,
+    required this.deleteFile,
+    required this.updateFileDescription,
+  }) : super(const DossierMedicalInitial()) {
+    on<FetchDossierMedicalEvent>(_onFetchDossierMedical);
+    on<CheckDossierMedicalExistsEvent>(_onCheckDossierMedicalExists);
+    on<UploadSingleFileEvent>(_onUploadSingleFile);
+    on<UploadMultipleFilesEvent>(_onUploadMultipleFiles);
+    on<DeleteFileEvent>(_onDeleteFile);
+    on<UpdateFileDescriptionEvent>(_onUpdateFileDescription);
   }
 
   Future<void> _onFetchDossierMedical(
-    FetchDossierMedical event,
+    FetchDossierMedicalEvent event,
     Emitter<DossierMedicalState> emit,
   ) async {
+    // Store the doctorId for future refresh operations
+    _currentDoctorId = event.doctorId;
+
     emit(const DossierMedicalLoading());
-    final result = await repository.getDossierMedical(event.patientId);
+    final result = await getDossierMedical.call(
+      patientId: event.patientId,
+      doctorId: event.doctorId,
+    );
     result.fold(
       (failure) => emit(DossierMedicalError(message: failure.message)),
       (dossier) =>
-          dossier.files.isEmpty
+          dossier.isEmpty
               ? emit(DossierMedicalEmpty(patientId: event.patientId))
               : emit(DossierMedicalLoaded(dossier: dossier)),
     );
   }
 
   Future<void> _onCheckDossierMedicalExists(
-    CheckDossierMedicalExists event,
+    CheckDossierMedicalExistsEvent event,
     Emitter<DossierMedicalState> emit,
   ) async {
     emit(const CheckingDossierMedicalStatus());
-    final result = await repository.hasDossierMedical(event.patientId);
+    final result = await hasDossierMedical.call(patientId: event.patientId);
     result.fold(
       (failure) => emit(DossierMedicalError(message: failure.message)),
       (exists) => emit(DossierMedicalExists(exists: exists)),
@@ -48,14 +71,14 @@ class DossierMedicalBloc
   }
 
   Future<void> _onUploadSingleFile(
-    UploadSingleFile event,
+    UploadSingleFileEvent event,
     Emitter<DossierMedicalState> emit,
   ) async {
     emit(const FileUploadLoading(isSingleFile: true));
-    final result = await repository.addFileToDossier(
-      event.patientId,
-      event.filePath,
-      event.description,
+    final result = await addFileToDossier.call(
+      patientId: event.patientId,
+      filePath: event.filePath,
+      description: event.description,
     );
     result.fold(
       (failure) =>
@@ -66,14 +89,14 @@ class DossierMedicalBloc
   }
 
   Future<void> _onUploadMultipleFiles(
-    UploadMultipleFiles event,
+    UploadMultipleFilesEvent event,
     Emitter<DossierMedicalState> emit,
   ) async {
     emit(const FileUploadLoading(isSingleFile: false));
-    final result = await repository.addFilesToDossier(
-      event.patientId,
-      event.filePaths,
-      event.descriptions,
+    final result = await addFilesToDossier.call(
+      patientId: event.patientId,
+      filePaths: event.filePaths,
+      descriptions: event.descriptions,
     );
     result.fold(
       (failure) =>
@@ -84,30 +107,38 @@ class DossierMedicalBloc
   }
 
   Future<void> _onDeleteFile(
-    DeleteFile event,
+    DeleteFileEvent event,
     Emitter<DossierMedicalState> emit,
   ) async {
     emit(FileDeleteLoading(fileId: event.fileId));
-    final result = await repository.deleteFile(event.patientId, event.fileId);
+    final result = await deleteFile.call(
+      patientId: event.patientId,
+      fileId: event.fileId,
+    );
     result.fold(
       (failure) =>
           emit(FileDeleteError(message: failure.message, fileId: event.fileId)),
       (_) => emit(FileDeleteSuccess(fileId: event.fileId)),
     );
 
-    // After delete, refresh the dossier
-    add(FetchDossierMedical(patientId: event.patientId));
+    // After delete, refresh the dossier with the stored doctorId
+    add(
+      FetchDossierMedicalEvent(
+        patientId: event.patientId,
+        doctorId: _currentDoctorId,
+      ),
+    );
   }
 
   Future<void> _onUpdateFileDescription(
-    UpdateFileDescription event,
+    UpdateFileDescriptionEvent event,
     Emitter<DossierMedicalState> emit,
   ) async {
     emit(FileDescriptionUpdateLoading(fileId: event.fileId));
-    final result = await repository.updateFileDescription(
-      event.patientId,
-      event.fileId,
-      event.description,
+    final result = await updateFileDescription.call(
+      patientId: event.patientId,
+      fileId: event.fileId,
+      description: event.description,
     );
     result.fold(
       (failure) => emit(
@@ -119,7 +150,12 @@ class DossierMedicalBloc
       (_) => emit(FileDescriptionUpdateSuccess(fileId: event.fileId)),
     );
 
-    // After update, refresh the dossier
-    add(FetchDossierMedical(patientId: event.patientId));
+    // After update, refresh the dossier with the stored doctorId
+    add(
+      FetchDossierMedicalEvent(
+        patientId: event.patientId,
+        doctorId: _currentDoctorId,
+      ),
+    );
   }
 }

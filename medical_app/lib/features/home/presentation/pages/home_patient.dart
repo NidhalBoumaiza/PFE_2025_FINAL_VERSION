@@ -180,8 +180,10 @@ class _HomePatientState extends State<HomePatient> {
   Widget _buildMessageIcon(bool isActive) {
     return BlocBuilder<ConversationsBloc, ConversationsState>(
       buildWhen: (previous, current) {
-        // Only rebuild when conversations loaded
-        return current is ConversationsLoaded;
+        // Only rebuild when conversations loaded or loading state changes
+        return current is ConversationsLoaded ||
+            current is ConversationsLoading ||
+            current is ConversationsError;
       },
       builder: (context, state) {
         int unreadCount = 0;
@@ -194,6 +196,20 @@ class _HomePatientState extends State<HomePatient> {
                         !conv.lastMessageRead && conv.lastMessage.isNotEmpty,
                   )
                   .length;
+        }
+
+        // Load conversations if not loaded yet and we have userId
+        if (state is! ConversationsLoaded &&
+            state is! ConversationsLoading &&
+            userId.isNotEmpty) {
+          // Trigger loading conversations
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (mounted) {
+              context.read<ConversationsBloc>().add(
+                FetchConversationsEvent(userId: userId, isDoctor: false),
+              );
+            }
+          });
         }
 
         return Stack(
@@ -512,29 +528,42 @@ class _HomePatientState extends State<HomePatient> {
         child: Scaffold(
           backgroundColor: theme.scaffoldBackgroundColor,
           appBar: AppBar(
-            backgroundColor: theme.appBarTheme.backgroundColor,
+            backgroundColor: AppColors.primaryColor,
             elevation: 0,
+            automaticallyImplyLeading: false,
+            leading: Builder(
+              builder:
+                  (context) => IconButton(
+                    icon: const Icon(Icons.menu, color: Colors.white),
+                    onPressed: () => Scaffold.of(context).openDrawer(),
+                  ),
+            ),
             title: Text(
               _getAppBarTitle(),
               style: GoogleFonts.raleway(
-                fontSize: 20.sp,
+                fontSize: 18.sp,
                 fontWeight: FontWeight.bold,
-                color: theme.textTheme.titleLarge?.color,
+                color: Colors.white,
               ),
             ),
+            centerTitle: true,
             actions: [
-              NotificationBadge(),
-              SizedBox(width: 8.w),
-              ThemeCubitSwitch(
-                compact: true,
-                color: isDarkMode ? Colors.white : AppColors.primaryColor,
-              ),
-              SizedBox(width: 8.w),
-              LocationIndicator(
-                userId: userId,
-                isDarkMode: isDarkMode,
-                onTap: _showLocationPermissionDialog,
-              ),
+              if (_selectedIndex == 1) ...[
+                IconButton(
+                  icon: const Icon(Icons.calendar_today, color: Colors.white),
+                  onPressed: () => _selectAppointmentDate(context),
+                  tooltip: 'filter_by_date'.tr,
+                ),
+                if (_selectedAppointmentDate != null)
+                  IconButton(
+                    icon: const Icon(Icons.clear, color: Colors.white),
+                    onPressed: _resetAppointmentDateFilter,
+                    tooltip: 'reset_filter'.tr,
+                  ),
+              ],
+              NotificationBadge(iconColor: Colors.white, iconSize: 24),
+
+
               SizedBox(width: 8.w),
             ],
           ),

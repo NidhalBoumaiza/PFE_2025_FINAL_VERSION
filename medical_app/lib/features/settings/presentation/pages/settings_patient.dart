@@ -7,13 +7,14 @@ import 'package:medical_app/features/authentication/data/models/patient_model.da
 import 'package:medical_app/features/authentication/domain/entities/patient_entity.dart';
 import 'package:medical_app/features/authentication/domain/entities/user_entity.dart';
 import 'package:medical_app/features/profile/presentation/pages/blocs/BLoC%20update%20profile/update_user_bloc.dart';
-import 'package:medical_app/features/profile/presentation/pages/edit_profile_screen.dart';
+import 'package:medical_app/features/profile/presentation/pages/edit_patient_profile_page.dart';
 import 'package:medical_app/widgets/theme_cubit_switch.dart';
 import 'package:medical_app/i18n/app_translation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../authentication/presentation/pages/login_screen.dart';
 import 'package:medical_app/injection_container.dart' as di;
 import 'change_password_screen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class SettingsPatient extends StatefulWidget {
   const SettingsPatient({super.key});
@@ -23,6 +24,35 @@ class SettingsPatient extends StatefulWidget {
 }
 
 class _SettingsPatientState extends State<SettingsPatient> {
+  // Notification settings state
+  bool _appointmentNotifications = true;
+  bool _messageNotifications = true;
+  bool _prescriptionNotifications = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadNotificationSettings();
+  }
+
+  // Load notification settings from SharedPreferences
+  Future<void> _loadNotificationSettings() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _appointmentNotifications =
+          prefs.getBool('appointment_notifications') ?? true;
+      _messageNotifications = prefs.getBool('message_notifications') ?? true;
+      _prescriptionNotifications =
+          prefs.getBool('prescription_notifications') ?? true;
+    });
+  }
+
+  // Save notification setting to SharedPreferences
+  Future<void> _saveNotificationSetting(String key, bool value) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(key, value);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -152,19 +182,22 @@ class _SettingsPatientState extends State<SettingsPatient> {
             _buildSwitchSetting(
               title: "appointments".tr,
               icon: Icons.calendar_today,
-              value: true,
-            ),
-            const Divider(height: 1),
-            _buildSwitchSetting(
-              title: "medications".tr,
-              icon: Icons.medication,
-              value: true,
+              value: _appointmentNotifications,
+              settingKey: 'appointment_notifications',
             ),
             const Divider(height: 1),
             _buildSwitchSetting(
               title: "messages".tr,
               icon: Icons.message,
-              value: true,
+              value: _messageNotifications,
+              settingKey: 'message_notifications',
+            ),
+            const Divider(height: 1),
+            _buildSwitchSetting(
+              title: "prescriptions".tr,
+              icon: Icons.description,
+              value: _prescriptionNotifications,
+              settingKey: 'prescription_notifications',
             ),
           ],
         ),
@@ -176,6 +209,7 @@ class _SettingsPatientState extends State<SettingsPatient> {
     required String title,
     required IconData icon,
     required bool value,
+    String? settingKey,
   }) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
@@ -191,9 +225,36 @@ class _SettingsPatientState extends State<SettingsPatient> {
           ),
           Switch(
             value: value,
-            onChanged: (val) {
-              // Implement notification settings logic
-              setState(() {});
+            onChanged: (val) async {
+              if (settingKey != null) {
+                await _saveNotificationSetting(settingKey, val);
+                setState(() {
+                  switch (settingKey) {
+                    case 'appointment_notifications':
+                      _appointmentNotifications = val;
+                      break;
+                    case 'message_notifications':
+                      _messageNotifications = val;
+                      break;
+                    case 'prescription_notifications':
+                      _prescriptionNotifications = val;
+                      break;
+                  }
+                });
+
+                // Show feedback to user
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(
+                      val
+                          ? '$title ${"notifications".tr} ${"enabled".tr}'
+                          : '$title ${"notifications".tr} ${"disabled".tr}',
+                    ),
+                    duration: const Duration(seconds: 2),
+                    backgroundColor: AppColors.primaryColor,
+                  ),
+                );
+              }
             },
             activeColor: AppColors.primaryColor,
           ),
@@ -209,10 +270,14 @@ class _SettingsPatientState extends State<SettingsPatient> {
       child: Column(
         children: [
           ListTile(
-            leading: const Icon(Icons.person, color: AppColors.primaryColor),
+            leading: const Icon(Icons.edit, color: AppColors.primaryColor),
             title: Text(
               "edit_profile".tr,
               style: GoogleFonts.raleway(fontSize: 14),
+            ),
+            subtitle: Text(
+              "update_your_personal_information".tr,
+              style: GoogleFonts.raleway(fontSize: 12, color: Colors.grey[600]),
             ),
             trailing: const Icon(Icons.chevron_right, size: 20),
             contentPadding: const EdgeInsets.symmetric(
@@ -238,52 +303,73 @@ class _SettingsPatientState extends State<SettingsPatient> {
                       userModel is PatientModel
                           ? (userModel as PatientModel).antecedent
                           : '',
+                  bloodType:
+                      userModel is PatientModel
+                          ? (userModel as PatientModel).bloodType
+                          : null,
+                  height:
+                      userModel is PatientModel
+                          ? (userModel as PatientModel).height
+                          : null,
+                  weight:
+                      userModel is PatientModel
+                          ? (userModel as PatientModel).weight
+                          : null,
+                  allergies:
+                      userModel is PatientModel
+                          ? (userModel as PatientModel).allergies
+                          : null,
+                  chronicDiseases:
+                      userModel is PatientModel
+                          ? (userModel as PatientModel).chronicDiseases
+                          : null,
+                  emergencyContact:
+                      userModel is PatientModel
+                          ? (userModel as PatientModel).emergencyContact
+                          : null,
                 );
 
                 final updatedUser = await Navigator.push(
                   context,
                   MaterialPageRoute(
                     builder:
-                        (context) => EditProfileScreen(user: patientEntity),
+                        (context) =>
+                            EditPatientProfilePage(patient: patientEntity),
                   ),
                 );
 
-                if (updatedUser != null && updatedUser is UserEntity) {
-                  // Dispatch update event to the BLoC
-                  context.read<UpdateUserBloc>().add(
-                    UpdateUserEvent(updatedUser),
+                if (updatedUser != null && updatedUser is PatientEntity) {
+                  // Show success message
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('profile_updated_successfully'.tr),
+                      backgroundColor: AppColors.primaryColor,
+                    ),
                   );
-
-                  // Cache updated user if successful
-                  if (userModel is PatientModel) {
-                    await authLocalDataSource.cacheUser(
-                      (userModel as PatientModel).copyWith(
-                        name: updatedUser.name,
-                        lastName: updatedUser.lastName,
-                        phoneNumber: updatedUser.phoneNumber,
-                        gender: updatedUser.gender,
-                        dateOfBirth: updatedUser.dateOfBirth,
-                        antecedent:
-                            updatedUser is PatientEntity
-                                ? (updatedUser as PatientEntity).antecedent
-                                : '',
-                      ),
-                    );
-                  }
                 }
               } catch (e) {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text("Failed to load profile: $e")),
+                  SnackBar(
+                    content: Text("failed_to_load_profile".tr),
+                    backgroundColor: Colors.red,
+                  ),
                 );
               }
             },
           ),
           const Divider(height: 1),
           ListTile(
-            leading: const Icon(Icons.lock, color: AppColors.primaryColor),
+            leading: const Icon(
+              Icons.lock_outline,
+              color: AppColors.primaryColor,
+            ),
             title: Text(
               "change_password".tr,
               style: GoogleFonts.raleway(fontSize: 14),
+            ),
+            subtitle: Text(
+              "update_your_password".tr,
+              style: GoogleFonts.raleway(fontSize: 12, color: Colors.grey[600]),
             ),
             trailing: const Icon(Icons.chevron_right, size: 20),
             contentPadding: const EdgeInsets.symmetric(
@@ -306,20 +392,17 @@ class _SettingsPatientState extends State<SettingsPatient> {
               "logout".tr,
               style: GoogleFonts.raleway(fontSize: 14, color: Colors.red),
             ),
+            subtitle: Text(
+              "sign_out_of_your_account".tr,
+              style: GoogleFonts.raleway(fontSize: 12, color: Colors.grey[600]),
+            ),
+            trailing: const Icon(Icons.chevron_right, size: 20),
             contentPadding: const EdgeInsets.symmetric(
               horizontal: 16,
               vertical: 8,
             ),
             onTap: () {
-              // Logique de déconnexion
-              ScaffoldMessenger.of(
-                context,
-              ).showSnackBar(SnackBar(content: Text("logout_success".tr)));
-              // Rediriger vers la page de connexion
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(builder: (context) => LoginScreen()),
-              );
+              _showLogoutDialog();
             },
           ),
         ],
@@ -351,6 +434,37 @@ class _SettingsPatientState extends State<SettingsPatient> {
           ],
         ),
       ),
+    );
+  }
+
+  void _showLogoutDialog() {
+    showDialog(
+      context: context,
+      builder:
+          (context) => AlertDialog(
+            title: Text("logout".tr),
+            content: Text("logout_confirmation".tr),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: Text("cancel".tr),
+              ),
+              TextButton(
+                onPressed: () {
+                  // Logout logic
+                  ScaffoldMessenger.of(
+                    context,
+                  ).showSnackBar(SnackBar(content: Text("logout_success".tr)));
+                  // Redirect to login screen
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(builder: (context) => LoginScreen()),
+                  );
+                },
+                child: Text("logout".tr),
+              ),
+            ],
+          ),
     );
   }
 }

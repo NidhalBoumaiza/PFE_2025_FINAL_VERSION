@@ -11,6 +11,7 @@ import 'package:medical_app/features/ratings/presentation/bloc/rating_bloc.dart'
 import 'package:medical_app/features/rendez_vous/domain/entities/rendez_vous_entity.dart';
 import 'package:medical_app/features/rendez_vous/presentation/blocs/rendez-vous%20BLoC/rendez_vous_bloc.dart';
 import 'package:medical_app/features/rendez_vous/presentation/pages/doctor_profile_page.dart';
+import 'package:medical_app/core/services/location_service.dart';
 import 'package:intl/intl.dart';
 
 class AvailableDoctorsScreen extends StatefulWidget {
@@ -34,12 +35,54 @@ class AvailableDoctorsScreen extends StatefulWidget {
 class _AvailableDoctorsScreenState extends State<AvailableDoctorsScreen> {
   final Map<String, double> _doctorRatings = {};
   bool _isLoading = false;
+  double _searchRadius = 10.0; // Default 10 km
+  double? _userLatitude;
+  double? _userLongitude;
+  bool _isLocationLoading = true;
 
   @override
   void initState() {
     super.initState();
+    _initializeLocation();
+  }
+
+  Future<void> _initializeLocation() async {
+    try {
+      final position = await LocationService.getCurrentPosition();
+      if (position != null) {
+        setState(() {
+          _userLatitude = position.latitude;
+          _userLongitude = position.longitude;
+          _isLocationLoading = false;
+        });
+        _fetchDoctors();
+      } else {
+        setState(() {
+          _isLocationLoading = false;
+        });
+        _fetchDoctors(); // Fetch without location filtering
+      }
+    } catch (e) {
+      print('Error getting location: $e');
+      setState(() {
+        _isLocationLoading = false;
+      });
+      _fetchDoctors(); // Fetch without location filtering
+    }
+  }
+
+  void _fetchDoctors() {
     context.read<RendezVousBloc>().add(
-      FetchDoctorsBySpecialty(widget.specialty, widget.startTime),
+      FetchDoctorsBySpecialty(
+        widget.specialty,
+        widget.startTime,
+        searchRadiusKm:
+            _userLatitude != null && _userLongitude != null
+                ? _searchRadius
+                : null,
+        userLatitude: _userLatitude,
+        userLongitude: _userLongitude,
+      ),
     );
   }
 
@@ -137,6 +180,179 @@ class _AvailableDoctorsScreenState extends State<AvailableDoctorsScreen> {
     }
   }
 
+  void _showRangeSelector() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
+      ),
+      builder: (context) {
+        double tempRadius = _searchRadius;
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            return Container(
+              padding: EdgeInsets.all(24.w),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: 40.w,
+                    height: 5.h,
+                    decoration: BoxDecoration(
+                      color: Colors.grey[300],
+                      borderRadius: BorderRadius.circular(10.r),
+                    ),
+                  ),
+                  SizedBox(height: 24.h),
+                  Text(
+                    'search_range'.tr,
+                    style: GoogleFonts.raleway(
+                      fontSize: 20.sp,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  SizedBox(height: 24.h),
+                  Row(
+                    children: [
+                      Icon(Icons.location_on, color: AppColors.primaryColor),
+                      SizedBox(width: 8.w),
+                      Text(
+                        'search_radius'.tr,
+                        style: GoogleFonts.raleway(fontSize: 16.sp),
+                      ),
+                      Spacer(),
+                      Text(
+                        '${tempRadius.toInt()} km',
+                        style: GoogleFonts.raleway(
+                          fontSize: 16.sp,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.primaryColor,
+                        ),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 16.h),
+                  Slider(
+                    value: tempRadius,
+                    min: 1.0,
+                    max: 100.0,
+                    divisions: 99,
+                    activeColor: AppColors.primaryColor,
+                    inactiveColor: AppColors.primaryColor.withOpacity(0.3),
+                    onChanged: (value) {
+                      setModalState(() {
+                        tempRadius = value;
+                      });
+                    },
+                  ),
+                  SizedBox(height: 8.h),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        '1 km',
+                        style: GoogleFonts.raleway(
+                          fontSize: 12.sp,
+                          color: Colors.grey,
+                        ),
+                      ),
+                      Text(
+                        '100 km',
+                        style: GoogleFonts.raleway(
+                          fontSize: 12.sp,
+                          color: Colors.grey,
+                        ),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 24.h),
+                  if (_userLatitude == null || _userLongitude == null)
+                    Container(
+                      padding: EdgeInsets.all(12.w),
+                      decoration: BoxDecoration(
+                        color: Colors.orange.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(8.r),
+                        border: Border.all(
+                          color: Colors.orange.withOpacity(0.3),
+                        ),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.warning,
+                            color: Colors.orange,
+                            size: 20.sp,
+                          ),
+                          SizedBox(width: 8.w),
+                          Expanded(
+                            child: Text(
+                              'location_not_available_search_all'.tr,
+                              style: GoogleFonts.raleway(fontSize: 14.sp),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  SizedBox(height: 16.h),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: OutlinedButton(
+                          onPressed: () => Navigator.pop(context),
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: AppColors.primaryColor,
+                            side: BorderSide(color: AppColors.primaryColor),
+                            padding: EdgeInsets.symmetric(vertical: 12.h),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8.r),
+                            ),
+                          ),
+                          child: Text(
+                            'cancel'.tr,
+                            style: GoogleFonts.raleway(fontSize: 16.sp),
+                          ),
+                        ),
+                      ),
+                      SizedBox(width: 16.w),
+                      Expanded(
+                        child: ElevatedButton(
+                          onPressed: () {
+                            setState(() {
+                              _searchRadius = tempRadius;
+                            });
+                            Navigator.pop(context);
+                            _fetchDoctors();
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.primaryColor,
+                            foregroundColor: Colors.white,
+                            padding: EdgeInsets.symmetric(vertical: 12.h),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8.r),
+                            ),
+                          ),
+                          child: Text(
+                            'apply'.tr,
+                            style: GoogleFonts.raleway(
+                              fontSize: 16.sp,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: MediaQuery.of(context).viewInsets.bottom),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -159,6 +375,13 @@ class _AvailableDoctorsScreenState extends State<AvailableDoctorsScreen> {
           icon: const Icon(Icons.chevron_left, size: 28, color: Colors.white),
           onPressed: () => Navigator.pop(context),
         ),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.tune, color: Colors.white),
+            onPressed: _showRangeSelector,
+            tooltip: 'search_range'.tr,
+          ),
+        ],
       ),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -184,119 +407,197 @@ class _AvailableDoctorsScreenState extends State<AvailableDoctorsScreen> {
                     color: theme.textTheme.bodySmall?.color,
                   ),
                 ),
+                SizedBox(height: 8.h),
+                // Location and search radius info
+                Container(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: 12.w,
+                    vertical: 8.h,
+                  ),
+                  decoration: BoxDecoration(
+                    color: AppColors.primaryColor.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(8.r),
+                    border: Border.all(
+                      color: AppColors.primaryColor.withOpacity(0.3),
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(
+                        _userLatitude != null && _userLongitude != null
+                            ? Icons.location_on
+                            : Icons.location_off,
+                        color: AppColors.primaryColor,
+                        size: 16.sp,
+                      ),
+                      SizedBox(width: 8.w),
+                      Expanded(
+                        child: Text(
+                          _userLatitude != null && _userLongitude != null
+                              ? 'search_within_radius'.tr.replaceAll(
+                                '{radius}',
+                                '${_searchRadius.toInt()}',
+                              )
+                              : 'searching_all_doctors'.tr,
+                          style: GoogleFonts.raleway(
+                            fontSize: 12.sp,
+                            color: AppColors.primaryColor,
+                          ),
+                        ),
+                      ),
+                      if (_userLatitude != null && _userLongitude != null)
+                        GestureDetector(
+                          onTap: _showRangeSelector,
+                          child: Text(
+                            'change'.tr,
+                            style: GoogleFonts.raleway(
+                              fontSize: 12.sp,
+                              color: AppColors.primaryColor,
+                              fontWeight: FontWeight.w600,
+                              decoration: TextDecoration.underline,
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
               ],
             ),
           ),
 
           Expanded(
-            child: BlocConsumer<RendezVousBloc, RendezVousState>(
-              listener: (context, state) {
-                if (state is RendezVousError) {
-                  if (_isLoading) {
-                    Navigator.of(context).pop();
-                    setState(() => _isLoading = false);
-                  }
-                  showErrorSnackBar(context, state.message);
-                } else if (state is AddingRendezVousState) {
-                  setState(() => _isLoading = true);
-                  showDialog(
-                    context: context,
-                    barrierDismissible: false,
-                    builder: (BuildContext context) {
-                      return Dialog(
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(20.0),
-                        ),
-                        child: Container(
-                          padding: EdgeInsets.all(24.0),
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              CircularProgressIndicator(
-                                color: AppColors.primaryColor,
-                              ),
-                              SizedBox(height: 16),
-                              Text(
-                                'creating_appointment'.tr,
-                                style: GoogleFonts.raleway(
-                                  fontSize: 16.sp,
-                                  fontWeight: FontWeight.w600,
+            child:
+                _isLocationLoading
+                    ? Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          CircularProgressIndicator(
+                            color: AppColors.primaryColor,
+                          ),
+                          SizedBox(height: 16.h),
+                          Text(
+                            'getting_location'.tr,
+                            style: GoogleFonts.raleway(fontSize: 16.sp),
+                          ),
+                        ],
+                      ),
+                    )
+                    : BlocConsumer<RendezVousBloc, RendezVousState>(
+                      listener: (context, state) {
+                        if (state is RendezVousError) {
+                          if (_isLoading) {
+                            Navigator.of(context).pop();
+                            setState(() => _isLoading = false);
+                          }
+                          showErrorSnackBar(context, state.message);
+                        } else if (state is AddingRendezVousState) {
+                          setState(() => _isLoading = true);
+                          showDialog(
+                            context: context,
+                            barrierDismissible: false,
+                            builder: (BuildContext context) {
+                              return Dialog(
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(20.0),
+                                ),
+                                child: Container(
+                                  padding: EdgeInsets.all(24.0),
+                                  child: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      CircularProgressIndicator(
+                                        color: AppColors.primaryColor,
+                                      ),
+                                      SizedBox(height: 16),
+                                      Text(
+                                        'creating_appointment'.tr,
+                                        style: GoogleFonts.raleway(
+                                          fontSize: 16.sp,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              );
+                            },
+                          );
+                        } else if (state is RendezVousCreated) {
+                          if (_isLoading) {
+                            Navigator.of(context).pop();
+                            setState(() => _isLoading = false);
+                          }
+
+                          Navigator.of(
+                            context,
+                          ).popUntil((route) => route.isFirst);
+
+                          showSuccessSnackBar(
+                            context,
+                            'consultation_request_sent'.tr,
+                          );
+                        } else if (state is DoctorsLoaded) {
+                          for (var doctor in state.doctors) {
+                            if (doctor.id != null) {
+                              _loadDoctorRating(doctor.id!);
+                            }
+                          }
+                        }
+                      },
+                      builder: (context, state) {
+                        if (state is RendezVousLoading) {
+                          return Center(
+                            child: CircularProgressIndicator(
+                              color: AppColors.primaryColor,
+                            ),
+                          );
+                        } else if (state is DoctorsLoaded) {
+                          final doctors = state.doctors;
+                          if (doctors.isEmpty) {
+                            return Center(
+                              child: Padding(
+                                padding: EdgeInsets.all(24.w),
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(
+                                      Icons.search_off,
+                                      size: 64.sp,
+                                      color:
+                                          isDarkMode
+                                              ? theme.iconTheme.color
+                                                  ?.withOpacity(0.4)
+                                              : Colors.grey[400],
+                                    ),
+                                    SizedBox(height: 16.h),
+                                    Text(
+                                      'no_available_doctors'.tr,
+                                      textAlign: TextAlign.center,
+                                      style: GoogleFonts.raleway(
+                                        fontSize: 16.sp,
+                                        color:
+                                            theme.textTheme.bodyMedium?.color,
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
-                            ],
-                          ),
-                        ),
-                      );
-                    },
-                  );
-                } else if (state is RendezVousCreated) {
-                  if (_isLoading) {
-                    Navigator.of(context).pop();
-                    setState(() => _isLoading = false);
-                  }
+                            );
+                          }
 
-                  Navigator.of(context).popUntil((route) => route.isFirst);
-
-                  showSuccessSnackBar(context, 'consultation_request_sent'.tr);
-                } else if (state is DoctorsLoaded) {
-                  for (var doctor in state.doctors) {
-                    if (doctor.id != null) {
-                      _loadDoctorRating(doctor.id!);
-                    }
-                  }
-                }
-              },
-              builder: (context, state) {
-                if (state is RendezVousLoading) {
-                  return Center(
-                    child: CircularProgressIndicator(
-                      color: AppColors.primaryColor,
+                          return ListView.builder(
+                            padding: EdgeInsets.all(12.w),
+                            itemCount: doctors.length,
+                            itemBuilder: (context, index) {
+                              final doctor = doctors[index];
+                              return _buildDoctorCard(doctor);
+                            },
+                          );
+                        }
+                        return const SizedBox();
+                      },
                     ),
-                  );
-                } else if (state is DoctorsLoaded) {
-                  final doctors = state.doctors;
-                  if (doctors.isEmpty) {
-                    return Center(
-                      child: Padding(
-                        padding: EdgeInsets.all(24.w),
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(
-                              Icons.search_off,
-                              size: 64.sp,
-                              color:
-                                  isDarkMode
-                                      ? theme.iconTheme.color?.withOpacity(0.4)
-                                      : Colors.grey[400],
-                            ),
-                            SizedBox(height: 16.h),
-                            Text(
-                              'no_available_doctors'.tr,
-                              textAlign: TextAlign.center,
-                              style: GoogleFonts.raleway(
-                                fontSize: 16.sp,
-                                color: theme.textTheme.bodyMedium?.color,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    );
-                  }
-
-                  return ListView.builder(
-                    padding: EdgeInsets.all(12.w),
-                    itemCount: doctors.length,
-                    itemBuilder: (context, index) {
-                      final doctor = doctors[index];
-                      return _buildDoctorCard(doctor);
-                    },
-                  );
-                }
-                return const SizedBox();
-              },
-            ),
           ),
         ],
       ),

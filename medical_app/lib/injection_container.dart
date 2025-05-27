@@ -19,7 +19,6 @@ import 'package:medical_app/features/authentication/domain/usecases/update_user_
 import 'package:medical_app/features/authentication/domain/usecases/verify_code_use_case.dart';
 import 'package:medical_app/features/authentication/presentation/blocs/Signup%20BLoC/signup_bloc.dart';
 import 'package:medical_app/features/authentication/presentation/blocs/login%20BLoC/login_bloc.dart';
-
 import 'package:medical_app/features/messagerie/data/data_sources/message_local_datasource.dart';
 import 'package:medical_app/features/messagerie/data/data_sources/message_remote_datasource.dart';
 import 'package:medical_app/features/messagerie/data/repositories/message_repository_impl.dart';
@@ -41,12 +40,10 @@ import 'package:medical_app/features/rendez_vous/domain/usecases/fetch_rendez_vo
 import 'package:medical_app/features/rendez_vous/domain/usecases/update_rendez_vous_status_use_case.dart';
 import 'package:medical_app/features/rendez_vous/presentation/blocs/rendez-vous%20BLoC/rendez_vous_bloc.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'features/authentication/presentation/blocs/forget password bloc/forgot_password_bloc.dart';
-import 'features/authentication/presentation/blocs/reset password bloc/reset_password_bloc.dart';
-import 'features/authentication/presentation/blocs/verify code bloc/verify_code_bloc.dart';
-import 'features/profile/presentation/pages/blocs/BLoC update profile/update_user_bloc.dart';
-
-// Rating feature imports
+import 'package:medical_app/features/authentication/presentation/blocs/forget%20password%20bloc/forgot_password_bloc.dart';
+import 'package:medical_app/features/authentication/presentation/blocs/reset%20password%20bloc/reset_password_bloc.dart';
+import 'package:medical_app/features/authentication/presentation/blocs/verify%20code%20bloc/verify_code_bloc.dart';
+import 'package:medical_app/features/profile/presentation/pages/blocs/BLoC%20update%20profile/update_user_bloc.dart';
 import 'package:medical_app/features/ratings/data/datasources/rating_remote_datasource.dart';
 import 'package:medical_app/features/ratings/data/repositories/rating_repository_impl.dart';
 import 'package:medical_app/features/ratings/domain/repositories/rating_repository.dart';
@@ -55,16 +52,12 @@ import 'package:medical_app/features/ratings/domain/usecases/has_patient_rated_a
 import 'package:medical_app/features/ratings/presentation/bloc/rating_bloc.dart';
 import 'package:medical_app/features/ratings/domain/usecases/get_doctor_ratings_use_case.dart';
 import 'package:medical_app/features/ratings/domain/usecases/get_doctor_average_rating_use_case.dart';
-
-// Dashboard feature imports
 import 'package:medical_app/features/dashboard/data/datasources/dashboard_remote_datasource.dart';
 import 'package:medical_app/features/dashboard/data/repositories/dashboard_repository_impl.dart';
 import 'package:medical_app/features/dashboard/domain/repositories/dashboard_repository.dart';
 import 'package:medical_app/features/dashboard/domain/usecases/get_doctor_dashboard_stats_use_case.dart';
 import 'package:medical_app/features/dashboard/domain/usecases/get_upcoming_appointments_use_case.dart';
 import 'package:medical_app/features/dashboard/presentation/blocs/dashboard%20BLoC/dashboard_bloc.dart';
-
-// Add prescription feature imports
 import 'package:medical_app/features/ordonnance/data/datasources/prescription_remote_datasource.dart';
 import 'package:medical_app/features/ordonnance/data/repositories/prescription_repository_impl.dart';
 import 'package:medical_app/features/ordonnance/domain/repositories/prescription_repository.dart';
@@ -76,8 +69,6 @@ import 'package:medical_app/features/ordonnance/domain/usecases/get_prescription
 import 'package:medical_app/features/ordonnance/domain/usecases/get_prescription_by_id_use_case.dart';
 import 'package:medical_app/features/ordonnance/domain/usecases/update_prescription_use_case.dart';
 import 'package:medical_app/features/ordonnance/presentation/bloc/prescription_bloc.dart';
-
-// Add notification feature imports
 import 'package:medical_app/features/notifications/data/datasources/notification_remote_datasource.dart';
 import 'package:medical_app/features/notifications/data/repositories/notification_repository_impl.dart';
 import 'package:medical_app/features/notifications/domain/repositories/notification_repository.dart';
@@ -93,17 +84,19 @@ import 'package:medical_app/features/notifications/domain/usecases/setup_fcm_use
 import 'package:medical_app/features/notifications/presentation/bloc/notification_bloc.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-
 import 'package:medical_app/features/authentication/presentation/blocs/update_password_bloc/update_password_bloc.dart';
 import 'package:medical_app/features/authentication/domain/usecases/update_password_direct_use_case.dart';
-
-// Dossier Medical Feature
 import 'package:http/http.dart' as http;
 import 'package:medical_app/features/dossier_medical/data/datasources/dossier_medical_remote_datasource.dart';
 import 'package:medical_app/features/dossier_medical/data/repositories/dossier_medical_repository_impl.dart';
 import 'package:medical_app/features/dossier_medical/domain/repositories/dossier_medical_repository.dart';
+import 'package:medical_app/features/dossier_medical/domain/usecases/add_file_to_dossier.dart';
+import 'package:medical_app/features/dossier_medical/domain/usecases/add_files_to_dossier.dart';
+import 'package:medical_app/features/dossier_medical/domain/usecases/delete_file.dart';
 import 'package:medical_app/features/dossier_medical/domain/usecases/get_dossier_medical.dart';
 import 'package:medical_app/features/dossier_medical/domain/usecases/has_dossier_medical.dart';
+import 'package:medical_app/features/dossier_medical/domain/usecases/update_file_description.dart';
+import 'package:medical_app/features/dossier_medical/domain/usecases/check_doctor_access.dart';
 import 'package:medical_app/features/dossier_medical/presentation/bloc/dossier_medical_bloc.dart';
 
 final sl = GetIt.instance;
@@ -141,16 +134,12 @@ Future<void> init() async {
       getMessagesStreamUseCase: sl(),
     ),
   );
-
-  // Dashboard BLoC
   sl.registerFactory(
     () => DashboardBloc(
       getDoctorDashboardStatsUseCase: sl(),
       getUpcomingAppointmentsUseCase: sl(),
     ),
   );
-
-  // Prescription BLoC
   sl.registerFactory(
     () => PrescriptionBloc(
       createPrescriptionUseCase: sl(),
@@ -163,8 +152,6 @@ Future<void> init() async {
       notificationBloc: sl<NotificationBloc>(),
     ),
   );
-
-  // Notification BLoC
   sl.registerFactory(
     () => NotificationBloc(
       getNotificationsUseCase: sl(),
@@ -176,6 +163,24 @@ Future<void> init() async {
       setupFCMUseCase: sl(),
       saveFCMTokenUseCase: sl(),
       getNotificationsStreamUseCase: sl(),
+    ),
+  );
+  sl.registerFactory(
+    () => RatingBloc(
+      submitDoctorRatingUseCase: sl(),
+      hasPatientRatedAppointmentUseCase: sl(),
+      getDoctorRatingsUseCase: sl(),
+      getDoctorAverageRatingUseCase: sl(),
+    ),
+  );
+  sl.registerFactory(
+    () => DossierMedicalBloc(
+      getDossierMedical: sl(),
+      hasDossierMedical: sl(),
+      addFileToDossier: sl(),
+      addFilesToDossier: sl(),
+      deleteFile: sl(),
+      updateFileDescription: sl(),
     ),
   );
 
@@ -196,12 +201,8 @@ Future<void> init() async {
   sl.registerLazySingleton(() => GetMessagesStreamUseCase(sl()));
   sl.registerLazySingleton(() => SendVerificationCodeUseCase(sl()));
   sl.registerLazySingleton(() => UpdatePasswordDirectUseCase(sl()));
-
-  // Dashboard Use Cases
   sl.registerLazySingleton(() => GetDoctorDashboardStatsUseCase(sl()));
   sl.registerLazySingleton(() => GetUpcomingAppointmentsUseCase(sl()));
-
-  // Prescription Use Cases
   sl.registerLazySingleton(() => CreatePrescriptionUseCase(sl()));
   sl.registerLazySingleton(() => EditPrescriptionUseCase(sl()));
   sl.registerLazySingleton(() => GetPatientPrescriptionsUseCase(sl()));
@@ -209,8 +210,6 @@ Future<void> init() async {
   sl.registerLazySingleton(() => GetPrescriptionByIdUseCase(sl()));
   sl.registerLazySingleton(() => GetPrescriptionByAppointmentIdUseCase(sl()));
   sl.registerLazySingleton(() => UpdatePrescriptionUseCase(sl()));
-
-  // Notification Use Cases
   sl.registerLazySingleton(() => GetNotificationsUseCase(sl()));
   sl.registerLazySingleton(() => SendNotificationUseCase(sl()));
   sl.registerLazySingleton(() => MarkNotificationAsReadUseCase(sl()));
@@ -220,6 +219,17 @@ Future<void> init() async {
   sl.registerLazySingleton(() => SetupFCMUseCase(sl()));
   sl.registerLazySingleton(() => SaveFCMTokenUseCase(sl()));
   sl.registerLazySingleton(() => GetNotificationsStreamUseCase(sl()));
+  sl.registerLazySingleton(() => SubmitDoctorRatingUseCase(sl()));
+  sl.registerLazySingleton(() => HasPatientRatedAppointmentUseCase(sl()));
+  sl.registerLazySingleton(() => GetDoctorRatingsUseCase(sl()));
+  sl.registerLazySingleton(() => GetDoctorAverageRatingUseCase(sl()));
+  sl.registerLazySingleton(() => GetDossierMedical(sl()));
+  sl.registerLazySingleton(() => HasDossierMedical(sl()));
+  sl.registerLazySingleton(() => AddFileToDossier(sl()));
+  sl.registerLazySingleton(() => AddFilesToDossier(sl()));
+  sl.registerLazySingleton(() => DeleteFile(sl()));
+  sl.registerLazySingleton(() => UpdateFileDescription(sl()));
+  sl.registerLazySingleton(() => CheckDoctorAccess(sl()));
 
   // Repositories
   sl.registerLazySingleton<AuthRepository>(
@@ -235,20 +245,21 @@ Future<void> init() async {
   sl.registerLazySingleton<MessagingRepository>(
     () => MessagingRepositoryImpl(remoteDataSource: sl(), networkInfo: sl()),
   );
-
-  // Dashboard Repository
   sl.registerLazySingleton<DashboardRepository>(
     () => DashboardRepositoryImpl(remoteDataSource: sl(), networkInfo: sl()),
   );
-
-  // Prescription Repository
   sl.registerLazySingleton<PrescriptionRepository>(
     () => PrescriptionRepositoryImpl(remoteDataSource: sl(), networkInfo: sl()),
   );
-
-  // Notification Repository
   sl.registerLazySingleton<NotificationRepository>(
     () => NotificationRepositoryImpl(remoteDataSource: sl(), networkInfo: sl()),
+  );
+  sl.registerLazySingleton<RatingRepository>(
+    () => RatingRepositoryImpl(remoteDataSource: sl(), networkInfo: sl()),
+  );
+  sl.registerLazySingleton<DossierMedicalRepository>(
+    () =>
+        DossierMedicalRepositoryImpl(remoteDataSource: sl(), networkInfo: sl()),
   );
 
   // Data Sources
@@ -264,35 +275,53 @@ Future<void> init() async {
     () => AuthLocalDataSourceImpl(sharedPreferences: sl()),
   );
   sl.registerLazySingleton<RendezVousRemoteDataSource>(
-    () =>
-        RendezVousRemoteDataSourceImpl(firestore: sl(), localDataSource: sl(), notificationRemoteDataSource: sl()),
+    () => RendezVousRemoteDataSourceImpl(
+      firestore: sl(),
+      localDataSource: sl(),
+      notificationRemoteDataSource: sl(),
+    ),
   );
   sl.registerLazySingleton<RendezVousLocalDataSource>(
     () => RendezVousLocalDataSourceImpl(sharedPreferences: sl()),
   );
   sl.registerLazySingleton<MessagingRemoteDataSource>(
-    () => MessagingRemoteDataSourceImpl(firestore: sl(), storage: sl(), notificationRemoteDataSource: sl()),
+    () => MessagingRemoteDataSourceImpl(
+      firestore: sl(),
+      storage: sl(),
+      notificationRemoteDataSource: sl(),
+    ),
   );
   sl.registerLazySingleton<MessagingLocalDataSource>(
     () => MessagingLocalDataSourceImpl(),
   );
-
-  // Dashboard DataSource
   sl.registerLazySingleton<DashboardRemoteDataSource>(
     () => DashboardRemoteDataSourceImpl(firestore: sl()),
   );
-
-  // Prescription DataSource
   sl.registerLazySingleton<PrescriptionRemoteDataSource>(
-    () => PrescriptionRemoteDataSourceImpl(firestore: sl(), notificationRemoteDataSource: sl()),
+    () => PrescriptionRemoteDataSourceImpl(
+      firestore: sl(),
+      notificationRemoteDataSource: sl(),
+    ),
   );
-
-  // Notification Data Sources
   sl.registerLazySingleton<NotificationRemoteDataSource>(
     () => NotificationRemoteDataSourceImpl(
       firestore: sl(),
       firebaseMessaging: sl(),
       flutterLocalNotificationsPlugin: sl(),
+    ),
+  );
+  sl.registerLazySingleton<RatingRemoteDataSource>(
+    () => RatingRemoteDataSourceImpl(
+      firestore: sl(),
+      notificationRemoteDataSource: sl(),
+    ),
+  );
+  sl.registerLazySingleton<DossierMedicalRemoteDataSource>(
+    () => DossierMedicalRemoteDataSourceImpl(
+      client: sl(),
+      storage: sl(),
+      firestore: sl(),
+      notificationRemoteDataSource: sl(),
     ),
   );
 
@@ -309,50 +338,7 @@ Future<void> init() async {
   sl.registerLazySingleton<InternetConnectionChecker>(
     () => InternetConnectionChecker.instance,
   );
-
-  // External - FCM and Local Notifications
   sl.registerLazySingleton(() => FirebaseMessaging.instance);
   sl.registerLazySingleton(() => FlutterLocalNotificationsPlugin());
-
-  // Rating feature
-  sl.registerFactory(
-    () => RatingBloc(
-      submitDoctorRatingUseCase: sl(),
-      hasPatientRatedAppointmentUseCase: sl(),
-      getDoctorRatingsUseCase: sl(),
-      getDoctorAverageRatingUseCase: sl(),
-    ),
-  );
-  sl.registerLazySingleton(() => SubmitDoctorRatingUseCase(sl()));
-  sl.registerLazySingleton(() => HasPatientRatedAppointmentUseCase(sl()));
-  sl.registerLazySingleton(() => GetDoctorRatingsUseCase(sl()));
-  sl.registerLazySingleton(() => GetDoctorAverageRatingUseCase(sl()));
-  sl.registerLazySingleton<RatingRepository>(
-    () => RatingRepositoryImpl(remoteDataSource: sl(), networkInfo: sl()),
-  );
-  sl.registerLazySingleton<RatingRemoteDataSource>(
-    () => RatingRemoteDataSourceImpl(firestore: sl(), notificationRemoteDataSource: sl()),
-  );
-
-  // Dossier Medical
-  // BLoC
-  sl.registerFactory(() => DossierMedicalBloc(repository: sl()));
-
-  // Use Cases
-  sl.registerLazySingleton(() => GetDossierMedical(sl()));
-  sl.registerLazySingleton(() => HasDossierMedical(sl()));
-
-  // Repository
-  sl.registerLazySingleton<DossierMedicalRepository>(
-    () =>
-        DossierMedicalRepositoryImpl(remoteDataSource: sl(), networkInfo: sl()),
-  );
-
-  // Data Sources
-  sl.registerLazySingleton<DossierMedicalRemoteDataSource>(
-    () => DossierMedicalRemoteDataSourceImpl(client: http.Client()),
-  );
-
-  // Standalone registration
   sl.registerLazySingleton(() => http.Client());
 }

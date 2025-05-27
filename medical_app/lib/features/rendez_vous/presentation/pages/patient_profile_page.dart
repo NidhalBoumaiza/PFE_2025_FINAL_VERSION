@@ -1,13 +1,23 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:get/get.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../../core/utils/app_colors.dart';
 import '../../../authentication/domain/entities/patient_entity.dart';
 import '../../domain/entities/rendez_vous_entity.dart';
+import '../../../authentication/data/models/user_model.dart';
+import '../../../dossier_medical/presentation/bloc/dossier_medical_bloc.dart';
+import '../../../dossier_medical/presentation/bloc/dossier_medical_event.dart';
+import '../../../dossier_medical/presentation/bloc/dossier_medical_state.dart';
+import '../../../dossier_medical/presentation/pages/dossier_medical_screen.dart';
+import '../../../../injection_container.dart' as di;
+import '../../../../core/utils/navigation_with_transition.dart';
 
 class PatientProfilePage extends StatefulWidget {
   final PatientEntity patient;
@@ -24,28 +34,34 @@ class PatientProfilePage extends StatefulWidget {
 }
 
 class _PatientProfilePageState extends State<PatientProfilePage> {
-  bool _isLoading = true;
-  List<RendezVousEntity> _pastAppointments = [];
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  List<RendezVousEntity> pastAppointments = [];
+  bool isLoading = true;
+  UserModel? currentUser;
 
   @override
   void initState() {
     super.initState();
-    if (widget.pastAppointments != null) {
+    _loadUserData();
+    _loadPastAppointments();
+  }
+
+  Future<void> _loadUserData() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final userJson = prefs.getString('CACHED_USER');
+      if (userJson != null) {
+        final userMap = jsonDecode(userJson) as Map<String, dynamic>;
       setState(() {
-        _pastAppointments = widget.pastAppointments!;
-        _isLoading = false;
+          currentUser = UserModel.fromJson(userMap);
       });
-    } else if (widget.patient.id != null) {
-      _loadPatientAppointments();
-    } else {
-      setState(() {
-        _isLoading = false;
-      });
+      }
+    } catch (e) {
+      print('Error loading user data: $e');
     }
   }
 
-  Future<void> _loadPatientAppointments() async {
+  Future<void> _loadPastAppointments() async {
     try {
       final querySnapshot =
           await _firestore
@@ -81,13 +97,13 @@ class _PatientProfilePageState extends State<PatientProfilePage> {
           }).toList();
 
       setState(() {
-        _pastAppointments = appointments;
-        _isLoading = false;
+        pastAppointments = appointments;
+        isLoading = false;
       });
     } catch (e) {
       print('Error loading patient appointments: $e');
       setState(() {
-        _isLoading = false;
+        isLoading = false;
       });
     }
   }
@@ -136,6 +152,12 @@ class _PatientProfilePageState extends State<PatientProfilePage> {
             // Emergency Contact section (if available)
             _buildEmergencyContactCard(),
 
+            // Medical Files section - only show if doctor has access
+            if (currentUser != null &&
+                currentUser!.role == 'medecin' &&
+                widget.patient.id != null)
+              _buildMedicalFilesSection(),
+
             // Past Appointments
             Padding(
               padding: EdgeInsets.fromLTRB(16.w, 16.h, 16.w, 8.h),
@@ -150,7 +172,7 @@ class _PatientProfilePageState extends State<PatientProfilePage> {
             ),
 
             // Appointments list
-            _isLoading
+            isLoading
                 ? Center(
                   child: Padding(
                     padding: EdgeInsets.symmetric(vertical: 16.h),
@@ -576,8 +598,321 @@ class _PatientProfilePageState extends State<PatientProfilePage> {
     );
   }
 
+  Widget _buildMedicalFilesSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+          child: Text(
+            "Dossier médical",
+            style: GoogleFonts.raleway(
+              fontSize: 18.sp,
+              fontWeight: FontWeight.bold,
+              color: Colors.black87,
+            ),
+          ),
+        ),
+        BlocProvider(
+          create:
+              (context) =>
+                  di.sl<DossierMedicalBloc>()..add(
+                    FetchDossierMedicalEvent(
+                      patientId: widget.patient.id!,
+                      doctorId: currentUser?.id,
+                    ),
+                  ),
+          child: BlocBuilder<DossierMedicalBloc, DossierMedicalState>(
+            builder: (context, state) {
+              if (state is DossierMedicalLoading) {
+                return Card(
+                  margin: EdgeInsets.symmetric(horizontal: 16.w),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  elevation: 2,
+                  child: Padding(
+                    padding: EdgeInsets.all(20.w),
+                    child: Center(
+                      child: CircularProgressIndicator(
+                        color: AppColors.primaryColor,
+                      ),
+                    ),
+                  ),
+                );
+              }
+
+              if (state is DossierMedicalError) {
+                return Card(
+                  margin: EdgeInsets.symmetric(horizontal: 16.w),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  elevation: 2,
+                  child: Padding(
+                    padding: EdgeInsets.all(20.w),
+                    child: Column(
+                      children: [
+                        Icon(
+                          Icons.lock_outline,
+                          size: 48.sp,
+                          color: Colors.red.shade400,
+                        ),
+                        SizedBox(height: 12.h),
+                        Text(
+                          "Accès refusé",
+                          style: GoogleFonts.raleway(
+                            fontSize: 16.sp,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.red.shade600,
+                          ),
+                        ),
+                        SizedBox(height: 8.h),
+                        Text(
+                          "Vous devez avoir un rendez-vous confirmé avec ce patient pour accéder à son dossier médical.",
+                          textAlign: TextAlign.center,
+                          style: GoogleFonts.raleway(
+                            fontSize: 14.sp,
+                            color: Colors.grey.shade600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              }
+
+              if (state is DossierMedicalEmpty) {
+                return Card(
+                  margin: EdgeInsets.symmetric(horizontal: 16.w),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  elevation: 2,
+                  child: Padding(
+                    padding: EdgeInsets.all(20.w),
+                    child: Column(
+                      children: [
+                        Icon(
+                          Icons.folder_open_outlined,
+                          size: 48.sp,
+                          color: Colors.grey.shade400,
+                        ),
+                        SizedBox(height: 12.h),
+                        Text(
+                          "Aucun fichier médical",
+                          style: GoogleFonts.raleway(
+                            fontSize: 16.sp,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.grey.shade600,
+                          ),
+                        ),
+                        SizedBox(height: 8.h),
+                        Text(
+                          "Ce patient n'a pas encore de fichiers dans son dossier médical.",
+                          textAlign: TextAlign.center,
+                          style: GoogleFonts.raleway(
+                            fontSize: 14.sp,
+                            color: Colors.grey.shade500,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              }
+
+              if (state is DossierMedicalLoaded) {
+                return Card(
+                  margin: EdgeInsets.symmetric(horizontal: 16.w),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  elevation: 2,
+                  child: Padding(
+                    padding: EdgeInsets.all(16.w),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Row(
+                              children: [
+                                Icon(
+                                  Icons.folder_outlined,
+                                  color: AppColors.primaryColor,
+                                  size: 24.sp,
+                                ),
+                                SizedBox(width: 8.w),
+                                Text(
+                                  "Fichiers médicaux",
+                                  style: GoogleFonts.raleway(
+                                    fontSize: 16.sp,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.black87,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            GestureDetector(
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder:
+                                        (context) => BlocProvider(
+                                          create:
+                                              (context) =>
+                                                  di.sl<DossierMedicalBloc>()
+                                                    ..add(
+                                                      FetchDossierMedicalEvent(
+                                                        patientId:
+                                                            widget.patient.id!,
+                                                        doctorId:
+                                                            currentUser?.id,
+                                                      ),
+                                                    ),
+                                          child: DossierMedicalScreen(
+                                            patientId: widget.patient.id!,
+                                          ),
+                                        ),
+                                  ),
+                                );
+                              },
+                              child: Container(
+                                padding: EdgeInsets.symmetric(
+                                  horizontal: 12.w,
+                                  vertical: 6.h,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: AppColors.primaryColor.withOpacity(
+                                    0.1,
+                                  ),
+                                  borderRadius: BorderRadius.circular(20.r),
+                                ),
+                                child: Text(
+                                  "Voir tout",
+                                  style: GoogleFonts.raleway(
+                                    fontSize: 12.sp,
+                                    fontWeight: FontWeight.w600,
+                                    color: AppColors.primaryColor,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        SizedBox(height: 12.h),
+                        Text(
+                          "${state.dossier.files.length} fichier(s) disponible(s)",
+                          style: GoogleFonts.raleway(
+                            fontSize: 14.sp,
+                            color: Colors.grey.shade600,
+                          ),
+                        ),
+                        SizedBox(height: 12.h),
+                        // Show first 3 files as preview
+                        ...state.dossier.files.take(3).map((file) {
+                          return Container(
+                            margin: EdgeInsets.only(bottom: 8.h),
+                            padding: EdgeInsets.all(12.w),
+                            decoration: BoxDecoration(
+                              color: Colors.grey.shade50,
+                              borderRadius: BorderRadius.circular(8.r),
+                              border: Border.all(
+                                color: Colors.grey.shade200,
+                                width: 1,
+                              ),
+                            ),
+                            child: Row(
+                              children: [
+                                Icon(
+                                  _getFileIcon(file.mimetype),
+                                  color: AppColors.primaryColor,
+                                  size: 20.sp,
+                                ),
+                                SizedBox(width: 12.w),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        file.originalName,
+                                        style: GoogleFonts.raleway(
+                                          fontSize: 14.sp,
+                                          fontWeight: FontWeight.w600,
+                                          color: Colors.black87,
+                                        ),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                      if (file.description.isNotEmpty) ...[
+                                        SizedBox(height: 2.h),
+                                        Text(
+                                          file.description,
+                                          style: GoogleFonts.raleway(
+                                            fontSize: 12.sp,
+                                            color: Colors.grey.shade600,
+                                          ),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ],
+                                    ],
+                                  ),
+                                ),
+                                Text(
+                                  DateFormat('dd/MM/yy').format(file.createdAt),
+                                  style: GoogleFonts.raleway(
+                                    fontSize: 12.sp,
+                                    color: Colors.grey.shade500,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          );
+                        }).toList(),
+                        if (state.dossier.files.length > 3) ...[
+                          SizedBox(height: 8.h),
+                          Center(
+                            child: Text(
+                              "et ${state.dossier.files.length - 3} autre(s) fichier(s)...",
+                              style: GoogleFonts.raleway(
+                                fontSize: 12.sp,
+                                color: Colors.grey.shade500,
+                                fontStyle: FontStyle.italic,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                );
+              }
+
+              return SizedBox.shrink();
+            },
+          ),
+        ),
+      ],
+    );
+  }
+
+  IconData _getFileIcon(String mimetype) {
+    if (mimetype.startsWith('image/')) {
+      return Icons.image_outlined;
+    } else if (mimetype == 'application/pdf') {
+      return Icons.picture_as_pdf_outlined;
+    } else {
+      return Icons.insert_drive_file_outlined;
+    }
+  }
+
   Widget _buildPastAppointmentsList() {
-    if (_pastAppointments.isEmpty) {
+    if (pastAppointments.isEmpty) {
       return Center(
         child: Padding(
           padding: EdgeInsets.symmetric(vertical: 20.h),
@@ -603,9 +938,9 @@ class _PatientProfilePageState extends State<PatientProfilePage> {
       shrinkWrap: true,
       physics: NeverScrollableScrollPhysics(),
       padding: EdgeInsets.all(16.w),
-      itemCount: _pastAppointments.length,
+      itemCount: pastAppointments.length,
       itemBuilder: (context, index) {
-        final appointment = _pastAppointments[index];
+        final appointment = pastAppointments[index];
         return Card(
           margin: EdgeInsets.only(bottom: 12.h),
           shape: RoundedRectangleBorder(

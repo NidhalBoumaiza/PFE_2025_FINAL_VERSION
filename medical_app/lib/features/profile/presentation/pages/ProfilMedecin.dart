@@ -12,6 +12,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../../authentication/presentation/pages/login_screen.dart';
 import 'blocs/BLoC update profile/update_user_bloc.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:medical_app/features/settings/presentation/pages/SettingsPage.dart';
 
 class ProfilMedecin extends StatefulWidget {
   const ProfilMedecin({Key? key}) : super(key: key);

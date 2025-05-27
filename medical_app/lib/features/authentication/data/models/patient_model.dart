@@ -1,6 +1,7 @@
-import '../../domain/entities/patient_entity.dart';
-import './user_model.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:medical_app/features/dossier_medical/data/models/medical_file_model.dart';
+import '../../domain/entities/patient_entity.dart';
+import 'user_model.dart';
 
 class PatientModel extends UserModel {
   final String antecedent;
@@ -10,6 +11,7 @@ class PatientModel extends UserModel {
   final List<String>? allergies;
   final List<String>? chronicDiseases;
   final Map<String, String?>? emergencyContact;
+  final List<MedicalFileModel>? dossierFiles;
 
   PatientModel({
     String? id,
@@ -33,40 +35,39 @@ class PatientModel extends UserModel {
     this.allergies,
     this.chronicDiseases,
     this.emergencyContact,
+    this.dossierFiles,
   }) : super(
-         id: id,
-         name: name,
-         lastName: lastName,
-         email: email,
-         role: role,
-         gender: gender,
-         phoneNumber: phoneNumber,
-         dateOfBirth: dateOfBirth,
-         accountStatus: accountStatus,
-         verificationCode: verificationCode,
-         validationCodeExpiresAt: validationCodeExpiresAt,
-         fcmToken: fcmToken,
-         address: address,
-         location: location,
-       );
+    id: id,
+    name: name,
+    lastName: lastName,
+    email: email,
+    role: role,
+    gender: gender,
+    phoneNumber: phoneNumber,
+    dateOfBirth: dateOfBirth,
+    accountStatus: accountStatus,
+    verificationCode: verificationCode,
+    validationCodeExpiresAt: validationCodeExpiresAt,
+    fcmToken: fcmToken,
+    address: address,
+    location: location,
+  );
 
   factory PatientModel.fromJson(Map<String, dynamic> json) {
-    // Handle potential null or wrong types for each field
     final String id = json['id'] is String ? json['id'] as String : '';
     final String name = json['name'] is String ? json['name'] as String : '';
     final String lastName =
-        json['lastName'] is String ? json['lastName'] as String : '';
+    json['lastName'] is String ? json['lastName'] as String : '';
     final String email = json['email'] is String ? json['email'] as String : '';
     final String role =
-        json['role'] is String ? json['role'] as String : 'patient';
+    json['role'] is String ? json['role'] as String : 'patient';
     final String gender =
-        json['gender'] is String ? json['gender'] as String : 'Homme';
+    json['gender'] is String ? json['gender'] as String : 'Homme';
     final String phoneNumber =
-        json['phoneNumber'] is String ? json['phoneNumber'] as String : '';
+    json['phoneNumber'] is String ? json['phoneNumber'] as String : '';
     final String antecedent =
-        json['antecedent'] is String ? json['antecedent'] as String : '';
+    json['antecedent'] is String ? json['antecedent'] as String : '';
 
-    // Handle nullable fields with proper type checking
     DateTime? dateOfBirth;
     if (json['dateOfBirth'] is String &&
         (json['dateOfBirth'] as String).isNotEmpty) {
@@ -75,6 +76,8 @@ class PatientModel extends UserModel {
       } catch (_) {
         dateOfBirth = null;
       }
+    } else if (json['dateOfBirth'] is Timestamp) {
+      dateOfBirth = (json['dateOfBirth'] as Timestamp).toDate();
     }
 
     bool? accountStatus;
@@ -108,6 +111,8 @@ class PatientModel extends UserModel {
       } catch (_) {
         validationCodeExpiresAt = null;
       }
+    } else if (json['validationCodeExpiresAt'] is Timestamp) {
+      validationCodeExpiresAt = (json['validationCodeExpiresAt'] as Timestamp).toDate();
     }
 
     String? fcmToken;
@@ -115,12 +120,11 @@ class PatientModel extends UserModel {
       fcmToken = json['fcmToken'] as String;
     }
 
-    // Handle address and location
     Map<String, String?>? address;
     if (json['address'] is Map) {
       address = Map<String, String?>.from(
         (json['address'] as Map).map(
-          (key, value) => MapEntry(key.toString(), value?.toString()),
+              (key, value) => MapEntry(key.toString(), value?.toString()),
         ),
       );
     }
@@ -130,7 +134,6 @@ class PatientModel extends UserModel {
       location = Map<String, dynamic>.from(json['location'] as Map);
     }
 
-    // Handle new patient-specific fields
     String? bloodType;
     if (json['bloodType'] is String) {
       bloodType = json['bloodType'] as String;
@@ -182,9 +185,16 @@ class PatientModel extends UserModel {
     if (json['emergencyContact'] is Map) {
       emergencyContact = Map<String, String?>.from(
         (json['emergencyContact'] as Map).map(
-          (key, value) => MapEntry(key.toString(), value?.toString()),
+              (key, value) => MapEntry(key.toString(), value?.toString()),
         ),
       );
+    }
+
+    List<MedicalFileModel>? dossierFiles;
+    if (json['dossierFiles'] is List) {
+      dossierFiles = (json['dossierFiles'] as List)
+          .map((file) => MedicalFileModel.fromJson(file as Map<String, dynamic>))
+          .toList();
     }
 
     return PatientModel(
@@ -209,17 +219,15 @@ class PatientModel extends UserModel {
       allergies: allergies,
       chronicDiseases: chronicDiseases,
       emergencyContact: emergencyContact,
+      dossierFiles: dossierFiles,
     );
   }
 
-  /// Creates a valid PatientModel from potentially corrupted document data
-  /// This can help recover accounts when data is malformed
   static PatientModel recoverFromCorruptDoc(
-    Map<String, dynamic>? docData,
-    String userId,
-    String userEmail,
-  ) {
-    // Default values for required fields if missing or corrupted
+      Map<String, dynamic>? docData,
+      String userId,
+      String userEmail,
+      ) {
     final Map<String, dynamic> safeData = {
       'id': userId,
       'name': '',
@@ -232,7 +240,6 @@ class PatientModel extends UserModel {
       'accountStatus': true,
     };
 
-    // Use existing data when available and valid
     if (docData != null) {
       if (docData['name'] is String) safeData['name'] = docData['name'];
       if (docData['lastName'] is String)
@@ -244,60 +251,43 @@ class PatientModel extends UserModel {
         safeData['fcmToken'] = docData['fcmToken'];
       if (docData['antecedent'] is String)
         safeData['antecedent'] = docData['antecedent'];
-
-      // Handle address and location
       if (docData['address'] is Map) {
         safeData['address'] = docData['address'];
       }
       if (docData['location'] is Map) {
         safeData['location'] = docData['location'];
       }
-
-      // Handle new patient-specific fields
       if (docData['bloodType'] is String) {
         safeData['bloodType'] = docData['bloodType'];
       }
-
-      // Handle height
       if (docData['height'] is double || docData['height'] is int) {
         safeData['height'] = docData['height'];
       } else if (docData['height'] is String &&
           (docData['height'] as String).isNotEmpty) {
         try {
           safeData['height'] = double.parse(docData['height'] as String);
-        } catch (_) {
-          // Invalid height format, don't add to safeData
-        }
+        } catch (_) {}
       }
-
-      // Handle weight
       if (docData['weight'] is double || docData['weight'] is int) {
         safeData['weight'] = docData['weight'];
       } else if (docData['weight'] is String &&
           (docData['weight'] as String).isNotEmpty) {
         try {
           safeData['weight'] = double.parse(docData['weight'] as String);
-        } catch (_) {
-          // Invalid weight format, don't add to safeData
-        }
+        } catch (_) {}
       }
-
-      // Handle allergies
       if (docData['allergies'] is List) {
         safeData['allergies'] = docData['allergies'];
       }
-
-      // Handle chronicDiseases
       if (docData['chronicDiseases'] is List) {
         safeData['chronicDiseases'] = docData['chronicDiseases'];
       }
-
-      // Handle emergencyContact
       if (docData['emergencyContact'] is Map) {
         safeData['emergencyContact'] = docData['emergencyContact'];
       }
-
-      // Handle dateOfBirth properly
+      if (docData['dossierFiles'] is List) {
+        safeData['dossierFiles'] = docData['dossierFiles'];
+      }
       if (docData['dateOfBirth'] is String &&
           (docData['dateOfBirth'] as String).isNotEmpty) {
         try {
@@ -305,16 +295,12 @@ class PatientModel extends UserModel {
             docData['dateOfBirth'] as String,
           );
           safeData['dateOfBirth'] = dateOfBirth.toIso8601String();
-        } catch (_) {
-          // Invalid date format, don't add to safeData
-        }
+        } catch (_) {}
       } else if (docData['dateOfBirth'] is Timestamp) {
         try {
           DateTime dateOfBirth = (docData['dateOfBirth'] as Timestamp).toDate();
           safeData['dateOfBirth'] = dateOfBirth.toIso8601String();
-        } catch (_) {
-          // Invalid timestamp, don't add to safeData
-        }
+        } catch (_) {}
       }
     }
 
@@ -325,7 +311,6 @@ class PatientModel extends UserModel {
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = super.toJson();
     data['antecedent'] = antecedent;
-
     if (bloodType != null) {
       data['bloodType'] = bloodType;
     }
@@ -344,7 +329,9 @@ class PatientModel extends UserModel {
     if (emergencyContact != null) {
       data['emergencyContact'] = emergencyContact;
     }
-
+    if (dossierFiles != null) {
+      data['dossierFiles'] = dossierFiles!.map((file) => file.toJson()).toList();
+    }
     return data;
   }
 
@@ -362,6 +349,7 @@ class PatientModel extends UserModel {
       accountStatus: accountStatus,
       verificationCode: verificationCode,
       validationCodeExpiresAt: validationCodeExpiresAt,
+      fcmToken: fcmToken,
       address: address,
       location: location,
       bloodType: bloodType,
@@ -370,6 +358,7 @@ class PatientModel extends UserModel {
       allergies: allergies,
       chronicDiseases: chronicDiseases,
       emergencyContact: emergencyContact,
+      dossierFiles: dossierFiles?.map((file) => file.toEntity()).toList(),
     );
   }
 
@@ -396,6 +385,7 @@ class PatientModel extends UserModel {
     List<String>? allergies,
     List<String>? chronicDiseases,
     Map<String, String?>? emergencyContact,
+    List<MedicalFileModel>? dossierFiles,
   }) {
     return PatientModel(
       id: id ?? this.id,
@@ -409,7 +399,7 @@ class PatientModel extends UserModel {
       accountStatus: accountStatus ?? this.accountStatus,
       verificationCode: verificationCode ?? this.verificationCode,
       validationCodeExpiresAt:
-          validationCodeExpiresAt ?? this.validationCodeExpiresAt,
+      validationCodeExpiresAt ?? this.validationCodeExpiresAt,
       antecedent: antecedent ?? this.antecedent,
       fcmToken: fcmToken ?? this.fcmToken,
       address: address ?? this.address,
@@ -420,6 +410,7 @@ class PatientModel extends UserModel {
       allergies: allergies ?? this.allergies,
       chronicDiseases: chronicDiseases ?? this.chronicDiseases,
       emergencyContact: emergencyContact ?? this.emergencyContact,
+      dossierFiles: dossierFiles ?? this.dossierFiles,
     );
   }
 }

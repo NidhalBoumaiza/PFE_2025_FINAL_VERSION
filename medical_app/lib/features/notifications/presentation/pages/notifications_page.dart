@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:medical_app/core/utils/app_colors.dart';
 import 'package:medical_app/features/authentication/data/data%20sources/auth_local_data_source.dart';
@@ -31,10 +31,11 @@ class _NotificationsPageState extends State<NotificationsPage> {
   @override
   void initState() {
     super.initState();
-    _loadUserData();
+    _loadCurrentUser();
+    _refreshNotifications();
   }
 
-  Future<void> _loadUserData() async {
+  Future<void> _loadCurrentUser() async {
     try {
       final authLocalDataSource = di.sl<AuthLocalDataSource>();
       final user = await authLocalDataSource.getUser();
@@ -69,6 +70,14 @@ class _NotificationsPageState extends State<NotificationsPage> {
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text('error_loading_user_data'.tr)));
+    }
+  }
+
+  Future<void> _refreshNotifications() async {
+    if (_currentUser.id != null) {
+      context.read<NotificationBloc>().add(
+        GetNotificationsEvent(userId: _currentUser.id!),
+      );
     }
   }
 
@@ -600,6 +609,21 @@ class _NotificationsPageState extends State<NotificationsPage> {
         color = Colors.red;
         label = 'rejected'.tr;
         break;
+      case NotificationType.appointmentCanceled:
+        icon = Icons.event_busy_rounded;
+        color = Colors.orange;
+        label = 'canceled'.tr;
+        break;
+      case NotificationType.appointmentAssigned:
+        icon = Icons.assignment_rounded;
+        color = Colors.blue;
+        label = 'assigned'.tr;
+        break;
+      case NotificationType.appointmentReminder:
+        icon = Icons.alarm_rounded;
+        color = Colors.orange;
+        label = 'reminder'.tr;
+        break;
       case NotificationType.newRating:
         icon = Icons.star_rounded;
         color = Colors.amber;
@@ -610,24 +634,41 @@ class _NotificationsPageState extends State<NotificationsPage> {
         color = AppColors.primaryColor;
         label = 'prescription'.tr;
         break;
-      case NotificationType.appointmentAssigned:
-        // TODO: Handle this case.
-        throw UnimplementedError();
       case NotificationType.prescriptionUpdated:
-        // TODO: Handle this case.
-        throw UnimplementedError();
-      case NotificationType.newMessage:
-        // TODO: Handle this case.
-        throw UnimplementedError();
-      case NotificationType.appointmentCanceled:
-        // TODO: Handle this case.
-        throw UnimplementedError();
+        icon = Icons.update_rounded;
+        color = AppColors.primaryColor;
+        label = 'updated'.tr;
+        break;
       case NotificationType.prescriptionCanceled:
-        // TODO: Handle this case.
-        throw UnimplementedError();
+        icon = Icons.cancel_rounded;
+        color = Colors.red;
+        label = 'canceled'.tr;
+        break;
       case NotificationType.prescriptionRefilled:
-        // TODO: Handle this case.
-        throw UnimplementedError();
+        icon = Icons.refresh_rounded;
+        color = Colors.green;
+        label = 'refilled'.tr;
+        break;
+      case NotificationType.newMessage:
+        icon = Icons.message_rounded;
+        color = Colors.purple;
+        label = 'message'.tr;
+        break;
+      case NotificationType.dossierUpdate:
+        icon = Icons.folder_rounded;
+        color = Colors.teal;
+        label = 'dossier'.tr;
+        break;
+      case NotificationType.medicationReminder:
+        icon = Icons.medication_rounded;
+        color = Colors.green;
+        label = 'medication'.tr;
+        break;
+      case NotificationType.emergencyAlert:
+        icon = Icons.emergency_rounded;
+        color = Colors.red;
+        label = 'emergency'.tr;
+        break;
     }
 
     return Column(
@@ -773,7 +814,8 @@ class _NotificationsPageState extends State<NotificationsPage> {
     // Get patient information from notification data
     String patientId = notification.senderId;
     String patientName = '';
-    if (notification.data != null && notification.data!['patientName'] != null) {
+    if (notification.data != null &&
+        notification.data!['patientName'] != null) {
       patientName = notification.data!['patientName'];
     }
 
@@ -820,7 +862,8 @@ class _NotificationsPageState extends State<NotificationsPage> {
     // Get patient information from notification data
     String patientId = notification.senderId;
     String patientName = '';
-    if (notification.data != null && notification.data!['patientName'] != null) {
+    if (notification.data != null &&
+        notification.data!['patientName'] != null) {
       patientName = notification.data!['patientName'];
     }
 

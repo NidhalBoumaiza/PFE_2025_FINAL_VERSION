@@ -1,37 +1,45 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dartz/dartz.dart';
-import 'package:http/http.dart' as http;
-import 'package:http_parser/http_parser.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:medical_app/constants.dart';
 import 'package:medical_app/core/error/exceptions.dart';
-import '../models/dossier_medical_model.dart';
+import 'package:medical_app/features/dossier_medical/data/models/dossier_medical_model.dart';
+import 'package:medical_app/features/dossier_medical/data/models/medical_file_model.dart';
+import 'package:medical_app/features/notifications/data/datasources/notification_remote_datasource.dart';
+import 'package:medical_app/features/notifications/utils/notification_utils.dart';
 import 'package:path/path.dart' as path;
-import 'package:firebase_storage/firebase_storage.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:uuid/uuid.dart';
-import '../models/medical_file_model.dart';
+import 'package:http/http.dart' as http;
 
 abstract class DossierMedicalRemoteDataSource {
-  Future<DossierMedicalModel> getDossierMedical(String patientId);
-  Future<DossierMedicalModel> addFileToDossier(
-    String patientId,
-    File file,
-    String description,
-  );
-  Future<DossierMedicalModel> addFilesToDossier(
-    String patientId,
-    List<File> files,
-    Map<String, String> descriptions,
-  );
-  Future<Unit> deleteFile(String patientId, String fileId);
-  Future<Unit> updateFileDescription(
-    String patientId,
-    String fileId,
-    String description,
-  );
-  Future<bool> hasDossierMedical(String patientId);
+  Future<DossierMedicalModel> getDossierMedical({
+    required String patientId,
+    String? doctorId,
+  });
+  Future<DossierMedicalModel> addFileToDossier({
+    required String patientId,
+    required File file,
+    required String description,
+  });
+  Future<DossierMedicalModel> addFilesToDossier({
+    required String patientId,
+    required List<File> files,
+    required Map<String, String> descriptions,
+  });
+  Future<Unit> deleteFile({required String patientId, required String fileId});
+  Future<Unit> updateFileDescription({
+    required String patientId,
+    required String fileId,
+    required String description,
+  });
+  Future<bool> hasDossierMedical({required String patientId});
+  Future<bool> checkDoctorAccessToPatientFiles({
+    required String doctorId,
+    required String patientId,
+  });
 }
 
 class DossierMedicalRemoteDataSourceImpl
@@ -39,70 +47,69 @@ class DossierMedicalRemoteDataSourceImpl
   final http.Client client;
   final FirebaseStorage storage;
   final FirebaseFirestore firestore;
+  final NotificationRemoteDataSource notificationRemoteDataSource;
   final String baseUrl = AppConstants.dossierMedicalEndpoint;
-  final uuid = Uuid();
+  final Uuid uuid = Uuid();
 
   DossierMedicalRemoteDataSourceImpl({
     http.Client? client,
     FirebaseStorage? storage,
     FirebaseFirestore? firestore,
+    required this.notificationRemoteDataSource,
   }) : this.client = client ?? http.Client(),
        this.storage = storage ?? FirebaseStorage.instance,
        this.firestore = firestore ?? FirebaseFirestore.instance;
 
   @override
-  Future<DossierMedicalModel> getDossierMedical(String patientId) async {
+  Future<DossierMedicalModel> getDossierMedical({
+    required String patientId,
+    String? doctorId,
+  }) async {
     try {
-      // Get dossier document from Firestore
-      final dossierDoc = await firestore
-          .collection('dossiers_medicaux')
-          .doc(patientId)
-          .get();
-
-      if (dossierDoc.exists) {
-        // Get files collection
-        final filesSnapshot = await firestore
-            .collection('dossiers_medicaux')
-            .doc(patientId)
-            .collection('files')
-            .orderBy('createdAt', descending: true)
-            .get();
-
-        // Create the dossier model
-        final dossierData = dossierDoc.data() ?? {};
-        final List<MedicalFileModel> files = [];
-
-        for (var fileDoc in filesSnapshot.docs) {
-          final fileData = fileDoc.data();
-          files.add(MedicalFileModel.fromJson({
-            'id': fileDoc.id,
-            ...fileData,
-          }));
-        }
-
-        return DossierMedicalModel(
-          id: dossierDoc.id,
+      // If doctorId is provided, check if doctor has access to patient files
+      if (doctorId != null) {
+        final hasAccess = await checkDoctorAccessToPatientFiles(
+          doctorId: doctorId,
           patientId: patientId,
-          files: files,
-          createdAt: (dossierData['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
-          updatedAt: (dossierData['updatedAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
         );
-      } else {
-        // Create empty dossier if it doesn't exist
-        return DossierMedicalModel.empty(patientId);
+        if (!hasAccess) {
+          throw ServerException(
+            'Access denied: Doctor does not have confirmed appointments with this patient',
+          );
+        }
       }
+
+      final patientDoc =
+          await firestore.collection('patients').doc(patientId).get();
+
+      if (!patientDoc.exists) {
+        return DossierMedicalModel.empty();
+      }
+
+      final patientData = patientDoc.data() ?? {};
+      final List<MedicalFileModel> files =
+          patientData['dossierFiles'] != null
+              ? List<MedicalFileModel>.from(
+                (patientData['dossierFiles'] as List).map(
+                  (file) => MedicalFileModel.fromJson(file),
+                ),
+              )
+              : [];
+
+      return DossierMedicalModel(files: files);
+    } on FirebaseException catch (e) {
+      throw ServerException('Firestore error: ${e.message}');
     } catch (e) {
-      print('Error getting dossier medical: $e');
       throw ServerException('Failed to get medical dossier: $e');
     }
   }
 
   @override
-  Future<DossierMedicalModel> addFileToDossier(
-    String patientId,
-    File file,
-    String description,
-  ) async {
+  Future<DossierMedicalModel> addFileToDossier({
+    required String patientId,
+    required File file,
+    required String description,
+  }) async {
     try {
       // 1. Upload file to Firebase Storage
       final fileId = uuid.v4();
@@ -110,180 +117,320 @@ class DossierMedicalRemoteDataSourceImpl
       final fileName = '$fileId$fileExtension';
       final originalName = path.basename(file.path);
       final mimeType = _getMimeType(fileExtension.replaceAll('.', ''));
-      
-      // Create storage reference
-      final storageRef = storage.ref().child('dossiers_medicaux/$patientId/$fileName');
-      
-      // Set metadata
+
+      final storageRef = storage.ref().child(
+        'dossiers_medicaux/$patientId/$fileName',
+      );
       final metadata = SettableMetadata(
         contentType: mimeType,
-        customMetadata: {
-          'originalName': originalName,
-          'patientId': patientId,
-        },
+        customMetadata: {'originalName': originalName, 'patientId': patientId},
       );
-      
-      // Upload file
+
       final uploadTask = storageRef.putFile(file, metadata);
-      
-      // Wait for upload to complete
       final snapshot = await uploadTask;
-      
-      // Get download URL
       final downloadUrl = await snapshot.ref.getDownloadURL();
-      
-      // 2. Create or update dossier document in Firestore
-      final dossierRef = firestore.collection('dossiers_medicaux').doc(patientId);
-      final now = DateTime.now();
-      
-      await dossierRef.set({
-        'patientId': patientId,
-        'updatedAt': now,
-        'createdAt': FieldValue.serverTimestamp(),
+
+      // 2. Create file metadata
+      final fileData = MedicalFileModel(
+        id: fileId,
+        filename: fileName,
+        originalName: originalName,
+        path: downloadUrl,
+        mimetype: mimeType,
+        size: file.lengthSync(),
+        description: description,
+        createdAt: DateTime.now(),
+      );
+
+      // 3. Add file to dossierFiles array
+      await firestore.collection('patients').doc(patientId).set({
+        'dossierFiles': FieldValue.arrayUnion([fileData.toJson()]),
       }, SetOptions(merge: true));
-      
-      // 3. Add file document to files subcollection
-      final fileData = {
-        'filename': fileName,
-        'originalName': originalName,
-        'path': downloadUrl,
-        'mimetype': mimeType,
-        'size': file.lengthSync(),
-        'description': description,
-        'createdAt': now,
-      };
-      
-      await dossierRef.collection('files').doc(fileId).set(fileData);
-      
-      // 4. Return updated dossier
-      return getDossierMedical(patientId);
+
+      // 4. Send notification to medecin
+      await _sendNotification(
+        patientId: patientId,
+        title: 'New File Uploaded',
+        body: 'A new file "$originalName" was added to the patient\'s dossier.',
+        fileId: fileId,
+        fileUrl: downloadUrl,
+        fileName: originalName,
+      );
+
+      // 5. Return updated dossier
+      final currentFiles = await getDossierMedical(patientId: patientId);
+      return DossierMedicalModel(
+        files: List<MedicalFileModel>.from(currentFiles.files)..add(fileData),
+      );
+    } on FirebaseException catch (e) {
+      throw ServerException('Firestore/Storage error: ${e.message}');
     } catch (e) {
-      print('Error adding file to dossier: $e');
       throw ServerException('Failed to add file to dossier: $e');
     }
   }
 
   @override
-  Future<DossierMedicalModel> addFilesToDossier(
-    String patientId,
-    List<File> files,
-    Map<String, String> descriptions,
-  ) async {
+  Future<DossierMedicalModel> addFilesToDossier({
+    required String patientId,
+    required List<File> files,
+    required Map<String, String> descriptions,
+  }) async {
     try {
-      // Process each file
+      final List<MedicalFileModel> newFiles = [];
       for (var file in files) {
-        final fileName = path.basename(file.path);
-        final description = descriptions[fileName] ?? '';
-        
-        // Upload each file individually
-        await addFileToDossier(patientId, file, description);
+        final fileId = uuid.v4();
+        final fileExtension = path.extension(file.path);
+        final fileName = '$fileId$fileExtension';
+        final originalName = path.basename(file.path);
+        final mimeType = _getMimeType(fileExtension.replaceAll('.', ''));
+
+        final storageRef = storage.ref().child(
+          'dossiers_medicaux/$patientId/$fileName',
+        );
+        final metadata = SettableMetadata(
+          contentType: mimeType,
+          customMetadata: {
+            'originalName': originalName,
+            'patientId': patientId,
+          },
+        );
+        final uploadTask = storageRef.putFile(file, metadata);
+        final snapshot = await uploadTask;
+        final downloadUrl = await snapshot.ref.getDownloadURL();
+
+        final fileData = MedicalFileModel(
+          id: fileId,
+          filename: fileName,
+          originalName: originalName,
+          path: downloadUrl,
+          mimetype: mimeType,
+          size: file.lengthSync(),
+          description: descriptions[originalName] ?? '',
+          createdAt: DateTime.now(),
+        );
+        newFiles.add(fileData);
       }
-      
-      // Return the updated dossier
-      return getDossierMedical(patientId);
+
+      // Add all files to dossierFiles array
+      await firestore.collection('patients').doc(patientId).set({
+        'dossierFiles': FieldValue.arrayUnion(
+          newFiles.map((file) => file.toJson()).toList(),
+        ),
+      }, SetOptions(merge: true));
+
+      // Send notification to medecin
+      await _sendNotification(
+        patientId: patientId,
+        title: 'Multiple Files Uploaded',
+        body:
+            '${newFiles.length} new files were added to the patient\'s dossier.',
+        fileId: null,
+        fileUrl: null,
+        fileName: null,
+      );
+
+      // Return updated dossier
+      final currentFiles = await getDossierMedical(patientId: patientId);
+      return DossierMedicalModel(
+        files: List<MedicalFileModel>.from(currentFiles.files)
+          ..addAll(newFiles),
+      );
+    } on FirebaseException catch (e) {
+      throw ServerException('Firestore/Storage error: ${e.message}');
     } catch (e) {
-      print('Error adding multiple files to dossier: $e');
       throw ServerException('Failed to add multiple files to dossier: $e');
     }
   }
 
   @override
-  Future<Unit> deleteFile(String patientId, String fileId) async {
+  Future<Unit> deleteFile({
+    required String patientId,
+    required String fileId,
+  }) async {
     try {
-      // 1. Get the file document to get the filename
-      final fileDoc = await firestore
-          .collection('dossiers_medicaux')
-          .doc(patientId)
-          .collection('files')
-          .doc(fileId)
-          .get();
-      
-      if (!fileDoc.exists) {
+      final patientDoc =
+          await firestore.collection('patients').doc(patientId).get();
+
+      if (!patientDoc.exists || patientDoc.data()?['dossierFiles'] == null) {
         throw ServerException('File not found');
       }
-      
-      final fileData = fileDoc.data()!;
-      final fileName = fileData['filename'] as String;
-      
-      // 2. Delete the file from Firebase Storage
-      final storageRef = storage.ref().child('dossiers_medicaux/$patientId/$fileName');
+
+      final dossierFiles =
+          (patientDoc.data()!['dossierFiles'] as List)
+              .map((file) => MedicalFileModel.fromJson(file))
+              .toList();
+
+      final fileToDelete = dossierFiles.firstWhere(
+        (file) => file.id == fileId,
+        orElse: () => throw ServerException('File not found'),
+      );
+
+      final storageRef = storage.ref().child(
+        'dossiers_medicaux/$patientId/${fileToDelete.filename}',
+      );
       await storageRef.delete();
-      
-      // 3. Delete the file document from Firestore
-      await firestore
-          .collection('dossiers_medicaux')
-          .doc(patientId)
-          .collection('files')
-          .doc(fileId)
-          .delete();
-      
-      // 4. Update the dossier's updatedAt field
-      await firestore
-          .collection('dossiers_medicaux')
-          .doc(patientId)
-          .update({'updatedAt': FieldValue.serverTimestamp()});
-      
+
+      await firestore.collection('patients').doc(patientId).update({
+        'dossierFiles': FieldValue.arrayRemove([fileToDelete.toJson()]),
+      });
+
       return unit;
+    } on FirebaseException catch (e) {
+      throw ServerException('Firestore/Storage error: ${e.message}');
     } catch (e) {
-      print('Error deleting file: $e');
       throw ServerException('Failed to delete file: $e');
     }
   }
 
   @override
-  Future<Unit> updateFileDescription(
-    String patientId,
-    String fileId,
-    String description,
-  ) async {
+  Future<Unit> updateFileDescription({
+    required String patientId,
+    required String fileId,
+    required String description,
+  }) async {
     try {
-      // Update the file document in Firestore
-      await firestore
-          .collection('dossiers_medicaux')
-          .doc(patientId)
-          .collection('files')
-          .doc(fileId)
-          .update({
-        'description': description,
+      final patientDoc =
+          await firestore.collection('patients').doc(patientId).get();
+
+      if (!patientDoc.exists || patientDoc.data()?['dossierFiles'] == null) {
+        throw ServerException('File not found');
+      }
+
+      final dossierFiles =
+          (patientDoc.data()!['dossierFiles'] as List)
+              .map((file) => MedicalFileModel.fromJson(file))
+              .toList();
+
+      final fileIndex = dossierFiles.indexWhere((file) => file.id == fileId);
+      if (fileIndex == -1) {
+        throw ServerException('File not found');
+      }
+
+      final fileToUpdate = dossierFiles[fileIndex];
+      final updatedFile = MedicalFileModel(
+        id: fileToUpdate.id,
+        filename: fileToUpdate.filename,
+        originalName: fileToUpdate.originalName,
+        path: fileToUpdate.path,
+        mimetype: fileToUpdate.mimetype,
+        size: fileToUpdate.size,
+        description: description,
+        createdAt: fileToUpdate.createdAt,
+      );
+
+      await firestore.collection('patients').doc(patientId).update({
+        'dossierFiles.$fileIndex': updatedFile.toJson(),
       });
-      
-      // Update the dossier's updatedAt field
-      await firestore
-          .collection('dossiers_medicaux')
-          .doc(patientId)
-          .update({'updatedAt': FieldValue.serverTimestamp()});
-      
+
       return unit;
+    } on FirebaseException catch (e) {
+      throw ServerException('Firestore error: ${e.message}');
     } catch (e) {
-      print('Error updating file description: $e');
       throw ServerException('Failed to update file description: $e');
     }
   }
 
   @override
-  Future<bool> hasDossierMedical(String patientId) async {
+  Future<bool> hasDossierMedical({required String patientId}) async {
     try {
-      final dossierDoc = await firestore
-          .collection('dossiers_medicaux')
-          .doc(patientId)
-          .get();
-      
-      if (!dossierDoc.exists) {
+      final patientDoc =
+          await firestore.collection('patients').doc(patientId).get();
+
+      if (!patientDoc.exists || patientDoc.data()?['dossierFiles'] == null) {
         return false;
       }
-      
-      // Check if there are any files
-      final filesSnapshot = await firestore
-          .collection('dossiers_medicaux')
-          .doc(patientId)
-          .collection('files')
-          .limit(1)
-          .get();
-      
-      return filesSnapshot.docs.isNotEmpty;
+
+      final dossierFiles = patientDoc.data()!['dossierFiles'] as List;
+      return dossierFiles.isNotEmpty;
+    } on FirebaseException catch (e) {
+      throw ServerException('Firestore error: ${e.message}');
     } catch (e) {
-      print('Error checking if dossier exists: $e');
-      return false;
+      throw ServerException('Failed to check dossier existence: $e');
+    }
+  }
+
+  @override
+  Future<bool> checkDoctorAccessToPatientFiles({
+    required String doctorId,
+    required String patientId,
+  }) async {
+    try {
+      // Check if doctor has any confirmed (accepted) appointments with the patient
+      final appointmentsQuery =
+          await firestore
+              .collection('rendez_vous')
+              .where('doctorId', isEqualTo: doctorId)
+              .where('patientId', isEqualTo: patientId)
+              .where('status', isEqualTo: 'accepted')
+              .limit(1)
+              .get();
+
+      // If there's at least one confirmed appointment, grant access
+      return appointmentsQuery.docs.isNotEmpty;
+    } on FirebaseException catch (e) {
+      throw ServerException('Firestore error: ${e.message}');
+    } catch (e) {
+      throw ServerException('Failed to check doctor access: $e');
+    }
+  }
+
+  Future<void> _sendNotification({
+    required String patientId,
+    required String title,
+    required String body,
+    String? fileId,
+    String? fileUrl,
+    String? fileName,
+  }) async {
+    try {
+      // Fetch patient document to get medecinId and patientName
+      final patientDoc =
+          await firestore.collection('patients').doc(patientId).get();
+      if (!patientDoc.exists) {
+        print('Patient $patientId not found, skipping notification');
+        return;
+      }
+      final patientData = patientDoc.data()!;
+      final medecinId = patientData['medecinId'] as String?;
+      final patientName =
+          '${patientData['name']} ${patientData['lastName']}'.trim();
+      if (medecinId == null) {
+        print('No medecinId for patient $patientId, skipping notification');
+        return;
+      }
+
+      // Fetch medecin document to verify FCM token
+      final medecinDoc =
+          await firestore.collection('users').doc(medecinId).get();
+      if (!medecinDoc.exists || medecinDoc.data()?['fcmToken'] == null) {
+        print('No FCM token for medecin $medecinId, skipping notification');
+        return;
+      }
+
+      // Send notification to medecin
+      await notificationRemoteDataSource.sendNotification(
+        title: title,
+        body: body,
+        senderId: patientId,
+        recipientId: medecinId,
+        type: NotificationType.dossierUpdate,
+        recipientRole: 'medecin',
+        appointmentId: null,
+        prescriptionId: null,
+        ratingId: null,
+        data: {
+          'patientId': patientId,
+          'patientName': patientName.isNotEmpty ? patientName : 'Patient',
+          'click_action': 'FLUTTER_NOTIFICATION_CLICK',
+          if (fileId != null) 'fileId': fileId,
+          if (fileUrl != null) 'fileUrl': fileUrl,
+          if (fileName != null) 'fileName': fileName,
+        },
+      );
+      print('Sent notification for patient $patientId to medecin $medecinId');
+    } catch (e) {
+      print('Error sending notification: $e');
+      // Don't fail the operation if notification fails
     }
   }
 

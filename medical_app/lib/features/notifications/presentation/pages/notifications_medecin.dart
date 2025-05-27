@@ -81,9 +81,11 @@ class _NotificationsMedecinState extends State<NotificationsMedecin> {
           setState(() {
             _isLoading = false;
           });
+          if (mounted) {
           ScaffoldMessenger.of(
             context,
           ).showSnackBar(SnackBar(content: Text('loading_timeout'.tr)));
+          }
         }
       });
     }
@@ -91,7 +93,6 @@ class _NotificationsMedecinState extends State<NotificationsMedecin> {
     try {
       // Execute just one event at a time and let the bloc handle the rest
       // This prevents multiple loading states from being triggered
-      print('Loading notifications for doctor: ${_currentUser.id}');
       context.read<NotificationBloc>().add(
         GetNotificationsEvent(userId: _currentUser.id!),
       );
@@ -165,10 +166,7 @@ class _NotificationsMedecinState extends State<NotificationsMedecin> {
               current is NotificationInitial;
         },
         listener: (context, state) {
-          print('NotificationBloc state: ${state.runtimeType}');
-
           if (state is NotificationError) {
-            print('Notification Error: ${state.message}');
             ScaffoldMessenger.of(
               context,
             ).showSnackBar(SnackBar(content: Text(state.message)));
@@ -179,7 +177,6 @@ class _NotificationsMedecinState extends State<NotificationsMedecin> {
               });
             }
           } else if (state is NotificationsLoaded) {
-            print('Loaded notifications: ${state.notifications.length}');
             if (_isLoading) {
               setState(() {
                 _isLoading = false;
@@ -189,9 +186,6 @@ class _NotificationsMedecinState extends State<NotificationsMedecin> {
             // When notifications are loaded, also setup other notification features
             if (_currentUser.id != null) {
               // Set up notifications stream
-              print(
-                'Setting up notifications stream for doctor: ${_currentUser.id}',
-              );
               context.read<NotificationBloc>().add(
                 GetNotificationsStreamEvent(userId: _currentUser.id!),
               );
@@ -208,12 +202,9 @@ class _NotificationsMedecinState extends State<NotificationsMedecin> {
           return current is NotificationsLoaded || current is NotificationError;
         },
         builder: (context, state) {
-          print('Building UI with state: ${state.runtimeType}');
-
           // Show content based on loaded state
           if (state is NotificationsLoaded) {
             final notifications = state.notifications;
-            print('Loaded ${notifications.length} notifications for doctor');
 
             return RefreshIndicator(
               key: _refreshIndicatorKey,
@@ -399,12 +390,17 @@ class _NotificationsMedecinState extends State<NotificationsMedecin> {
         case 'appointment':
           return n.type == NotificationType.newAppointment ||
               n.type == NotificationType.appointmentAccepted ||
-              n.type == NotificationType.appointmentRejected;
+                      n.type == NotificationType.appointmentRejected ||
+                      n.type == NotificationType.appointmentCanceled ||
+                      n.type == NotificationType.appointmentAssigned ||
+                      n.type == NotificationType.appointmentReminder;
         case 'prescription':
-          return n.type == NotificationType.newPrescription;
+                  return n.type == NotificationType.newPrescription ||
+                      n.type == NotificationType.prescriptionUpdated ||
+                      n.type == NotificationType.prescriptionCanceled ||
+                      n.type == NotificationType.prescriptionRefilled;
         case 'message':
-        // Puisque newMessage n'est pas défini, nous pouvons temporairement le supprimer ou utiliser un autre type
-          return false; // À réactiver lorsque ce type sera disponible
+                  return n.type == NotificationType.newMessage;
         default:
           return true;
       }
@@ -658,6 +654,18 @@ class _NotificationsMedecinState extends State<NotificationsMedecin> {
         icon = Icons.cancel;
         color = Colors.red;
         break;
+      case NotificationType.appointmentCanceled:
+        icon = Icons.event_busy;
+        color = Colors.orange;
+        break;
+      case NotificationType.appointmentAssigned:
+        icon = Icons.assignment;
+        color = Colors.blue;
+        break;
+      case NotificationType.appointmentReminder:
+        icon = Icons.alarm;
+        color = Colors.orange;
+        break;
       case NotificationType.newRating:
         icon = Icons.star;
         color = Colors.amber;
@@ -666,24 +674,34 @@ class _NotificationsMedecinState extends State<NotificationsMedecin> {
         icon = Icons.medical_services;
         color = AppColors.primaryColor;
         break;
-      case NotificationType.appointmentAssigned:
-        // TODO: Handle this case.
-        throw UnimplementedError();
       case NotificationType.prescriptionUpdated:
-        // TODO: Handle this case.
-        throw UnimplementedError();
-      case NotificationType.newMessage:
-        // TODO: Handle this case.
-        throw UnimplementedError();
-      case NotificationType.appointmentCanceled:
-        // TODO: Handle this case.
-        throw UnimplementedError();
+        icon = Icons.update;
+        color = AppColors.primaryColor;
+        break;
       case NotificationType.prescriptionCanceled:
-        // TODO: Handle this case.
-        throw UnimplementedError();
+        icon = Icons.cancel;
+        color = Colors.red;
+        break;
       case NotificationType.prescriptionRefilled:
-        // TODO: Handle this case.
-        throw UnimplementedError();
+        icon = Icons.refresh;
+        color = Colors.green;
+        break;
+      case NotificationType.newMessage:
+        icon = Icons.message;
+        color = Colors.purple;
+        break;
+      case NotificationType.dossierUpdate:
+        icon = Icons.folder;
+        color = Colors.teal;
+        break;
+      case NotificationType.medicationReminder:
+        icon = Icons.medication;
+        color = Colors.green;
+        break;
+      case NotificationType.emergencyAlert:
+        icon = Icons.emergency;
+        color = Colors.red;
+        break;
     }
 
     return Container(
@@ -698,8 +716,6 @@ class _NotificationsMedecinState extends State<NotificationsMedecin> {
 
   void _acceptAppointment(NotificationEntity notification) {
     if (notification.appointmentId != null) {
-      print('Accepting appointment ${notification.appointmentId}');
-
       // Show a loading indicator
       showDialog(
         context: context,
@@ -790,7 +806,7 @@ class _NotificationsMedecinState extends State<NotificationsMedecin> {
           patientId: patientId,
           doctorId: _currentUser.id!,
           patientName: patientName,
-          doctorName: _currentUser.name + ' ' + _currentUser.lastName,
+          doctorName: '${_currentUser.name} ${_currentUser.lastName}',
           recipientRole: 'patient', // Added for notification
         ),
       );
@@ -799,8 +815,6 @@ class _NotificationsMedecinState extends State<NotificationsMedecin> {
 
   void _rejectAppointment(NotificationEntity notification) {
     if (notification.appointmentId != null) {
-      print('Rejecting appointment ${notification.appointmentId}');
-
       // Show a loading indicator
       showDialog(
         context: context,
@@ -891,7 +905,7 @@ class _NotificationsMedecinState extends State<NotificationsMedecin> {
           patientId: patientId,
           doctorId: _currentUser.id!,
           patientName: patientName,
-          doctorName: _currentUser.name + ' ' + _currentUser.lastName,
+          doctorName: '${_currentUser.name} ${_currentUser.lastName}',
           recipientRole: 'patient', // Added for notification
         ),
       );

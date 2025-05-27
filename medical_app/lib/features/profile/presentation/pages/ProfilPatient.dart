@@ -15,7 +15,7 @@ import 'blocs/BLoC update profile/update_user_bloc.dart';
 import 'package:medical_app/features/dossier_medical/presentation/bloc/dossier_medical_bloc.dart';
 import 'package:medical_app/features/dossier_medical/presentation/pages/dossier_medical_screen.dart';
 import 'package:medical_app/injection_container.dart' as di;
-import 'package:medical_app/features/settings/presentation/pages/SettingsPage.dart';
+import 'package:medical_app/features/settings/presentation/pages/settings_patient.dart';
 
 class ProfilePatient extends StatefulWidget {
   const ProfilePatient({Key? key}) : super(key: key);
@@ -416,7 +416,7 @@ class _ProfilePatientState extends State<ProfilePatient> {
                         onTap: () {
                           navigateToAnotherScreenWithSlideTransitionFromRightToLeft(
                             context,
-                            const SettingsPage(),
+                            const SettingsPatient(),
                           );
                         },
                         child: Container(

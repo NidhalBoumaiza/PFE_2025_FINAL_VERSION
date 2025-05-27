@@ -8,6 +8,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:get/get.dart';
 
 import '../../../../core/utils/app_colors.dart';
+import '../../../../core/widgets/office_location_map_widget.dart';
 import '../../../authentication/domain/entities/medecin_entity.dart';
 import '../../../ratings/domain/entities/doctor_rating_entity.dart';
 import '../../../ratings/presentation/bloc/rating_bloc.dart';
@@ -142,6 +143,9 @@ class _DoctorProfilePageState extends State<DoctorProfilePage> {
           children: [
             // Doctor header card with basic info
             _buildDoctorHeaderCard(),
+
+            // Office Location section
+            _buildOfficeLocationSection(),
 
             // Ratings section
             Padding(
@@ -471,6 +475,133 @@ class _DoctorProfilePageState extends State<DoctorProfilePage> {
             ],
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildOfficeLocationSection() {
+    final theme = Theme.of(context);
+
+    // Extract location data from doctor entity
+    double? latitude;
+    double? longitude;
+    String? address;
+
+    if (widget.doctor.location != null) {
+      latitude = widget.doctor.location!['latitude']?.toDouble();
+      longitude = widget.doctor.location!['longitude']?.toDouble();
+    }
+
+    if (widget.doctor.address != null) {
+      address =
+          widget.doctor.address!['formatted_address'] ??
+          widget.doctor.address!['coordinates'];
+    }
+
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            "office_location".tr,
+            style: GoogleFonts.raleway(
+              fontSize: 18.sp,
+              fontWeight: FontWeight.bold,
+              color: theme.textTheme.titleLarge?.color,
+            ),
+          ),
+          SizedBox(height: 12.h),
+          Card(
+            elevation: 4,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16.r),
+            ),
+            child: Padding(
+              padding: EdgeInsets.all(16.w),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  OfficeLocationMapWidget(
+                    latitude: latitude,
+                    longitude: longitude,
+                    address: address,
+                    height: 200,
+                    isInteractive: false,
+                    onTap:
+                        latitude != null && longitude != null
+                            ? () {
+                              // Open in external map app
+                              _openInMaps(latitude!, longitude!, address);
+                            }
+                            : null,
+                  ),
+                  if (address != null && address.isNotEmpty) ...[
+                    SizedBox(height: 12.h),
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.location_on,
+                          color: AppColors.primaryColor,
+                          size: 16.sp,
+                        ),
+                        SizedBox(width: 8.w),
+                        Expanded(
+                          child: Text(
+                            address,
+                            style: GoogleFonts.raleway(
+                              fontSize: 14.sp,
+                              color: theme.textTheme.bodyMedium?.color,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                  if (latitude != null && longitude != null) ...[
+                    SizedBox(height: 12.h),
+                    SizedBox(
+                      width: double.infinity,
+                      child: OutlinedButton.icon(
+                        onPressed:
+                            () => _openInMaps(latitude!, longitude!, address),
+                        icon: Icon(Icons.directions, size: 18.sp),
+                        label: Text(
+                          'get_directions'.tr,
+                          style: GoogleFonts.raleway(
+                            fontSize: 14.sp,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: AppColors.primaryColor,
+                          side: BorderSide(color: AppColors.primaryColor),
+                          padding: EdgeInsets.symmetric(vertical: 12.h),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12.r),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _openInMaps(double latitude, double longitude, String? address) {
+    // This would typically open the location in the device's default map app
+    // For now, we'll show a snackbar
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('opening_in_maps'.tr, style: GoogleFonts.raleway()),
+        backgroundColor: AppColors.primaryColor,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       ),
     );
   }

@@ -7,6 +7,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:medical_app/constants.dart';
 import 'package:medical_app/core/utils/app_themes.dart';
 import 'package:medical_app/features/authentication/data/data%20sources/auth_local_data_source.dart';
@@ -38,6 +39,7 @@ import 'package:medical_app/features/dossier_medical/presentation/bloc/dossier_m
 import 'package:medical_app/i18n/app_translation.dart';
 import 'package:medical_app/core/utils/theme_manager.dart';
 import 'dart:convert';
+import 'package:geolocator/geolocator.dart';
 
 import 'features/authentication/presentation/blocs/forget password bloc/forgot_password_bloc.dart';
 import 'features/authentication/presentation/blocs/reset password bloc/reset_password_bloc.dart';
@@ -62,11 +64,17 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
         'appointmentId': message.data['appointmentId'],
       if (message.data['prescriptionId'] != null)
         'prescriptionId': message.data['prescriptionId'],
-      if (message.data['ratingId'] != null) 'ratingId': message.data['ratingId'],
-      'data': message.data.isNotEmpty ? Map<String, dynamic>.from(message.data) : null,
+      if (message.data['ratingId'] != null)
+        'ratingId': message.data['ratingId'],
+      'data':
+          message.data.isNotEmpty
+              ? Map<String, dynamic>.from(message.data)
+              : null,
     };
 
-    await FirebaseFirestore.instance.collection('notifications').add(notificationData);
+    await FirebaseFirestore.instance
+        .collection('notifications')
+        .add(notificationData);
     print('Notification saved to Firestore');
   } catch (e) {
     print('Error saving notification to Firestore: $e');
@@ -74,7 +82,7 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
 }
 
 final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
-FlutterLocalNotificationsPlugin();
+    FlutterLocalNotificationsPlugin();
 
 const AndroidNotificationChannel channel = AndroidNotificationChannel(
   'high_importance_channel',
@@ -102,13 +110,18 @@ Future<void> main() async {
   );
 
   // Set Firestore persistence
-  FirebaseFirestore.instance.settings = const Settings(persistenceEnabled: true);
+  FirebaseFirestore.instance.settings = const Settings(
+    persistenceEnabled: true,
+  );
 
   // Set up FCM background handler
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
 
   // Initialize FCM and local notifications
   await _initializeFCM();
+
+  // Check and request location permissions
+  await _checkAndRequestLocationPermission();
 
   // Initialize French locale for date formatting
   await initializeDateFormatting('fr_FR', null);
@@ -130,7 +143,8 @@ Future<void> main() async {
     final token = await authLocalDataSource.getToken();
     final user = await authLocalDataSource.getUser();
     if (token != null && user.id != null && user.id!.isNotEmpty) {
-      initialScreen = user.role == 'medecin' ? const HomeMedecin() : const HomePatient();
+      initialScreen =
+          user.role == 'medecin' ? const HomeMedecin() : const HomePatient();
     } else {
       initialScreen = const LoginScreen();
     }
@@ -142,6 +156,22 @@ Future<void> main() async {
   final savedLocale = await LanguageService.getSavedLanguage();
 
   runApp(MyApp(initialScreen: initialScreen, savedLocale: savedLocale));
+}
+
+Future<void> _checkAndRequestLocationPermission() async {
+  LocationPermission permission = await Geolocator.checkPermission();
+  if (permission == LocationPermission.denied) {
+    permission = await Geolocator.requestPermission();
+    if (permission == LocationPermission.denied) {
+      print('Location permission denied');
+      return;
+    }
+  }
+  if (permission == LocationPermission.deniedForever) {
+    print('Location permission permanently denied');
+    return;
+  }
+  print('Location permission granted');
 }
 
 Future<void> _initializeFCM() async {
@@ -158,7 +188,9 @@ Future<void> _initializeFCM() async {
   print('User granted permission: ${settings.authorizationStatus}');
 
   // Initialize local notifications
-  const androidInitSettings = AndroidInitializationSettings('@mipmap/ic_launcher');
+  const androidInitSettings = AndroidInitializationSettings(
+    '@mipmap/ic_launcher',
+  );
   const iosInitSettings = DarwinInitializationSettings(
     requestAlertPermission: true,
     requestBadgePermission: true,
@@ -180,8 +212,11 @@ Future<void> _initializeFCM() async {
   );
 
   // Create Android notification channel
-  final androidPlugin = flutterLocalNotificationsPlugin
-      .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>();
+  final androidPlugin =
+      flutterLocalNotificationsPlugin
+          .resolvePlatformSpecificImplementation<
+            AndroidFlutterLocalNotificationsPlugin
+          >();
   await androidPlugin?.createNotificationChannel(channel);
 
   // Set iOS foreground notification options
@@ -220,14 +255,10 @@ Future<void> _saveFcmToken(String token) async {
     final user = await authLocalDataSource.getUser();
     if (user.id != null && user.id!.isNotEmpty) {
       String collection = user.role == 'patient' ? 'patients' : 'medecins';
-      await FirebaseFirestore.instance
-          .collection(collection)
-          .doc(user.id)
-          .set({'fcmToken': token}, SetOptions(merge: true));
-      await FirebaseFirestore.instance
-          .collection('users')
-          .doc(user.id)
-          .set({
+      await FirebaseFirestore.instance.collection(collection).doc(user.id).set({
+        'fcmToken': token,
+      }, SetOptions(merge: true));
+      await FirebaseFirestore.instance.collection('users').doc(user.id).set({
         'id': user.id,
         'name': user.name ?? '',
         'lastName': user.lastName ?? '',
@@ -253,9 +284,10 @@ void _handleNotificationPayload(String payload) {
     if (context == null) return;
 
     di.sl<AuthLocalDataSource>().getUser().then((user) {
-      final route = user.role == 'medecin'
-          ? const NotificationsMedecin()
-          : const NotificationsPatient();
+      final route =
+          user.role == 'medecin'
+              ? const NotificationsMedecin()
+              : const NotificationsPatient();
       Navigator.push(context, MaterialPageRoute(builder: (_) => route));
     });
   } catch (e) {
@@ -268,7 +300,7 @@ class MyApp extends StatefulWidget {
   final Locale? savedLocale;
 
   const MyApp({Key? key, required this.initialScreen, this.savedLocale})
-      : super(key: key);
+    : super(key: key);
 
   @override
   State<MyApp> createState() => _MyAppState();
@@ -285,7 +317,8 @@ class _MyAppState extends State<MyApp> {
   }
 
   Future<void> _setupInteractedMessage() async {
-    RemoteMessage? initialMessage = await FirebaseMessaging.instance.getInitialMessage();
+    RemoteMessage? initialMessage =
+        await FirebaseMessaging.instance.getInitialMessage();
     if (initialMessage != null) {
       _handleMessage(initialMessage);
     }
@@ -299,9 +332,15 @@ class _MyAppState extends State<MyApp> {
       final data = message.data;
 
       if (notification != null && navigatorKey.currentContext != null) {
-        final notificationBloc = navigatorKey.currentContext!.read<NotificationBloc>();
-        String senderName = data['senderName'] ?? data['doctorName'] ?? data['patientName'] ?? 'Unknown';
-        String title = notification.title ?? data['title'] ?? 'New Notification';
+        final notificationBloc =
+            navigatorKey.currentContext!.read<NotificationBloc>();
+        String senderName =
+            data['senderName'] ??
+            data['doctorName'] ??
+            data['patientName'] ??
+            'Unknown';
+        String title =
+            notification.title ?? data['title'] ?? 'New Notification';
         String body = notification.body ?? data['body'] ?? '';
 
         if (!body.contains(senderName) && senderName != 'Unknown') {
@@ -322,9 +361,10 @@ class _MyAppState extends State<MyApp> {
               body: body,
               recipientId: data['recipientId'] ?? '',
               senderId: data['senderId'] ?? '',
-              type: data['type'] != null
-                  ? NotificationUtils.stringToNotificationType(data['type'])
-                  : NotificationType.newAppointment,
+              type:
+                  data['type'] != null
+                      ? NotificationUtils.stringToNotificationType(data['type'])
+                      : NotificationType.newAppointment,
               createdAt: DateTime.now(),
               isRead: false,
               appointmentId: data['appointmentId'],
@@ -364,16 +404,23 @@ class _MyAppState extends State<MyApp> {
   }
 
   void _handleMessage(RemoteMessage message) {
-    di.sl<AuthLocalDataSource>().getUser().then((user) {
-      final route = user.role == 'medecin'
-          ? const NotificationsMedecin()
-          : const NotificationsPatient();
-      navigatorKey.currentState?.push(MaterialPageRoute(builder: (_) => route));
-    }).catchError((_) {
-      navigatorKey.currentState?.push(
-        MaterialPageRoute(builder: (_) => const NotificationsPatient()),
-      );
-    });
+    di
+        .sl<AuthLocalDataSource>()
+        .getUser()
+        .then((user) {
+          final route =
+              user.role == 'medecin'
+                  ? const NotificationsMedecin()
+                  : const NotificationsPatient();
+          navigatorKey.currentState?.push(
+            MaterialPageRoute(builder: (_) => route),
+          );
+        })
+        .catchError((_) {
+          navigatorKey.currentState?.push(
+            MaterialPageRoute(builder: (_) => const NotificationsPatient()),
+          );
+        });
   }
 
   @override
@@ -399,7 +446,10 @@ class _MyAppState extends State<MyApp> {
       ],
       child: BlocBuilder<ThemeCubit, ThemeState>(
         builder: (context, themeState) {
-          final themeMode = themeState is ThemeLoaded ? themeState.themeMode : ThemeMode.light;
+          final themeMode =
+              themeState is ThemeLoaded
+                  ? themeState.themeMode
+                  : ThemeMode.light;
           return ScreenUtilInit(
             designSize: const Size(360, 800),
             minTextAdapt: true,
@@ -424,3 +474,6 @@ class _MyAppState extends State<MyApp> {
     );
   }
 }
+
+
+

@@ -7,30 +7,31 @@ abstract class DossierMedicalEvent extends Equatable {
   List<Object?> get props => [];
 }
 
-class FetchDossierMedical extends DossierMedicalEvent {
+class FetchDossierMedicalEvent extends DossierMedicalEvent {
+  final String patientId;
+  final String? doctorId;
+
+  const FetchDossierMedicalEvent({required this.patientId, this.doctorId});
+
+  @override
+  List<Object?> get props => [patientId, doctorId];
+}
+
+class CheckDossierMedicalExistsEvent extends DossierMedicalEvent {
   final String patientId;
 
-  const FetchDossierMedical({required this.patientId});
+  const CheckDossierMedicalExistsEvent({required this.patientId});
 
   @override
   List<Object?> get props => [patientId];
 }
 
-class CheckDossierMedicalExists extends DossierMedicalEvent {
-  final String patientId;
-
-  const CheckDossierMedicalExists({required this.patientId});
-
-  @override
-  List<Object?> get props => [patientId];
-}
-
-class UploadSingleFile extends DossierMedicalEvent {
+class UploadSingleFileEvent extends DossierMedicalEvent {
   final String patientId;
   final String filePath;
   final String description;
 
-  const UploadSingleFile({
+  const UploadSingleFileEvent({
     required this.patientId,
     required this.filePath,
     this.description = '',
@@ -40,12 +41,12 @@ class UploadSingleFile extends DossierMedicalEvent {
   List<Object?> get props => [patientId, filePath, description];
 }
 
-class UploadMultipleFiles extends DossierMedicalEvent {
+class UploadMultipleFilesEvent extends DossierMedicalEvent {
   final String patientId;
   final List<String> filePaths;
   final Map<String, String> descriptions;
 
-  const UploadMultipleFiles({
+  const UploadMultipleFilesEvent({
     required this.patientId,
     required this.filePaths,
     this.descriptions = const {},
@@ -55,22 +56,22 @@ class UploadMultipleFiles extends DossierMedicalEvent {
   List<Object?> get props => [patientId, filePaths, descriptions];
 }
 
-class DeleteFile extends DossierMedicalEvent {
+class DeleteFileEvent extends DossierMedicalEvent {
   final String patientId;
   final String fileId;
 
-  const DeleteFile({required this.patientId, required this.fileId});
+  const DeleteFileEvent({required this.patientId, required this.fileId});
 
   @override
   List<Object?> get props => [patientId, fileId];
 }
 
-class UpdateFileDescription extends DossierMedicalEvent {
+class UpdateFileDescriptionEvent extends DossierMedicalEvent {
   final String patientId;
   final String fileId;
   final String description;
 
-  const UpdateFileDescription({
+  const UpdateFileDescriptionEvent({
     required this.patientId,
     required this.fileId,
     required this.description,

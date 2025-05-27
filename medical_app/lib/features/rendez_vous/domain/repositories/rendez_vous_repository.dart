@@ -10,25 +10,28 @@ abstract class RendezVousRepository {
   });
 
   Future<Either<Failure, Unit>> updateRendezVousStatus(
-      String rendezVousId,
-      String status,
-      String patientId,
-      String doctorId,
-      String patientName,
-      String doctorName,
-      String recipientRole,
-      );
+    String rendezVousId,
+    String status,
+    String patientId,
+    String doctorId,
+    String patientName,
+    String doctorName,
+    String recipientRole,
+  );
 
   Future<Either<Failure, Unit>> createRendezVous(RendezVousEntity rendezVous);
 
   Future<Either<Failure, List<MedecinEntity>>> getDoctorsBySpecialty(
-      String specialty,
-      DateTime startTime,
-      );
+    String specialty,
+    DateTime startTime, {
+    double? searchRadiusKm,
+    double? userLatitude,
+    double? userLongitude,
+  });
 
   Future<Either<Failure, Unit>> assignDoctorToRendezVous(
-      String rendezVousId,
-      String doctorId,
-      String doctorName,
-      );
+    String rendezVousId,
+    String doctorId,
+    String doctorName,
+  );
 }

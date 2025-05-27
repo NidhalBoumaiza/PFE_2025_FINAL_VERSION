@@ -1,20 +1,21 @@
 import 'package:dartz/dartz.dart';
 import 'package:medical_app/core/error/failures.dart';
-import '../entities/dossier_files_entity.dart';
 import '../repositories/dossier_medical_repository.dart';
 
-class GetDossierMedical {
+class UpdateFileDescription {
   final DossierMedicalRepository repository;
 
-  GetDossierMedical(this.repository);
+  UpdateFileDescription(this.repository);
 
-  Future<Either<Failure, DossierFilesEntity>> call({
+  Future<Either<Failure, Unit>> call({
     required String patientId,
-    String? doctorId,
+    required String fileId,
+    required String description,
   }) async {
-    return await repository.getDossierMedical(
+    return await repository.updateFileDescription(
       patientId: patientId,
-      doctorId: doctorId,
+      fileId: fileId,
+      description: description,
     );
   }
 }

@@ -38,22 +38,28 @@ class _RendezVousMedecinState extends State<RendezVousMedecin> {
     }
   }
 
-  Future<bool?> _showConfirmationDialog(String action, String patientName) async {
+  Future<bool?> _showConfirmationDialog(
+    String action,
+    String patientName,
+  ) async {
     return showDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text('$action la consultation'),
+      builder:
+          (context) => AlertDialog(
+            title: Text('confirm_consultation'.tr),
         content: Text(
-          'Voulez-vous vraiment $action la consultation pour $patientName ?',
+              'confirm_action_consultation'.tr
+                  .replaceAll('{action}', action)
+                  .replaceAll('{patient}', patientName),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Annuler'),
+                child: Text('cancel'.tr),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('Confirmer'),
+                child: Text('confirm'.tr),
           ),
         ],
       ),
@@ -68,10 +74,11 @@ class _RendezVousMedecinState extends State<RendezVousMedecin> {
       String doctorId,
       String doctorName,
       ) async {
-    final action = newStatus == 'accepted' ? 'accepter' : 'refuser';
+    final action = newStatus == 'accepted' ? 'accept'.tr : 'refuse'.tr;
     final confirmed = await _showConfirmationDialog(action, patientName);
     if (confirmed == true) {
-      context.read<RendezVousBloc>().add(UpdateRendezVousStatus(
+      context.read<RendezVousBloc>().add(
+        UpdateRendezVousStatus(
         rendezVousId: id,
         status: newStatus,
         patientId: patientId,
@@ -79,18 +86,19 @@ class _RendezVousMedecinState extends State<RendezVousMedecin> {
         patientName: patientName,
         doctorName: doctorName,
         recipientRole: 'patient',
-      ));
+        ),
+      );
     }
   }
 
   String _translateStatus(String status) {
     switch (status) {
       case 'pending':
-        return 'En attente';
+        return 'pending'.tr;
       case 'accepted':
-        return 'Accepté';
+        return 'accepted'.tr;
       case 'refused':
-        return 'Refusé';
+        return 'refused'.tr;
       default:
         return status;
     }
@@ -102,13 +110,10 @@ class _RendezVousMedecinState extends State<RendezVousMedecin> {
       child: Scaffold(
         backgroundColor: AppColors.whiteColor,
         appBar: AppBar(
-          title: const Text("Consultations"),
+          title: Text("consultations".tr),
           backgroundColor: const Color(0xFF2FA7BB),
           leading: IconButton(
-            icon: const Icon(
-              Icons.chevron_left,
-              size: 30,
-            ),
+            icon: const Icon(Icons.chevron_left, size: 30),
             onPressed: () {
               Navigator.pop(context);
             },
@@ -121,10 +126,12 @@ class _RendezVousMedecinState extends State<RendezVousMedecin> {
             } else if (state is RendezVousStatusUpdated) {
               showSuccessSnackBar(
                 context,
-                'Consultation mise à jour avec succès',
+                'consultation_updated_successfully'.tr,
               );
               if (doctorId != null) {
-                context.read<RendezVousBloc>().add(FetchRendezVous(doctorId: doctorId));
+                context.read<RendezVousBloc>().add(
+                  FetchRendezVous(doctorId: doctorId),
+                );
               }
             }
           },
@@ -138,7 +145,7 @@ class _RendezVousMedecinState extends State<RendezVousMedecin> {
                   // Image responsive
                   Image.asset(
                     'assets/images/Consultation.png',
-                    height:250.h,
+                    height: 250.h,
                     width: double.infinity,
                     fit: BoxFit.contain,
                   ),
@@ -149,7 +156,8 @@ class _RendezVousMedecinState extends State<RendezVousMedecin> {
                       if (state is RendezVousLoading || doctorId == null) {
                         return const Center(child: CircularProgressIndicator());
                       } else if (state is RendezVousLoaded) {
-                        final pendingRendezVous = state.rendezVous
+                        final pendingRendezVous =
+                            state.rendezVous
                             .where((rv) => rv.status == 'pending')
                             .toList();
                         if (pendingRendezVous.isEmpty) {
@@ -157,7 +165,7 @@ class _RendezVousMedecinState extends State<RendezVousMedecin> {
                             child: Padding(
                               padding: const EdgeInsets.all(20.0),
                               child: ReusableTextWidget(
-                                text: "Aucune consultation en attente",
+                                text: "no_pending_consultations".tr,
                                 textSize: 16,
                                 fontWeight: FontWeight.w600,
                                 color: Colors.grey,
@@ -183,27 +191,44 @@ class _RendezVousMedecinState extends State<RendezVousMedecin> {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     ReusableTextWidget(
-                                      text: "Patient: ${consultation.patientName ?? 'Inconnu'}",
+                                      text: "patient_label".tr.replaceAll(
+                                        '{name}',
+                                        consultation.patientName ??
+                                            'unknown'.tr,
+                                      ),
                                       textSize: 16,
                                       fontWeight: FontWeight.w700,
                                       color: Colors.black,
                                     ),
                                     SizedBox(height: 8.h),
                                     ReusableTextWidget(
-                                      text:
-                                      "Heure de début: ${consultation.startTime?.toLocal().toString().substring(0, 16) ?? 'Non défini'}",
+                                      text: "start_time_label".tr.replaceAll(
+                                        '{time}',
+                                        consultation.startTime
+                                                ?.toLocal()
+                                                .toString()
+                                                .substring(0, 16) ??
+                                            'not_defined'.tr,
+                                      ),
                                       textSize: 14,
                                       fontWeight: FontWeight.w600,
                                       color: Colors.grey[700],
                                     ),
                                     SizedBox(height: 8.h),
                                     ReusableTextWidget(
-                                      text: "Statut: ${_translateStatus(consultation.status ?? 'pending')}",
+                                      text: "status_label".tr.replaceAll(
+                                        '{status}',
+                                        _translateStatus(
+                                          consultation.status ?? 'pending',
+                                        ),
+                                      ),
                                       textSize: 14,
                                       fontWeight: FontWeight.w600,
-                                      color: consultation.status == 'pending'
+                                      color:
+                                          consultation.status == 'pending'
                                           ? Colors.orange
-                                          : consultation.status == 'accepted'
+                                              : consultation.status ==
+                                                  'accepted'
                                           ? Colors.green
                                           : Colors.red,
                                     ),
@@ -219,27 +244,35 @@ class _RendezVousMedecinState extends State<RendezVousMedecin> {
                                                 backgroundColor: Colors.green,
                                                 shape: RoundedRectangleBorder(
                                                   borderRadius:
-                                                  BorderRadius.circular(8.r),
+                                                      BorderRadius.circular(
+                                                        8.r,
+                                                      ),
                                                 ),
                                                 padding: EdgeInsets.symmetric(
                                                   vertical: 12.h,
                                                 ),
                                               ),
                                               onPressed: () async {
-                                                final authLocalDataSource = sl<AuthLocalDataSource>();
-                                                final user = await authLocalDataSource.getUser();
-                                                final doctorName = '${user.name} ${user.lastName}'.trim();
+                                                final authLocalDataSource =
+                                                    sl<AuthLocalDataSource>();
+                                                final user =
+                                                    await authLocalDataSource
+                                                        .getUser();
+                                                final doctorName =
+                                                    '${user.name} ${user.lastName}'
+                                                        .trim();
                                                 _updateConsultationStatus(
                                                   consultation.id ?? '',
                                                   'accepted',
-                                                  consultation.patientName ?? 'Inconnu',
+                                                  consultation.patientName ??
+                                                      'unknown'.tr,
                                                   consultation.patientId ?? '',
                                                   consultation.doctorId ?? '',
                                                   doctorName,
                                                 );
                                               },
                                               child: Text(
-                                                'Accepter',
+                                                'accept'.tr,
                                                 style: GoogleFonts.raleway(
                                                   fontSize: 14.sp,
                                                   fontWeight: FontWeight.w600,
@@ -255,27 +288,35 @@ class _RendezVousMedecinState extends State<RendezVousMedecin> {
                                                 backgroundColor: Colors.red,
                                                 shape: RoundedRectangleBorder(
                                                   borderRadius:
-                                                  BorderRadius.circular(8.r),
+                                                      BorderRadius.circular(
+                                                        8.r,
+                                                      ),
                                                 ),
                                                 padding: EdgeInsets.symmetric(
                                                   vertical: 12.h,
                                                 ),
                                               ),
                                               onPressed: () async {
-                                                final authLocalDataSource = sl<AuthLocalDataSource>();
-                                                final user = await authLocalDataSource.getUser();
-                                                final doctorName = '${user.name} ${user.lastName}'.trim();
+                                                final authLocalDataSource =
+                                                    sl<AuthLocalDataSource>();
+                                                final user =
+                                                    await authLocalDataSource
+                                                        .getUser();
+                                                final doctorName =
+                                                    '${user.name} ${user.lastName}'
+                                                        .trim();
                                                 _updateConsultationStatus(
                                                   consultation.id ?? '',
                                                   'refused',
-                                                  consultation.patientName ?? 'Inconnu',
+                                                  consultation.patientName ??
+                                                      'unknown'.tr,
                                                   consultation.patientId ?? '',
                                                   consultation.doctorId ?? '',
                                                   doctorName,
                                                 );
                                               },
                                               child: Text(
-                                                'Refuser',
+                                                'refuse'.tr,
                                                 style: GoogleFonts.raleway(
                                                   fontSize: 14.sp,
                                                   fontWeight: FontWeight.w600,

@@ -1,5 +1,5 @@
 import 'package:equatable/equatable.dart';
-import 'package:medical_app/features/dossier_medical/domain/entities/dossier_medical_entity.dart';
+import 'package:medical_app/features/dossier_medical/domain/entities/dossier_files_entity.dart';
 import 'package:medical_app/features/dossier_medical/domain/entities/medical_file_entity.dart';
 
 abstract class DossierMedicalState extends Equatable {
@@ -18,7 +18,7 @@ class DossierMedicalLoading extends DossierMedicalState {
 }
 
 class DossierMedicalLoaded extends DossierMedicalState {
-  final DossierMedicalEntity dossier;
+  final DossierFilesEntity dossier;
 
   const DossierMedicalLoaded({required this.dossier});
 
@@ -54,7 +54,7 @@ class FileUploadLoading extends DossierMedicalState {
 }
 
 class FileUploadSuccess extends DossierMedicalState {
-  final DossierMedicalEntity dossier;
+  final DossierFilesEntity dossier;
   final bool isSingleFile;
 
   const FileUploadSuccess({required this.dossier, this.isSingleFile = true});

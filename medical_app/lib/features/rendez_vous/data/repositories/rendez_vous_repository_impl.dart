@@ -31,19 +31,22 @@ class RendezVousRepositoryImpl implements RendezVousRepository {
           patientId: patientId,
           doctorId: doctorId,
         );
-        final rendezVousEntities = rendezVousModels
-            .map((model) => RendezVousEntity(
-          id: model.id,
-          patientId: model.patientId,
-          doctorId: model.doctorId,
-          patientName: model.patientName,
-          doctorName: model.doctorName,
-          speciality: model.speciality,
-          startTime: model.startTime,
-          endTime: model.endTime,
-          status: model.status,
-        ))
-            .toList();
+        final rendezVousEntities =
+            rendezVousModels
+                .map(
+                  (model) => RendezVousEntity(
+                    id: model.id,
+                    patientId: model.patientId,
+                    doctorId: model.doctorId,
+                    patientName: model.patientName,
+                    doctorName: model.doctorName,
+                    speciality: model.speciality,
+                    startTime: model.startTime,
+                    endTime: model.endTime,
+                    status: model.status,
+                  ),
+                )
+                .toList();
         return Right(rendezVousEntities);
       } on ServerException {
         return Left(ServerFailure());
@@ -55,19 +58,22 @@ class RendezVousRepositoryImpl implements RendezVousRepository {
     } else {
       try {
         final cachedRendezVous = await localDataSource.getCachedRendezVous();
-        final rendezVousEntities = cachedRendezVous
-            .map((model) => RendezVousEntity(
-          id: model.id,
-          patientId: model.patientId,
-          doctorId: model.doctorId,
-          patientName: model.patientName,
-          doctorName: model.doctorName,
-          speciality: model.speciality,
-          startTime: model.startTime,
-          endTime: model.endTime,
-          status: model.status,
-        ))
-            .toList();
+        final rendezVousEntities =
+            cachedRendezVous
+                .map(
+                  (model) => RendezVousEntity(
+                    id: model.id,
+                    patientId: model.patientId,
+                    doctorId: model.doctorId,
+                    patientName: model.patientName,
+                    doctorName: model.doctorName,
+                    speciality: model.speciality,
+                    startTime: model.startTime,
+                    endTime: model.endTime,
+                    status: model.status,
+                  ),
+                )
+                .toList();
         return Right(rendezVousEntities);
       } on EmptyCacheException {
         return Left(EmptyCacheFailure());
@@ -77,14 +83,14 @@ class RendezVousRepositoryImpl implements RendezVousRepository {
 
   @override
   Future<Either<Failure, Unit>> updateRendezVousStatus(
-      String rendezVousId,
-      String status,
-      String patientId,
-      String doctorId,
-      String patientName,
-      String doctorName,
-      String recipientRole,
-      ) async {
+    String rendezVousId,
+    String status,
+    String patientId,
+    String doctorId,
+    String patientName,
+    String doctorName,
+    String recipientRole,
+  ) async {
     if (await networkInfo.isConnected) {
       try {
         await remoteDataSource.updateRendezVousStatus(
@@ -111,7 +117,8 @@ class RendezVousRepositoryImpl implements RendezVousRepository {
 
   @override
   Future<Either<Failure, Unit>> createRendezVous(
-      RendezVousEntity rendezVous) async {
+    RendezVousEntity rendezVous,
+  ) async {
     if (await networkInfo.isConnected) {
       try {
         final rendezVousModel = RendezVousModel(
@@ -141,14 +148,20 @@ class RendezVousRepositoryImpl implements RendezVousRepository {
 
   @override
   Future<Either<Failure, List<MedecinEntity>>> getDoctorsBySpecialty(
-      String specialty,
-      DateTime startTime,
-      ) async {
+    String specialty,
+    DateTime startTime, {
+    double? searchRadiusKm,
+    double? userLatitude,
+    double? userLongitude,
+  }) async {
     if (await networkInfo.isConnected) {
       try {
         final doctors = await remoteDataSource.getDoctorsBySpecialty(
           specialty,
           startTime,
+          searchRadiusKm: searchRadiusKm,
+          userLatitude: userLatitude,
+          userLongitude: userLongitude,
         );
         return Right(doctors);
       } on ServerException {
@@ -165,10 +178,10 @@ class RendezVousRepositoryImpl implements RendezVousRepository {
 
   @override
   Future<Either<Failure, Unit>> assignDoctorToRendezVous(
-      String rendezVousId,
-      String doctorId,
-      String doctorName,
-      ) async {
+    String rendezVousId,
+    String doctorId,
+    String doctorName,
+  ) async {
     if (await networkInfo.isConnected) {
       try {
         await remoteDataSource.assignDoctorToRendezVous(

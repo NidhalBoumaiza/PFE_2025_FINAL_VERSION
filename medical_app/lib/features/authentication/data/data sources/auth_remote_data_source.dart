@@ -245,11 +245,18 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
             dateOfBirth: user.dateOfBirth,
             speciality: user.speciality,
             numLicence: user.numLicence,
+            appointmentDuration: user.appointmentDuration,
+            education: user.education,
+            experience: user.experience,
+            consultationFee: user.consultationFee,
+            address: user.address,
+            location: user.location,
             accountStatus: false,
             verificationCode: randomNumber,
             validationCodeExpiresAt: DateTime.now().add(
               const Duration(minutes: 60),
             ),
+            fcmToken: user.fcmToken,
           );
         } else {
           // This should never happen as we filter at the repository level

@@ -2,14 +2,18 @@ import 'package:dartz/dartz.dart';
 import 'package:medical_app/core/error/failures.dart';
 import '../repositories/dossier_medical_repository.dart';
 
-class HasDossierMedical {
+class DeleteFile {
   final DossierMedicalRepository repository;
 
-  HasDossierMedical(this.repository);
+  DeleteFile(this.repository);
 
-  Future<Either<Failure, bool>> call({
+  Future<Either<Failure, Unit>> call({
     required String patientId,
+    required String fileId,
   }) async {
-    return await repository.hasDossierMedical(patientId: patientId);
+    return await repository.deleteFile(
+      patientId: patientId,
+      fileId: fileId,
+    );
   }
 }

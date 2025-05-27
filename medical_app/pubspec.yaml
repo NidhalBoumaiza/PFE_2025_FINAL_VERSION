@@ -48,7 +48,7 @@ dependencies:
   flutter_rating_bar: ^4.0.1
   uuid: ^4.5.1
   table_calendar: ^3.0.9
-  url_launcher: ^6.2.5
+  url_launcher: ^6.3.1
   firebase_messaging_platform_interface: ^4.6.5
   firebase_messaging_web: ^3.10.5
   flutter_local_notifications: ^19.2.0
@@ -58,6 +58,7 @@ dependencies:
   firebase_admin: ^0.3.0+2
   googleapis: ^13.2.0
   googleapis_auth: ^2.0.0
+  flutter_pdfview: ^1.4.0+1
 #  permission_handler: ^11.3.1
 #  device_info_plus: ^10.1.2
 

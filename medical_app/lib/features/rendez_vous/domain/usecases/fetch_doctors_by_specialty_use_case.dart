@@ -9,9 +9,18 @@ class FetchDoctorsBySpecialtyUseCase {
   FetchDoctorsBySpecialtyUseCase(this.rendezVousRepository);
 
   Future<Either<Failure, List<MedecinEntity>>> call(
-      String specialty,
-      DateTime startTime,
-      ) async {
-    return await rendezVousRepository.getDoctorsBySpecialty(specialty, startTime);
+    String specialty,
+    DateTime startTime, {
+    double? searchRadiusKm,
+    double? userLatitude,
+    double? userLongitude,
+  }) async {
+    return await rendezVousRepository.getDoctorsBySpecialty(
+      specialty,
+      startTime,
+      searchRadiusKm: searchRadiusKm,
+      userLatitude: userLatitude,
+      userLongitude: userLongitude,
+    );
   }
 }

@@ -6,7 +6,14 @@ enum NotificationType {
   newPrescription,
   prescriptionUpdated,
   newMessage,
-  newRating, appointmentCanceled, prescriptionCanceled, prescriptionRefilled,
+  newRating,
+  appointmentCanceled,
+  prescriptionCanceled,
+  prescriptionRefilled,
+  dossierUpdate,
+  appointmentReminder,
+  medicationReminder,
+  emergencyAlert,
 }
 
 class NotificationUtils {
@@ -29,14 +36,19 @@ class NotificationUtils {
       case NotificationType.newRating:
         return 'newRating';
       case NotificationType.appointmentCanceled:
-        // TODO: Handle this case.
-        throw UnimplementedError();
+        return 'appointmentCanceled';
       case NotificationType.prescriptionCanceled:
-        // TODO: Handle this case.
-        throw UnimplementedError();
+        return 'prescriptionCanceled';
       case NotificationType.prescriptionRefilled:
-        // TODO: Handle this case.
-        throw UnimplementedError();
+        return 'prescriptionRefilled';
+      case NotificationType.dossierUpdate:
+        return 'dossierUpdate';
+      case NotificationType.appointmentReminder:
+        return 'appointmentReminder';
+      case NotificationType.medicationReminder:
+        return 'medicationReminder';
+      case NotificationType.emergencyAlert:
+        return 'emergencyAlert';
     }
   }
 
@@ -58,8 +70,88 @@ class NotificationUtils {
         return NotificationType.newMessage;
       case 'newRating':
         return NotificationType.newRating;
+      case 'appointmentCanceled':
+        return NotificationType.appointmentCanceled;
+      case 'prescriptionCanceled':
+        return NotificationType.prescriptionCanceled;
+      case 'prescriptionRefilled':
+        return NotificationType.prescriptionRefilled;
+      case 'dossierUpdate':
+        return NotificationType.dossierUpdate;
+      case 'appointmentReminder':
+        return NotificationType.appointmentReminder;
+      case 'medicationReminder':
+        return NotificationType.medicationReminder;
+      case 'emergencyAlert':
+        return NotificationType.emergencyAlert;
       default:
         return NotificationType.newAppointment;
+    }
+  }
+
+  /// Get notification priority based on type
+  static String getNotificationPriority(NotificationType type) {
+    switch (type) {
+      case NotificationType.emergencyAlert:
+        return 'max';
+      case NotificationType.appointmentReminder:
+      case NotificationType.medicationReminder:
+        return 'high';
+      case NotificationType.appointmentAccepted:
+      case NotificationType.appointmentRejected:
+      case NotificationType.appointmentCanceled:
+      case NotificationType.newPrescription:
+        return 'high';
+      case NotificationType.newAppointment:
+      case NotificationType.appointmentAssigned:
+      case NotificationType.prescriptionUpdated:
+      case NotificationType.newMessage:
+      case NotificationType.newRating:
+        return 'default';
+      default:
+        return 'default';
+    }
+  }
+
+  /// Get notification sound based on type
+  static String getNotificationSound(NotificationType type) {
+    switch (type) {
+      case NotificationType.emergencyAlert:
+        return 'emergency_sound';
+      case NotificationType.appointmentReminder:
+      case NotificationType.medicationReminder:
+        return 'reminder_sound';
+      default:
+        return 'default';
+    }
+  }
+
+  /// Get notification icon based on type
+  static String getNotificationIcon(NotificationType type) {
+    switch (type) {
+      case NotificationType.newAppointment:
+      case NotificationType.appointmentAccepted:
+      case NotificationType.appointmentRejected:
+      case NotificationType.appointmentAssigned:
+      case NotificationType.appointmentCanceled:
+      case NotificationType.appointmentReminder:
+        return 'ic_appointment';
+      case NotificationType.newPrescription:
+      case NotificationType.prescriptionUpdated:
+      case NotificationType.prescriptionCanceled:
+      case NotificationType.prescriptionRefilled:
+      case NotificationType.medicationReminder:
+        return 'ic_prescription';
+      case NotificationType.newMessage:
+        return 'ic_message';
+      case NotificationType.newRating:
+        return 'ic_rating';
+      case NotificationType.dossierUpdate:
+        return 'ic_medical_record';
+      case NotificationType.emergencyAlert:
+        return 'ic_emergency';
+      default:
+        return 'ic_notification';
     }
   }
 }

@@ -1,4 +1,6 @@
-import 'package:medical_app/features/authentication/domain/entities/user_entity.dart';
+import 'package:equatable/equatable.dart';
+import 'package:medical_app/features/dossier_medical/domain/entities/medical_file_entity.dart';
+import 'user_entity.dart';
 
 class PatientEntity extends UserEntity {
   final String antecedent;
@@ -8,6 +10,7 @@ class PatientEntity extends UserEntity {
   final List<String>? allergies;
   final List<String>? chronicDiseases;
   final Map<String, String?>? emergencyContact;
+  final List<MedicalFileEntity>? dossierFiles;
 
   PatientEntity({
     String? id,
@@ -31,22 +34,23 @@ class PatientEntity extends UserEntity {
     this.allergies,
     this.chronicDiseases,
     this.emergencyContact,
+    this.dossierFiles,
   }) : super(
-         id: id,
-         name: name,
-         lastName: lastName,
-         email: email,
-         role: role,
-         gender: gender,
-         phoneNumber: phoneNumber,
-         dateOfBirth: dateOfBirth,
-         accountStatus: accountStatus,
-         verificationCode: verificationCode,
-         validationCodeExpiresAt: validationCodeExpiresAt,
-         fcmToken: fcmToken,
-         address: address,
-         location: location,
-       );
+    id: id,
+    name: name,
+    lastName: lastName,
+    email: email,
+    role: role,
+    gender: gender,
+    phoneNumber: phoneNumber,
+    dateOfBirth: dateOfBirth,
+    accountStatus: accountStatus,
+    verificationCode: verificationCode,
+    validationCodeExpiresAt: validationCodeExpiresAt,
+    fcmToken: fcmToken,
+    address: address,
+    location: location,
+  );
 
   factory PatientEntity.create({
     String? id,
@@ -70,6 +74,7 @@ class PatientEntity extends UserEntity {
     List<String>? allergies,
     List<String>? chronicDiseases,
     Map<String, String?>? emergencyContact,
+    List<MedicalFileEntity>? dossierFiles,
   }) {
     return PatientEntity(
       id: id,
@@ -93,6 +98,7 @@ class PatientEntity extends UserEntity {
       allergies: allergies,
       chronicDiseases: chronicDiseases,
       emergencyContact: emergencyContact,
+      dossierFiles: dossierFiles,
     );
   }
 
@@ -106,5 +112,6 @@ class PatientEntity extends UserEntity {
     allergies,
     chronicDiseases,
     emergencyContact,
+    dossierFiles,
   ];
 }

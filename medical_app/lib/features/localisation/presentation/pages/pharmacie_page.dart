@@ -40,7 +40,33 @@ class _PharmaciePageState extends State<PharmaciePage> {
   void initState() {
     super.initState();
     _currentType = widget.initialType;
+    _testApiKey(); // Test API key first
     _checkLocationPermission();
+  }
+
+  Future<void> _testApiKey() async {
+    try {
+      print('🔍 Testing Google Places API key...');
+
+      // Test both Maps and Places API
+      final isPlacesWorking = await PlacesService.testApiKey();
+      print('Places API test result: $isPlacesWorking');
+
+      if (!isPlacesWorking) {
+        print(
+          '⚠️ Places API key test failed - but this might be a network issue',
+        );
+        // Don't show error to user since the actual API calls might still work
+      } else {
+        print('✅ Places API key test passed');
+      }
+
+      // Test Maps API by trying to load a simple map
+      print('🗺️ Testing Google Maps API...');
+    } catch (e) {
+      print('❌ Error testing API key: $e');
+      // Don't show error to user since this is just a test
+    }
   }
 
   Future<void> _checkLocationPermission() async {
@@ -163,6 +189,10 @@ class _PharmaciePageState extends State<PharmaciePage> {
       print(
         'Fetching nearby ${_currentType == PlaceType.hospital ? "hospitals" : "pharmacies"}...',
       );
+      print(
+        'Current position: ${_currentPosition!.latitude}, ${_currentPosition!.longitude}',
+      );
+
       List<PlaceEntity> places;
       if (_currentType == PlaceType.hospital) {
         places = await PlacesService.getNearbyHospitals(_currentPosition!);
@@ -172,6 +202,11 @@ class _PharmaciePageState extends State<PharmaciePage> {
 
       print('Received ${places.length} places');
 
+      // Debug: Print first few places
+      for (int i = 0; i < places.length && i < 3; i++) {
+        print('Place $i: ${places[i].name} at ${places[i].location}');
+      }
+
       if (mounted) {
         setState(() {
           _places = places;
@@ -179,6 +214,11 @@ class _PharmaciePageState extends State<PharmaciePage> {
         });
 
         _updateMarkers();
+
+        // If we have places, animate to show them
+        if (places.isNotEmpty && _currentPosition != null) {
+          _animateToShowAllPlaces();
+        }
       }
     } catch (e) {
       print('Error fetching nearby places: $e');
@@ -240,6 +280,56 @@ class _PharmaciePageState extends State<PharmaciePage> {
       );
     } catch (e) {
       print('Error animating to position: $e');
+    }
+  }
+
+  Future<void> _animateToShowAllPlaces() async {
+    try {
+      if (_places.isEmpty || _currentPosition == null) return;
+
+      final GoogleMapController controller = await _controller.future;
+
+      // Calculate bounds to show all places and user location
+      double minLat = _currentPosition!.latitude;
+      double maxLat = _currentPosition!.latitude;
+      double minLng = _currentPosition!.longitude;
+      double maxLng = _currentPosition!.longitude;
+
+      for (var place in _places) {
+        minLat =
+            minLat < place.location.latitude ? minLat : place.location.latitude;
+        maxLat =
+            maxLat > place.location.latitude ? maxLat : place.location.latitude;
+        minLng =
+            minLng < place.location.longitude
+                ? minLng
+                : place.location.longitude;
+        maxLng =
+            maxLng > place.location.longitude
+                ? maxLng
+                : place.location.longitude;
+      }
+
+      // Add some padding
+      final padding = 0.01;
+      minLat -= padding;
+      maxLat += padding;
+      minLng -= padding;
+      maxLng += padding;
+
+      await controller.animateCamera(
+        CameraUpdate.newLatLngBounds(
+          LatLngBounds(
+            southwest: LatLng(minLat, minLng),
+            northeast: LatLng(maxLat, maxLng),
+          ),
+          100.0, // padding
+        ),
+      );
+    } catch (e) {
+      print('Error animating to show all places: $e');
+      // Fallback to showing current position
+      _animateToPosition(_currentPosition!);
     }
   }
 
@@ -435,6 +525,10 @@ class _PharmaciePageState extends State<PharmaciePage> {
 
   @override
   Widget build(BuildContext context) {
+    print(
+      '🏗️ Building PharmaciePage - isLoading: $_isLoading, currentPosition: $_currentPosition, places: ${_places.length}',
+    );
+
     return Scaffold(
       appBar: AppBar(
         title: Text(
@@ -475,24 +569,82 @@ class _PharmaciePageState extends State<PharmaciePage> {
                   ],
                 ),
               )
+              : _currentPosition == null
+              ? Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.location_off, size: 64, color: Colors.grey),
+                    SizedBox(height: 16.h),
+                    Text(
+                      'Location not available',
+                      style: GoogleFonts.raleway(fontSize: 16.sp),
+                    ),
+                    SizedBox(height: 8.h),
+                    ElevatedButton(
+                      onPressed: _checkLocationPermission,
+                      child: Text('Retry'),
+                    ),
+                  ],
+                ),
+              )
               : Stack(
                 children: [
                   // Google Map
-                  GoogleMap(
-                    initialCameraPosition: CameraPosition(
-                      target: _currentPosition ?? _defaultLocation,
-                      zoom: _defaultZoom,
+                  Container(
+                    width: double.infinity,
+                    height: double.infinity,
+                    child: GoogleMap(
+                      initialCameraPosition: CameraPosition(
+                        target: _currentPosition ?? _defaultLocation,
+                        zoom: _defaultZoom,
+                      ),
+                      myLocationEnabled: true,
+                      myLocationButtonEnabled: false,
+                      zoomControlsEnabled: false,
+                      mapToolbarEnabled: false,
+                      markers: _markers,
+                      onMapCreated: (GoogleMapController controller) {
+                        print('🗺️ GoogleMap created successfully');
+                        print(
+                          'Map position: ${_currentPosition ?? _defaultLocation}',
+                        );
+                        print('Markers count: ${_markers.length}');
+
+                        if (!_controller.isCompleted) {
+                          _controller.complete(controller);
+                          print('✅ GoogleMap controller completed');
+
+                          // Fetch places after map is ready if we haven't already
+                          if (_places.isEmpty &&
+                              _currentPosition != null &&
+                              !_isLoadingPlaces) {
+                            print('🔄 Map ready, fetching places...');
+                            _fetchNearbyPlaces();
+                          }
+                        }
+                      },
+                      onCameraMove: (CameraPosition position) {
+                        // Optional: Add camera move handling
+                        print('📷 Camera moved to: ${position.target}');
+                      },
+                      onTap: (LatLng position) {
+                        print('👆 Map tapped at: $position');
+                        // Clear selected place when tapping on map
+                        if (_selectedPlace != null) {
+                          setState(() {
+                            _selectedPlace = null;
+                          });
+                        }
+                      },
+                      // Add error handling
+                      onCameraIdle: () {
+                        print('📷 Camera idle');
+                      },
+                      onCameraMoveStarted: () {
+                        print('📷 Camera move started');
+                      },
                     ),
-                    myLocationEnabled: true,
-                    myLocationButtonEnabled: false,
-                    zoomControlsEnabled: false,
-                    mapToolbarEnabled: false,
-                    markers: _markers,
-                    onMapCreated: (GoogleMapController controller) {
-                      if (!_controller.isCompleted) {
-                        _controller.complete(controller);
-                      }
-                    },
                   ),
 
                   // Toggle buttons
