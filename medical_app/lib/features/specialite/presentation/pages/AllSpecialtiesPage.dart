@@ -66,6 +66,7 @@ class _AllSpecialtiesPageState extends State<AllSpecialtiesPage> {
           children: [
             // Search Bar
             Container(
+              width: double.infinity,
               decoration: BoxDecoration(
                 color: isDarkMode ? theme.cardColor : Colors.white,
                 borderRadius: BorderRadius.circular(25),
@@ -106,7 +107,8 @@ class _AllSpecialtiesPageState extends State<AllSpecialtiesPage> {
                   crossAxisCount: 3, // Modifié de 4 à 3 par ligne
                   crossAxisSpacing: 12,
                   mainAxisSpacing: 12,
-                  childAspectRatio: 0.8,
+                  childAspectRatio:
+                      0.85, // Slightly increased for better text space
                 ),
                 itemCount: _filteredSpecialties.length,
                 itemBuilder: (context, index) {
@@ -130,26 +132,36 @@ class _AllSpecialtiesPageState extends State<AllSpecialtiesPage> {
                         padding: const EdgeInsets.all(8),
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
+                          mainAxisSize: MainAxisSize.min,
                           children: [
-                            ColorFiltered(
-                              colorFilter: ColorFilter.mode(
-                                AppColors.primaryColor,
-                                BlendMode.srcATop,
-                              ),
-                              child: Image.asset(
-                                _filteredSpecialties[index]['image']!,
-                                width: 50,
-                                height: 50,
+                            Flexible(
+                              flex: 2,
+                              child: ColorFiltered(
+                                colorFilter: ColorFilter.mode(
+                                  AppColors.primaryColor,
+                                  BlendMode.srcATop,
+                                ),
+                                child: Image.asset(
+                                  _filteredSpecialties[index]['image']!,
+                                  width: 45,
+                                  height: 45,
+                                  fit: BoxFit.contain,
+                                ),
                               ),
                             ),
                             const SizedBox(height: 8),
-                            Text(
-                              _filteredSpecialties[index]['text']!,
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.bold,
-                                color: theme.textTheme.bodyLarge?.color,
+                            Flexible(
+                              flex: 1,
+                              child: Text(
+                                _filteredSpecialties[index]['text']!,
+                                textAlign: TextAlign.center,
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold,
+                                  color: theme.textTheme.bodyLarge?.color,
+                                ),
                               ),
                             ),
                           ],

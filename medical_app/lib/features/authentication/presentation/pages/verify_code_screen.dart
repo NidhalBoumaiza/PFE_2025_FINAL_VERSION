@@ -13,6 +13,10 @@ import 'package:lottie/lottie.dart';
 import 'package:medical_app/features/authentication/presentation/blocs/verify%20code%20bloc/verify_code_bloc.dart';
 import 'package:medical_app/features/authentication/presentation/pages/reset_password_screen.dart';
 import 'package:medical_app/features/authentication/presentation/pages/login_screen.dart';
+import 'package:medical_app/features/home/presentation/pages/home_patient.dart';
+import 'package:medical_app/features/home/presentation/pages/home_medecin.dart';
+import 'package:medical_app/features/authentication/data/data%20sources/auth_local_data_source.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class VerifyCodeScreen extends StatelessWidget {
   final String email;
@@ -123,18 +127,63 @@ class VerifyCodeScreen extends StatelessWidget {
 
                     // OTP Input Field with updated styling
                     BlocConsumer<VerifyCodeBloc, VerifyCodeState>(
-                      listener: (context, state) {
+                      listener: (context, state) async {
                         if (state is VerifyCodeSuccess) {
                           showSuccessSnackBar(
                             context,
                             "code_verified_successfully".tr,
                           );
                           if (isAccountCreation) {
-                            navigateToAnotherScreenWithSlideTransitionFromRightToLeftPushReplacement(
-                              context,
-                              const LoginScreen(),
-                            );
+                            // For account creation, navigate to appropriate home page based on user role
+                            try {
+                              final prefs =
+                                  await SharedPreferences.getInstance();
+                              final authLocalDataSource =
+                                  AuthLocalDataSourceImpl(
+                                    sharedPreferences: prefs,
+                                  );
+                              final user = await authLocalDataSource.getUser();
+
+                              if (user.role == 'patient') {
+                                // Navigate to patient home and remove all previous routes
+                                Navigator.pushAndRemoveUntil(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => const HomePatient(),
+                                  ),
+                                  (route) => false,
+                                );
+                              } else if (user.role == 'medecin') {
+                                // Navigate to doctor home and remove all previous routes
+                                Navigator.pushAndRemoveUntil(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => const HomeMedecin(),
+                                  ),
+                                  (route) => false,
+                                );
+                              } else {
+                                // Fallback to login screen
+                                Navigator.pushAndRemoveUntil(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => const LoginScreen(),
+                                  ),
+                                  (route) => false,
+                                );
+                              }
+                            } catch (e) {
+                              // If there's an error getting user data, go to login
+                              Navigator.pushAndRemoveUntil(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => const LoginScreen(),
+                                ),
+                                (route) => false,
+                              );
+                            }
                           } else {
+                            // For password reset, navigate to reset password screen
                             navigateToAnotherScreenWithSlideTransitionFromRightToLeft(
                               context,
                               ResetPasswordScreen(
@@ -262,7 +311,7 @@ class VerifyCodeScreen extends StatelessWidget {
                                   color: AppColors.primaryColor,
                                 ),
                               ),
-                              ),
+                            ),
                           ],
                         );
                       },

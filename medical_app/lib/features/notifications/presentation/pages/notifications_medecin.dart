@@ -28,7 +28,7 @@ class _NotificationsMedecinState extends State<NotificationsMedecin> {
   late UserEntity _currentUser;
   bool _isLoading = true;
   final GlobalKey<RefreshIndicatorState> _refreshIndicatorKey =
-  GlobalKey<RefreshIndicatorState>();
+      GlobalKey<RefreshIndicatorState>();
 
   @override
   void initState() {
@@ -82,9 +82,9 @@ class _NotificationsMedecinState extends State<NotificationsMedecin> {
             _isLoading = false;
           });
           if (mounted) {
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(SnackBar(content: Text('loading_timeout'.tr)));
+            ScaffoldMessenger.of(
+              context,
+            ).showSnackBar(SnackBar(content: Text('loading_timeout'.tr)));
           }
         }
       });
@@ -211,47 +211,47 @@ class _NotificationsMedecinState extends State<NotificationsMedecin> {
               onRefresh: _refreshNotifications,
               color: AppColors.primaryColor,
               child:
-              notifications.isEmpty
-                  ? ListView(
-                physics: const AlwaysScrollableScrollPhysics(),
-                children: [
-                  SizedBox(
-                    height: MediaQuery.of(context).size.height * 0.7,
-                    child: Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
+                  notifications.isEmpty
+                      ? ListView(
+                        physics: const AlwaysScrollableScrollPhysics(),
                         children: [
-                          Icon(
-                            Icons.notifications_off,
-                            size: 80.sp,
-                            color:
-                            isDarkMode
-                                ? theme.iconTheme.color
-                                ?.withOpacity(0.4)
-                                : Colors.grey[400],
-                          ),
-                          SizedBox(height: 16.h),
-                          Text(
-                            'no_notifications'.tr,
-                            style: GoogleFonts.raleway(
-                              fontSize: 16.sp,
-                              color: theme.textTheme.bodyMedium?.color,
+                          SizedBox(
+                            height: MediaQuery.of(context).size.height * 0.7,
+                            child: Center(
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(
+                                    Icons.notifications_off,
+                                    size: 80.sp,
+                                    color:
+                                        isDarkMode
+                                            ? theme.iconTheme.color
+                                                ?.withOpacity(0.4)
+                                            : Colors.grey[400],
+                                  ),
+                                  SizedBox(height: 16.h),
+                                  Text(
+                                    'no_notifications'.tr,
+                                    style: GoogleFonts.raleway(
+                                      fontSize: 16.sp,
+                                      color: theme.textTheme.bodyMedium?.color,
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
                         ],
+                      )
+                      : Column(
+                        children: [
+                          _buildFilterChips(),
+                          Expanded(
+                            child: _buildNotificationList(notifications),
+                          ),
+                        ],
                       ),
-                    ),
-                  ),
-                ],
-              )
-                  : Column(
-                children: [
-                  _buildFilterChips(),
-                  Expanded(
-                    child: _buildNotificationList(notifications),
-                  ),
-                ],
-              ),
             );
           } else if (state is NotificationError) {
             return RefreshIndicator(
@@ -368,7 +368,7 @@ class _NotificationsMedecinState extends State<NotificationsMedecin> {
       },
       selectedColor: AppColors.primaryColor,
       backgroundColor:
-      isDarkMode ? theme.cardColor.withOpacity(0.3) : Colors.grey.shade100,
+          isDarkMode ? theme.cardColor.withOpacity(0.3) : Colors.grey.shade100,
       checkmarkColor: Colors.white,
       padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.r)),
@@ -382,29 +382,29 @@ class _NotificationsMedecinState extends State<NotificationsMedecin> {
     final isDarkMode = theme.brightness == Brightness.dark;
 
     final filteredNotifications =
-    _selectedFilter == 'all'
-        ? notifications
-        : notifications.where((n) {
-      // Filter by notification type based on the selected filter
-      switch (_selectedFilter) {
-        case 'appointment':
-          return n.type == NotificationType.newAppointment ||
-              n.type == NotificationType.appointmentAccepted ||
+        _selectedFilter == 'all'
+            ? notifications
+            : notifications.where((n) {
+              // Filter by notification type based on the selected filter
+              switch (_selectedFilter) {
+                case 'appointment':
+                  return n.type == NotificationType.newAppointment ||
+                      n.type == NotificationType.appointmentAccepted ||
                       n.type == NotificationType.appointmentRejected ||
                       n.type == NotificationType.appointmentCanceled ||
                       n.type == NotificationType.appointmentAssigned ||
                       n.type == NotificationType.appointmentReminder;
-        case 'prescription':
+                case 'prescription':
                   return n.type == NotificationType.newPrescription ||
                       n.type == NotificationType.prescriptionUpdated ||
                       n.type == NotificationType.prescriptionCanceled ||
                       n.type == NotificationType.prescriptionRefilled;
-        case 'message':
+                case 'message':
                   return n.type == NotificationType.newMessage;
-        default:
-          return true;
-      }
-    }).toList();
+                default:
+                  return true;
+              }
+            }).toList();
 
     if (filteredNotifications.isEmpty) {
       return Center(
@@ -415,9 +415,9 @@ class _NotificationsMedecinState extends State<NotificationsMedecin> {
               Icons.notifications_off,
               size: 48.sp,
               color:
-              isDarkMode
-                  ? theme.iconTheme.color?.withOpacity(0.4)
-                  : Colors.grey[400],
+                  isDarkMode
+                      ? theme.iconTheme.color?.withOpacity(0.4)
+                      : Colors.grey[400],
             ),
             SizedBox(height: 16.h),
             Text(
@@ -470,22 +470,22 @@ class _NotificationsMedecinState extends State<NotificationsMedecin> {
           context: context,
           builder:
               (context) => AlertDialog(
-            title: Text('delete_notification'.tr),
-            content: Text('confirm_delete_notification'.tr),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(false),
-                child: Text('cancel'.tr),
+                title: Text('delete_notification'.tr),
+                content: Text('confirm_delete_notification'.tr),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.of(context).pop(false),
+                    child: Text('cancel'.tr),
+                  ),
+                  TextButton(
+                    onPressed: () => Navigator.of(context).pop(true),
+                    child: Text(
+                      'delete'.tr,
+                      style: const TextStyle(color: Colors.red),
+                    ),
+                  ),
+                ],
               ),
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(true),
-                child: Text(
-                  'delete'.tr,
-                  style: const TextStyle(color: Colors.red),
-                ),
-              ),
-            ],
-          ),
         );
       },
       onDismissed: (direction) {
@@ -514,9 +514,9 @@ class _NotificationsMedecinState extends State<NotificationsMedecin> {
         borderRadius: BorderRadius.circular(12.r),
         side: BorderSide(
           color:
-          notification.isRead
-              ? Colors.transparent
-              : AppColors.primaryColor.withOpacity(0.5),
+              notification.isRead
+                  ? Colors.transparent
+                  : AppColors.primaryColor.withOpacity(0.5),
           width: notification.isRead ? 0 : 1.5,
         ),
       ),
@@ -556,9 +556,9 @@ class _NotificationsMedecinState extends State<NotificationsMedecin> {
                                 style: GoogleFonts.raleway(
                                   fontSize: 16.sp,
                                   fontWeight:
-                                  notification.isRead
-                                      ? FontWeight.normal
-                                      : FontWeight.bold,
+                                      notification.isRead
+                                          ? FontWeight.normal
+                                          : FontWeight.bold,
                                   color: theme.textTheme.titleMedium?.color,
                                 ),
                                 maxLines: 1,
@@ -729,7 +729,7 @@ class _NotificationsMedecinState extends State<NotificationsMedecin> {
                 children: [
                   CircularProgressIndicator(color: AppColors.primaryColor),
                   SizedBox(width: 20),
-                  Text("Processing...", style: TextStyle(fontSize: 16)),
+                  Text("processing".tr, style: TextStyle(fontSize: 16)),
                 ],
               ),
             ),
@@ -757,13 +757,13 @@ class _NotificationsMedecinState extends State<NotificationsMedecin> {
             if (state is RendezVousErrorState || state is RendezVousError) {
               // Show error message
               String errorMessage =
-              state is RendezVousErrorState
-                  ? state.message
-                  : (state as RendezVousError).message;
+                  state is RendezVousErrorState
+                      ? state.message
+                      : (state as RendezVousError).message;
 
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
-                  content: Text('Error: $errorMessage'),
+                  content: Text('${"error".tr}: $errorMessage'),
                   backgroundColor: Colors.red,
                 ),
               );
@@ -828,7 +828,7 @@ class _NotificationsMedecinState extends State<NotificationsMedecin> {
                 children: [
                   CircularProgressIndicator(color: AppColors.primaryColor),
                   SizedBox(width: 20),
-                  Text("Processing...", style: TextStyle(fontSize: 16)),
+                  Text("processing".tr, style: TextStyle(fontSize: 16)),
                 ],
               ),
             ),
@@ -856,13 +856,13 @@ class _NotificationsMedecinState extends State<NotificationsMedecin> {
             if (state is RendezVousErrorState || state is RendezVousError) {
               // Show error message
               String errorMessage =
-              state is RendezVousErrorState
-                  ? state.message
-                  : (state as RendezVousError).message;
+                  state is RendezVousErrorState
+                      ? state.message
+                      : (state as RendezVousError).message;
 
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
-                  content: Text('Error: $errorMessage'),
+                  content: Text('${"error".tr}: $errorMessage'),
                   backgroundColor: Colors.red,
                 ),
               );
@@ -929,9 +929,9 @@ class _NotificationsMedecinState extends State<NotificationsMedecin> {
               MaterialPageRoute(
                 builder:
                     (context) => AppointmentDetailsPage(
-                  appointment: appointment,
-                  isDoctor: true,
-                ),
+                      appointment: appointment,
+                      isDoctor: true,
+                    ),
               ),
             );
           }
@@ -945,22 +945,22 @@ class _NotificationsMedecinState extends State<NotificationsMedecin> {
         MaterialPageRoute(
           builder:
               (context) => Scaffold(
-            appBar: AppBar(
-              title: Text('Loading...'),
-              backgroundColor: AppColors.primaryColor,
-            ),
-            body: Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  CircularProgressIndicator(color: AppColors.primaryColor),
-                  SizedBox(height: 16),
-                  Text('Loading appointment details...'),
-                  blocListener,
-                ],
+                appBar: AppBar(
+                  title: Text('loading'.tr),
+                  backgroundColor: AppColors.primaryColor,
+                ),
+                body: Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      CircularProgressIndicator(color: AppColors.primaryColor),
+                      SizedBox(height: 16),
+                      Text('loading_appointment_details'.tr),
+                      blocListener,
+                    ],
+                  ),
+                ),
               ),
-            ),
-          ),
         ),
       );
     } else if (notification.prescriptionId != null) {
@@ -977,19 +977,19 @@ class _NotificationsMedecinState extends State<NotificationsMedecin> {
     final difference = now.difference(createdAt);
 
     if (difference.inSeconds < 60) {
-      return 'just now';
+      return 'just_now'.tr;
     } else if (difference.inMinutes < 60) {
-      return '${difference.inMinutes} minutes ago';
+      return '${difference.inMinutes} ${"minutes_ago".tr}';
     } else if (difference.inHours < 24) {
-      return '${difference.inHours} hours ago';
+      return '${difference.inHours} ${"hours_ago".tr}';
     } else if (difference.inDays < 7) {
-      return '${difference.inDays} days ago';
+      return '${difference.inDays} ${"days_ago".tr}';
     } else if (difference.inDays < 30) {
-      return '${difference.inDays ~/ 7} weeks ago';
+      return '${difference.inDays ~/ 7} ${"weeks_ago".tr}';
     } else if (difference.inDays < 365) {
-      return '${difference.inDays ~/ 30} months ago';
+      return '${difference.inDays ~/ 30} ${"months_ago".tr}';
     } else {
-      return '${difference.inDays ~/ 365} years ago';
+      return '${difference.inDays ~/ 365} ${"years_ago".tr}';
     }
   }
 }

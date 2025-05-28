@@ -562,7 +562,7 @@ class _AppointmentsMedecinsState extends State<AppointmentsMedecins> {
                                       MainAxisAlignment.spaceBetween,
                                   children: [
                                     Text(
-                                      "Sélectionner une date",
+                                      "select_date".tr,
                                       style: GoogleFonts.raleway(
                                         fontSize: 16.sp,
                                         fontWeight: FontWeight.bold,
@@ -581,7 +581,7 @@ class _AppointmentsMedecinsState extends State<AppointmentsMedecins> {
                                               _applyDateFilter();
                                             },
                                             child: Text(
-                                              "Effacer",
+                                              "clear".tr,
                                               style: GoogleFonts.raleway(
                                                 color: Colors.red,
                                                 fontWeight: FontWeight.w600,
@@ -701,10 +701,10 @@ class _AppointmentsMedecinsState extends State<AppointmentsMedecins> {
                                     formatButtonVisible: true,
                                     titleCentered: true,
                                   ),
-                                  availableCalendarFormats: const {
-                                    CalendarFormat.month: 'Mois',
-                                    CalendarFormat.twoWeeks: '2 Semaines',
-                                    CalendarFormat.week: 'Semaine',
+                                  availableCalendarFormats: {
+                                    CalendarFormat.month: "month".tr,
+                                    CalendarFormat.twoWeeks: "two_weeks".tr,
+                                    CalendarFormat.week: "week".tr,
                                   },
                                 ),
                               ],
@@ -827,10 +827,16 @@ class _AppointmentsMedecinsState extends State<AppointmentsMedecins> {
                                 SizedBox(height: 24.h),
                                 Text(
                                   selectedDate != null
-                                      ? "Aucun rendez-vous trouvé pour cette date"
+                                      ? "no_appointments_for_date".tr
+                                          .replaceAll(
+                                            "{0}",
+                                            DateFormat(
+                                              'dd/MM/yyyy',
+                                            ).format(selectedDate!),
+                                          )
                                       : statusFilter != null
-                                      ? "Aucun rendez-vous ${_getStatusText(statusFilter!).toLowerCase()}"
-                                      : "Aucun rendez-vous trouvé",
+                                      ? "no_appointments_found".tr
+                                      : "no_appointments_found".tr,
                                   style: GoogleFonts.raleway(
                                     fontSize: 18.sp,
                                     fontWeight: FontWeight.w600,
@@ -840,7 +846,7 @@ class _AppointmentsMedecinsState extends State<AppointmentsMedecins> {
                                 ),
                                 SizedBox(height: 8.h),
                                 Text(
-                                  "Essayez de modifier les filtres ou d'actualiser la page",
+                                  "try_refreshing_the_page".tr,
                                   style: GoogleFonts.raleway(
                                     fontSize: 14.sp,
                                     color: Colors.grey[600],
@@ -952,7 +958,8 @@ class _AppointmentsMedecinsState extends State<AppointmentsMedecins> {
                                                       child: Text(
                                                         appointment
                                                                 .patientName ??
-                                                            "Patient inconnu",
+                                                            "unknown_patient"
+                                                                .tr,
                                                         style:
                                                             GoogleFonts.raleway(
                                                               fontSize: 16.sp,

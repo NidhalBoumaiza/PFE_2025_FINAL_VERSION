@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
+import 'package:get/get.dart';
 
 import '../../../../core/utils/app_colors.dart';
 import '../../domain/entities/prescription_entity.dart';
@@ -47,12 +48,12 @@ class _PrescriptionsListPageState extends State<PrescriptionsListPage> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDarkMode = theme.brightness == Brightness.dark;
-    
+
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
         title: Text(
-          widget.isDoctor ? 'Mes Ordonnances' : 'Mes Ordonnances',
+          widget.isDoctor ? 'my_prescriptions'.tr : 'my_prescriptions'.tr,
           style: GoogleFonts.raleway(
             fontWeight: FontWeight.bold,
             fontSize: 18.sp,
@@ -76,14 +77,10 @@ class _PrescriptionsListPageState extends State<PrescriptionsListPage> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(
-                    Icons.error_outline,
-                    color: Colors.red,
-                    size: 60.sp,
-                  ),
+                  Icon(Icons.error_outline, color: Colors.red, size: 60.sp),
                   SizedBox(height: 16.h),
                   Text(
-                    'Erreur: ${state.message}',
+                    '${'error'.tr}: ${state.message}',
                     style: GoogleFonts.raleway(
                       fontSize: 16.sp,
                       color: theme.textTheme.bodyMedium?.color,
@@ -94,10 +91,7 @@ class _PrescriptionsListPageState extends State<PrescriptionsListPage> {
                   ElevatedButton.icon(
                     onPressed: _loadPrescriptions,
                     icon: const Icon(Icons.refresh),
-                    label: Text(
-                      'Réessayer',
-                      style: GoogleFonts.raleway(),
-                    ),
+                    label: Text('retry'.tr, style: GoogleFonts.raleway()),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.primaryColor,
                       foregroundColor: Colors.white,
@@ -117,12 +111,15 @@ class _PrescriptionsListPageState extends State<PrescriptionsListPage> {
                 children: [
                   Icon(
                     Icons.medical_services_outlined,
-                    color: isDarkMode ? theme.iconTheme.color?.withOpacity(0.4) : Colors.grey,
+                    color:
+                        isDarkMode
+                            ? theme.iconTheme.color?.withOpacity(0.4)
+                            : Colors.grey,
                     size: 60.sp,
                   ),
                   SizedBox(height: 16.h),
                   Text(
-                    'Chargement des ordonnances...',
+                    'loading_prescriptions'.tr,
                     style: GoogleFonts.raleway(
                       fontSize: 16.sp,
                       color: theme.textTheme.bodyMedium?.color,
@@ -140,7 +137,7 @@ class _PrescriptionsListPageState extends State<PrescriptionsListPage> {
   Widget _buildPrescriptionsList(List<PrescriptionEntity> prescriptions) {
     final theme = Theme.of(context);
     final isDarkMode = theme.brightness == Brightness.dark;
-    
+
     if (prescriptions.isEmpty) {
       return Center(
         child: Column(
@@ -148,12 +145,15 @@ class _PrescriptionsListPageState extends State<PrescriptionsListPage> {
           children: [
             Icon(
               Icons.medical_services_outlined,
-              color: isDarkMode ? theme.iconTheme.color?.withOpacity(0.4) : Colors.grey,
+              color:
+                  isDarkMode
+                      ? theme.iconTheme.color?.withOpacity(0.4)
+                      : Colors.grey,
               size: 60.sp,
             ),
             SizedBox(height: 16.h),
             Text(
-              'Aucune ordonnance',
+              'no_prescriptions'.tr,
               style: GoogleFonts.raleway(
                 fontSize: 18.sp,
                 fontWeight: FontWeight.bold,
@@ -163,8 +163,8 @@ class _PrescriptionsListPageState extends State<PrescriptionsListPage> {
             SizedBox(height: 8.h),
             Text(
               widget.isDoctor
-                  ? 'Vous n\'avez pas encore créé d\'ordonnance'
-                  : 'Vous n\'avez pas encore reçu d\'ordonnance',
+                  ? 'no_prescriptions_created_yet'.tr
+                  : 'no_prescriptions_received_yet'.tr,
               style: GoogleFonts.raleway(
                 fontSize: 14.sp,
                 color: theme.textTheme.bodySmall?.color,
@@ -196,26 +196,25 @@ class _PrescriptionsListPageState extends State<PrescriptionsListPage> {
     final theme = Theme.of(context);
     final isDarkMode = theme.brightness == Brightness.dark;
     final medicationCount = prescription.medications.length;
-    
+
     return Card(
       elevation: 2,
       margin: EdgeInsets.only(bottom: 16.h),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12.r),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
       color: theme.cardColor,
       child: InkWell(
         onTap: () {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => BlocProvider<PrescriptionBloc>.value(
-                value: _prescriptionBloc,
-                child: PrescriptionDetailsPage(
-                  prescription: prescription,
-                  isDoctor: widget.isDoctor,
-                ),
-              ),
+              builder:
+                  (context) => BlocProvider<PrescriptionBloc>.value(
+                    value: _prescriptionBloc,
+                    child: PrescriptionDetailsPage(
+                      prescription: prescription,
+                      isDoctor: widget.isDoctor,
+                    ),
+                  ),
             ),
           ).then((_) {
             // Refresh list when returning
@@ -238,7 +237,7 @@ class _PrescriptionsListPageState extends State<PrescriptionsListPage> {
                   SizedBox(width: 12.w),
                   Expanded(
                     child: Text(
-                      'Ordonnance du ${DateFormat('dd/MM/yyyy').format(prescription.date)}',
+                      '${'prescription_from'.tr} ${DateFormat('dd/MM/yyyy').format(prescription.date)}',
                       style: GoogleFonts.raleway(
                         fontSize: 16.sp,
                         fontWeight: FontWeight.bold,
@@ -251,19 +250,22 @@ class _PrescriptionsListPageState extends State<PrescriptionsListPage> {
               SizedBox(height: 12.h),
               Text(
                 widget.isDoctor
-                    ? 'Patient: ${prescription.patientName}'
-                    : 'Médecin: Dr. ${prescription.doctorName}',
+                    ? '${'patient'.tr}: ${prescription.patientName}'
+                    : '${'doctor'.tr}: Dr. ${prescription.doctorName}',
                 style: GoogleFonts.raleway(
                   fontSize: 14.sp,
                   color: theme.textTheme.bodyMedium?.color,
                 ),
               ),
-              Divider(height: 20.h, color: isDarkMode ? Colors.grey.shade700 : Colors.grey.shade300),
+              Divider(
+                height: 20.h,
+                color: isDarkMode ? Colors.grey.shade700 : Colors.grey.shade300,
+              ),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    '$medicationCount médicament${medicationCount > 1 ? 's' : ''}',
+                    '$medicationCount ${'medication'.tr}${medicationCount > 1 ? 's' : ''}',
                     style: GoogleFonts.raleway(
                       fontSize: 14.sp,
                       color: theme.textTheme.bodySmall?.color,
@@ -272,7 +274,7 @@ class _PrescriptionsListPageState extends State<PrescriptionsListPage> {
                   Row(
                     children: [
                       Text(
-                        'Voir détails',
+                        'view_details'.tr,
                         style: GoogleFonts.raleway(
                           fontSize: 14.sp,
                           color: AppColors.primaryColor,
@@ -288,21 +290,17 @@ class _PrescriptionsListPageState extends State<PrescriptionsListPage> {
                   ),
                 ],
               ),
-              
+
               // Show edit status if doctor
-              if (widget.isDoctor) 
+              if (widget.isDoctor)
                 Padding(
                   padding: EdgeInsets.only(top: 8.h),
                   child: Row(
                     children: [
-                      Icon(
-                        Icons.edit,
-                        size: 16.sp,
-                        color: Colors.green,
-                      ),
+                      Icon(Icons.edit, size: 16.sp, color: Colors.green),
                       SizedBox(width: 4.w),
                       Text(
-                        'Modifiable',
+                        'editable'.tr,
                         style: GoogleFonts.raleway(
                           fontSize: 12.sp,
                           color: Colors.green,
@@ -317,4 +315,4 @@ class _PrescriptionsListPageState extends State<PrescriptionsListPage> {
       ),
     );
   }
-} 
+}

@@ -4,6 +4,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:uuid/uuid.dart';
+import 'package:get/get.dart';
 
 import '../../../../core/utils/app_colors.dart';
 import '../../../../core/utils/custom_snack_bar.dart';
@@ -45,14 +46,14 @@ class _CreatePrescriptionPageState extends State<CreatePrescriptionPage> {
     super.initState();
     _loadExistingPrescription();
   }
-  
+
   void _loadExistingPrescription() {
     if (widget.existingPrescription != null) {
       setState(() {
         _isEditing = true;
         _prescriptionId = widget.existingPrescription!.id;
         _noteController.text = widget.existingPrescription!.note ?? '';
-        
+
         // Load medications from existing prescription
         for (var med in widget.existingPrescription!.medications) {
           _medications.add(MedicationModel.fromEntity(med));
@@ -74,10 +75,7 @@ class _CreatePrescriptionPageState extends State<CreatePrescriptionPage> {
     if (_medicationNameController.text.isEmpty ||
         _dosageController.text.isEmpty ||
         _instructionsController.text.isEmpty) {
-      showWarningSnackBar(
-        context,
-            'Veuillez remplir tous les champs pour le médicament',
-      );
+      showWarningSnackBar(context, 'fill_all_medication_fields'.tr);
       return;
     }
 
@@ -106,9 +104,9 @@ class _CreatePrescriptionPageState extends State<CreatePrescriptionPage> {
     _medicationNameController.text = medication.name;
     _dosageController.text = medication.dosage;
     _instructionsController.text = medication.instructions;
-    
+
     _removeMedication(medication.id);
-    
+
     // Scroll to medication form
     Future.delayed(Duration(milliseconds: 100), () {
       Scrollable.ensureVisible(
@@ -120,10 +118,7 @@ class _CreatePrescriptionPageState extends State<CreatePrescriptionPage> {
 
   Future<void> _savePrescription() async {
     if (_medications.isEmpty) {
-      showWarningSnackBar(
-        context,
-            'Veuillez ajouter au moins un médicament',
-      );
+      showWarningSnackBar(context, 'add_at_least_one_medication'.tr);
       return;
     }
 
@@ -141,37 +136,40 @@ class _CreatePrescriptionPageState extends State<CreatePrescriptionPage> {
         'patientName': widget.appointment.patientName,
         'doctorId': widget.appointment.doctorId,
         'doctorName': widget.appointment.doctorName,
-        'date': _isEditing 
-          ? widget.existingPrescription!.date.toIso8601String() 
-          : DateTime.now().toIso8601String(),
+        'date':
+            _isEditing
+                ? widget.existingPrescription!.date.toIso8601String()
+                : DateTime.now().toIso8601String(),
         'lastUpdated': DateTime.now().toIso8601String(),
         'medications': _medications.map((m) => m.toJson()).toList(),
         'note': _noteController.text,
       };
 
-      await _firestore.collection('prescriptions').doc(prescriptionId).set(prescriptionData);
+      await _firestore
+          .collection('prescriptions')
+          .doc(prescriptionId)
+          .set(prescriptionData);
 
       // Also update the appointment status to completed if needed
-      if (widget.appointment.status != 'completed' && widget.appointment.id != null) {
-        await _firestore.collection('rendez_vous').doc(widget.appointment.id).update({
-          'status': 'completed',
-        });
+      if (widget.appointment.status != 'completed' &&
+          widget.appointment.id != null) {
+        await _firestore
+            .collection('rendez_vous')
+            .doc(widget.appointment.id)
+            .update({'status': 'completed'});
       }
 
       showSuccessSnackBar(
         context,
         _isEditing
-          ? 'Ordonnance mise à jour avec succès'
-          : 'Ordonnance enregistrée avec succès',
+            ? 'prescription_updated_success'.tr
+            : 'prescription_saved_success'.tr,
       );
 
       Navigator.pop(context, true);
     } catch (e) {
       print('Error saving prescription: $e');
-      showErrorSnackBar(
-        context,
-            'Erreur lors de l\'enregistrement: $e',
-      );
+      showErrorSnackBar(context, '${'save_error'.tr}: $e');
     } finally {
       setState(() {
         _isSaving = false;
@@ -184,7 +182,7 @@ class _CreatePrescriptionPageState extends State<CreatePrescriptionPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          _isEditing ? "Modifier l'ordonnance" : "Nouvelle Ordonnance",
+          _isEditing ? 'edit_prescription'.tr : 'new_prescription'.tr,
           style: GoogleFonts.raleway(
             fontWeight: FontWeight.bold,
             fontSize: 18.sp,
@@ -200,23 +198,24 @@ class _CreatePrescriptionPageState extends State<CreatePrescriptionPage> {
         actions: [
           TextButton(
             onPressed: _isSaving ? null : _savePrescription,
-            child: _isSaving
-                ? SizedBox(
-                    width: 24.w,
-                    height: 24.h,
-                    child: const CircularProgressIndicator(
-                      color: Colors.white,
-                      strokeWidth: 2,
+            child:
+                _isSaving
+                    ? SizedBox(
+                      width: 24.w,
+                      height: 24.h,
+                      child: const CircularProgressIndicator(
+                        color: Colors.white,
+                        strokeWidth: 2,
+                      ),
+                    )
+                    : Text(
+                      'save'.tr,
+                      style: GoogleFonts.raleway(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16.sp,
+                      ),
                     ),
-                  )
-                : Text(
-                    "Enregistrer",
-                    style: GoogleFonts.raleway(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16.sp,
-                    ),
-                  ),
           ),
         ],
       ),
@@ -232,7 +231,7 @@ class _CreatePrescriptionPageState extends State<CreatePrescriptionPage> {
 
               // Medication list
               Text(
-                "Médicaments",
+                'medications'.tr,
                 style: GoogleFonts.raleway(
                   fontSize: 18.sp,
                   fontWeight: FontWeight.bold,
@@ -242,7 +241,9 @@ class _CreatePrescriptionPageState extends State<CreatePrescriptionPage> {
               SizedBox(height: 8.h),
 
               // Existing medications
-              ..._medications.map((medication) => _buildMedicationItem(medication)),
+              ..._medications.map(
+                (medication) => _buildMedicationItem(medication),
+              ),
 
               // Add medication form
               _buildAddMedicationForm(),
@@ -250,7 +251,7 @@ class _CreatePrescriptionPageState extends State<CreatePrescriptionPage> {
 
               // Additional notes
               Text(
-                "Notes additionnelles",
+                'additional_notes'.tr,
                 style: GoogleFonts.raleway(
                   fontSize: 18.sp,
                   fontWeight: FontWeight.bold,
@@ -269,7 +270,7 @@ class _CreatePrescriptionPageState extends State<CreatePrescriptionPage> {
                     controller: _noteController,
                     maxLines: 4,
                     decoration: InputDecoration(
-                      hintText: "Notes ou instructions supplémentaires...",
+                      hintText: 'additional_notes_hint'.tr,
                       border: InputBorder.none,
                       hintStyle: GoogleFonts.raleway(
                         fontSize: 14.sp,
@@ -293,7 +294,7 @@ class _CreatePrescriptionPageState extends State<CreatePrescriptionPage> {
         onPressed: _isSaving ? null : _savePrescription,
         icon: Icon(Icons.save, color: Colors.white),
         label: Text(
-          "Enregistrer",
+          'save'.tr,
           style: GoogleFonts.raleway(
             color: Colors.white,
             fontWeight: FontWeight.bold,
@@ -308,9 +309,7 @@ class _CreatePrescriptionPageState extends State<CreatePrescriptionPage> {
   Widget _buildPatientInfoCard() {
     return Card(
       elevation: 3,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12.r),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
       child: Padding(
         padding: EdgeInsets.all(16.w),
         child: Column(
@@ -325,11 +324,7 @@ class _CreatePrescriptionPageState extends State<CreatePrescriptionPage> {
                     color: Colors.orange,
                     borderRadius: BorderRadius.circular(10.r),
                   ),
-                  child: Icon(
-                    Icons.person,
-                    color: Colors.white,
-                    size: 30.sp,
-                  ),
+                  child: Icon(Icons.person, color: Colors.white, size: 30.sp),
                 ),
                 SizedBox(width: 12.w),
                 Expanded(
@@ -337,7 +332,7 @@ class _CreatePrescriptionPageState extends State<CreatePrescriptionPage> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        widget.appointment.patientName ?? "Patient inconnu",
+                        widget.appointment.patientName ?? 'unknown_patient'.tr,
                         style: GoogleFonts.raleway(
                           fontSize: 16.sp,
                           fontWeight: FontWeight.bold,
@@ -346,7 +341,9 @@ class _CreatePrescriptionPageState extends State<CreatePrescriptionPage> {
                       ),
                       SizedBox(height: 4.h),
                       Text(
-                        DateFormat('dd/MM/yyyy à HH:mm').format(widget.appointment.startTime),
+                        DateFormat(
+                          'dd/MM/yyyy à HH:mm',
+                        ).format(widget.appointment.startTime),
                         style: GoogleFonts.raleway(
                           fontSize: 14.sp,
                           color: Colors.grey.shade600,
@@ -357,10 +354,11 @@ class _CreatePrescriptionPageState extends State<CreatePrescriptionPage> {
                 ),
               ],
             ),
-            if (widget.patient != null && widget.patient!.antecedent.isNotEmpty) ...[
+            if (widget.patient != null &&
+                widget.patient!.antecedent.isNotEmpty) ...[
               Divider(height: 24.h),
               Text(
-                "Antécédents médicaux:",
+                '${'medical_history'.tr}:',
                 style: GoogleFonts.raleway(
                   fontSize: 14.sp,
                   fontWeight: FontWeight.bold,
@@ -386,9 +384,7 @@ class _CreatePrescriptionPageState extends State<CreatePrescriptionPage> {
     return Card(
       margin: EdgeInsets.only(bottom: 12.h),
       elevation: 2,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12.r),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
       child: Padding(
         padding: EdgeInsets.all(16.w),
         child: Column(
@@ -412,7 +408,7 @@ class _CreatePrescriptionPageState extends State<CreatePrescriptionPage> {
                     color: AppColors.primaryColor,
                     size: 22.sp,
                   ),
-                  tooltip: "Modifier",
+                  tooltip: 'edit'.tr,
                   onPressed: () => _editMedication(medication),
                 ),
                 IconButton(
@@ -421,7 +417,7 @@ class _CreatePrescriptionPageState extends State<CreatePrescriptionPage> {
                     color: Colors.red,
                     size: 22.sp,
                   ),
-                  tooltip: "Supprimer",
+                  tooltip: 'delete'.tr,
                   onPressed: () => _removeMedication(medication.id),
                 ),
               ],
@@ -436,7 +432,7 @@ class _CreatePrescriptionPageState extends State<CreatePrescriptionPage> {
                 ),
                 SizedBox(width: 6.w),
                 Text(
-                  "Dosage: ${medication.dosage}",
+                  '${'dosage_label'.tr}: ${medication.dosage}',
                   style: GoogleFonts.raleway(
                     fontSize: 14.sp,
                     color: Colors.grey.shade700,
@@ -456,7 +452,7 @@ class _CreatePrescriptionPageState extends State<CreatePrescriptionPage> {
                 SizedBox(width: 6.w),
                 Expanded(
                   child: Text(
-                    "Instructions: ${medication.instructions}",
+                    '${'instructions_label'.tr}: ${medication.instructions}',
                     style: GoogleFonts.raleway(
                       fontSize: 14.sp,
                       color: Colors.grey.shade700,
@@ -474,9 +470,7 @@ class _CreatePrescriptionPageState extends State<CreatePrescriptionPage> {
   Widget _buildAddMedicationForm() {
     return Card(
       elevation: 2,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12.r),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
       child: Padding(
         padding: EdgeInsets.all(16.w),
         child: Form(
@@ -485,7 +479,7 @@ class _CreatePrescriptionPageState extends State<CreatePrescriptionPage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                "Ajouter un médicament",
+                'add_medication'.tr,
                 style: GoogleFonts.raleway(
                   fontSize: 16.sp,
                   fontWeight: FontWeight.bold,
@@ -496,7 +490,7 @@ class _CreatePrescriptionPageState extends State<CreatePrescriptionPage> {
               TextFormField(
                 controller: _medicationNameController,
                 decoration: InputDecoration(
-                  labelText: 'Nom du médicament',
+                  labelText: 'medication_name'.tr,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8.r),
                   ),
@@ -510,7 +504,7 @@ class _CreatePrescriptionPageState extends State<CreatePrescriptionPage> {
               TextFormField(
                 controller: _dosageController,
                 decoration: InputDecoration(
-                  labelText: 'Dosage',
+                  labelText: 'dosage'.tr,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8.r),
                   ),
@@ -524,7 +518,7 @@ class _CreatePrescriptionPageState extends State<CreatePrescriptionPage> {
               TextFormField(
                 controller: _instructionsController,
                 decoration: InputDecoration(
-                  labelText: 'Instructions',
+                  labelText: 'instructions'.tr,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8.r),
                   ),
@@ -541,7 +535,7 @@ class _CreatePrescriptionPageState extends State<CreatePrescriptionPage> {
                   onPressed: _addMedication,
                   icon: Icon(Icons.add, color: Colors.white),
                   label: Text(
-                    "Ajouter",
+                    'add'.tr,
                     style: GoogleFonts.raleway(
                       color: Colors.white,
                       fontWeight: FontWeight.bold,
@@ -565,4 +559,4 @@ class _CreatePrescriptionPageState extends State<CreatePrescriptionPage> {
       ),
     );
   }
-} 
+}

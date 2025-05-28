@@ -79,7 +79,7 @@ class _EditDoctorProfilePageState extends State<EditDoctorProfilePage> {
         builder:
             (context) => LocationPickerWidget(
               initialLocation: _selectedLocation,
-              title: 'edit_office_location',
+              title: 'edit_office_location'.tr,
               onLocationSelected: (location, address) {
                 setState(() {
                   _selectedLocation = location;
@@ -280,7 +280,7 @@ class _EditDoctorProfilePageState extends State<EditDoctorProfilePage> {
 
               _buildTextField(
                 controller: _nameController,
-                label: 'first_name'.tr,
+                label: 'first_name_label'.tr,
                 icon: Icons.person_outline,
                 validator: (value) {
                   if (value == null || value.trim().isEmpty) {
@@ -294,11 +294,11 @@ class _EditDoctorProfilePageState extends State<EditDoctorProfilePage> {
 
               _buildTextField(
                 controller: _lastNameController,
-                label: 'last_name'.tr,
+                label: 'name_label'.tr,
                 icon: Icons.person_outline,
                 validator: (value) {
                   if (value == null || value.trim().isEmpty) {
-                    return 'last_name_required'.tr;
+                    return 'name_required'.tr;
                   }
                   return null;
                 },
@@ -308,7 +308,7 @@ class _EditDoctorProfilePageState extends State<EditDoctorProfilePage> {
 
               _buildTextField(
                 controller: _phoneController,
-                label: 'phone_number'.tr,
+                label: 'phone_number_label'.tr,
                 icon: Icons.phone_outlined,
                 keyboardType: TextInputType.phone,
                 validator: (value) {

@@ -48,7 +48,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
           backgroundColor: AppColors.primaryColor,
           elevation: 0,
           title: Text(
-            "Réinitialiser le mot de passe",
+            "reset_password_title".tr,
             style: GoogleFonts.raleway(
               fontSize: 20.sp,
               fontWeight: FontWeight.bold,
@@ -95,7 +95,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                       // Title and instructions
                       Center(
                         child: Text(
-                          "Nouveau mot de passe",
+                          "new_password_title".tr,
                           style: GoogleFonts.raleway(
                             fontSize: 24.sp,
                             fontWeight: FontWeight.bold,
@@ -109,7 +109,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
 
                       Center(
                         child: Text(
-                          "Créez un nouveau mot de passe pour votre compte ${widget.email}",
+                          "${"create_new_password_for_account".tr} ${widget.email}",
                           style: GoogleFonts.raleway(
                             fontSize: 14.sp,
                             color: Colors.black54,
@@ -123,7 +123,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
 
                       // New password field
                       Text(
-                        "Nouveau mot de passe",
+                        "new_password_label".tr,
                         style: GoogleFonts.raleway(
                           fontSize: 16.sp,
                           fontWeight: FontWeight.w600,
@@ -189,7 +189,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                                 width: 1,
                               ),
                             ),
-                            hintText: "Entrez votre nouveau mot de passe",
+                            hintText: "new_password_placeholder".tr,
                             hintStyle: GoogleFonts.raleway(
                               color: Colors.grey[400],
                               fontSize: 15.sp,
@@ -216,10 +216,10 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                           ),
                           validator: (value) {
                             if (value == null || value.isEmpty) {
-                              return "Le mot de passe est obligatoire";
+                              return "password_required".tr;
                             }
                             if (value.length < 6) {
-                              return "Le mot de passe doit contenir au moins 6 caractères";
+                              return "password_min_length".tr;
                             }
                             return null;
                           },
@@ -230,7 +230,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
 
                       // Confirm password field
                       Text(
-                        "Confirmer le mot de passe",
+                        "confirm_password_label".tr,
                         style: GoogleFonts.raleway(
                           fontSize: 16.sp,
                           fontWeight: FontWeight.w600,
@@ -296,7 +296,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                                 width: 1,
                               ),
                             ),
-                            hintText: "Confirmez votre mot de passe",
+                            hintText: "confirm_password_placeholder".tr,
                             hintStyle: GoogleFonts.raleway(
                               color: Colors.grey[400],
                               fontSize: 15.sp,
@@ -323,10 +323,10 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                           ),
                           validator: (value) {
                             if (value == null || value.isEmpty) {
-                              return "La confirmation du mot de passe est obligatoire";
+                              return "confirm_password_required".tr;
                             }
                             if (value != newPasswordController.text) {
-                              return "Les mots de passe ne correspondent pas";
+                              return "passwords_dont_match".tr;
                             }
                             return null;
                           },
@@ -341,7 +341,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                           if (state is ResetPasswordSuccess) {
                             showSuccessSnackBar(
                               context,
-                              "Mot de passe réinitialisé avec succès",
+                              "password_reset_success".tr,
                             );
                             navigateToAnotherScreenWithSlideTransitionFromRightToLeftPushReplacement(
                               context,
@@ -387,7 +387,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                                         strokeWidth: 3,
                                       )
                                       : Text(
-                                        "Réinitialiser le mot de passe",
+                                        "reset_password_button".tr,
                                         style: GoogleFonts.raleway(
                                           fontSize: 16.sp,
                                           fontWeight: FontWeight.w600,

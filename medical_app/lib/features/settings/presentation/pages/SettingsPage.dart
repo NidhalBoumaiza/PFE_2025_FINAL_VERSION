@@ -7,15 +7,13 @@ import 'package:medical_app/features/authentication/data/models/medecin_model.da
 import 'package:medical_app/features/authentication/data/models/user_model.dart';
 import 'package:medical_app/features/authentication/domain/entities/user_entity.dart';
 import 'package:medical_app/features/authentication/domain/entities/medecin_entity.dart';
-import 'package:medical_app/features/profile/presentation/pages/blocs/BLoC%20update%20profile/update_user_bloc.dart';
-import 'package:medical_app/features/profile/presentation/pages/edit_doctor_profile_page.dart';
+import 'package:medical_app/features/profile/presentation/pages/ProfilMedecin.dart';
 import 'package:medical_app/features/profile/presentation/pages/edit_patient_profile_page.dart';
 import 'package:medical_app/widgets/theme_cubit_switch.dart';
 import 'package:medical_app/i18n/app_translation.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../../authentication/presentation/pages/login_screen.dart';
+import 'package:medical_app/features/authentication/presentation/pages/login_screen.dart';
 import 'package:medical_app/injection_container.dart' as di;
-import 'change_password_screen.dart';
+import 'package:medical_app/features/settings/presentation/pages/change_password_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:medical_app/features/authentication/domain/entities/patient_entity.dart';
 import 'package:medical_app/features/authentication/data/models/patient_model.dart';
@@ -131,11 +129,11 @@ class _SettingsPageState extends State<SettingsPage> {
         padding: const EdgeInsets.all(12),
         child: Column(
           children: [
-            _buildLanguageOption('Français', 'fr'),
+            _buildLanguageOption("french".tr, 'fr'),
             const Divider(height: 1),
-            _buildLanguageOption('English', 'en'),
+            _buildLanguageOption("english".tr, 'en'),
             const Divider(height: 1),
-            _buildLanguageOption('العربية', 'ar'),
+            _buildLanguageOption("arabic".tr, 'ar'),
           ],
         ),
       ),
@@ -147,8 +145,18 @@ class _SettingsPageState extends State<SettingsPage> {
 
     return InkWell(
       onTap: () async {
-        Get.updateLocale(Locale(langCode));
-        await LanguageService.saveLanguage(langCode);
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString('app_language', langCode);
+        Get.updateLocale(
+          Locale(
+            langCode,
+            langCode == 'fr'
+                ? 'FR'
+                : langCode == 'en'
+                ? 'US'
+                : 'AR',
+          ),
+        );
       },
       borderRadius: BorderRadius.circular(12),
       child: Padding(
@@ -294,9 +302,7 @@ class _SettingsPageState extends State<SettingsPage> {
                           final result = await Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder:
-                                  (context) =>
-                                      EditDoctorProfilePage(doctor: user),
+                              builder: (context) => const ProfilMedecin(),
                             ),
                           );
                           if (result != null) {
@@ -534,7 +540,7 @@ class _SettingsPageState extends State<SettingsPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              "Medical App v1.0.0",
+              "app_name_version".tr,
               style: GoogleFonts.raleway(
                 fontWeight: FontWeight.bold,
                 fontSize: 14,
@@ -566,14 +572,16 @@ class _SettingsPageState extends State<SettingsPage> {
               ),
               TextButton(
                 onPressed: () {
-                  // Logique de déconnexion
+                  // Logout logic
                   ScaffoldMessenger.of(
                     context,
                   ).showSnackBar(SnackBar(content: Text("logout_success".tr)));
-                  // Rediriger vers la page de connexion
+                  // Redirect to login page
                   Navigator.pushReplacement(
                     context,
-                    MaterialPageRoute(builder: (context) => LoginScreen()),
+                    MaterialPageRoute(
+                      builder: (context) => const LoginScreen(),
+                    ),
                   );
                 },
                 child: Text("logout".tr),

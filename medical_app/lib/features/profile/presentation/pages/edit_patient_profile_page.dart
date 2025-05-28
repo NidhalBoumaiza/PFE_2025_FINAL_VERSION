@@ -350,7 +350,7 @@ class _EditPatientProfilePageState extends State<EditPatientProfilePage> {
                   Expanded(
                     child: _buildTextField(
                       controller: _firstNameController,
-                      label: 'first_name'.tr,
+                      label: 'first_name_label'.tr,
                       icon: Icons.person_outline,
                       validator:
                           (value) =>
@@ -361,11 +361,10 @@ class _EditPatientProfilePageState extends State<EditPatientProfilePage> {
                   Expanded(
                     child: _buildTextField(
                       controller: _lastNameController,
-                      label: 'last_name'.tr,
+                      label: 'name_label'.tr,
                       icon: Icons.person_outline,
                       validator:
-                          (value) =>
-                              value!.isEmpty ? 'last_name_required'.tr : null,
+                          (value) => value!.isEmpty ? 'name_required'.tr : null,
                     ),
                   ),
                 ],
@@ -465,7 +464,7 @@ class _EditPatientProfilePageState extends State<EditPatientProfilePage> {
                 controller: _allergiesController,
                 label: 'allergies'.tr,
                 icon: Icons.warning,
-                hintText: 'enter_allergies'.tr,
+                hintText: 'enter_allergies_hint'.tr,
                 maxLines: 2,
               ),
 
@@ -474,7 +473,7 @@ class _EditPatientProfilePageState extends State<EditPatientProfilePage> {
                 controller: _chronicDiseasesController,
                 label: 'chronic_diseases'.tr,
                 icon: Icons.local_hospital,
-                hintText: 'enter_chronic_diseases'.tr,
+                hintText: 'enter_chronic_diseases_hint'.tr,
                 maxLines: 2,
               ),
 
@@ -487,7 +486,7 @@ class _EditPatientProfilePageState extends State<EditPatientProfilePage> {
                 controller: _emergencyNameController,
                 label: 'emergency_contact_name'.tr,
                 icon: Icons.person,
-                hintText: 'enter_emergency_name'.tr,
+                hintText: 'enter_emergency_name_hint'.tr,
               ),
 
               SizedBox(height: 16.h),
@@ -495,7 +494,7 @@ class _EditPatientProfilePageState extends State<EditPatientProfilePage> {
                 controller: _emergencyRelationController,
                 label: 'emergency_relationship'.tr,
                 icon: Icons.people,
-                hintText: 'enter_emergency_relationship'.tr,
+                hintText: 'enter_emergency_relationship_hint'.tr,
               ),
 
               SizedBox(height: 16.h),
@@ -504,7 +503,7 @@ class _EditPatientProfilePageState extends State<EditPatientProfilePage> {
                 label: 'emergency_phone'.tr,
                 icon: Icons.phone,
                 keyboardType: TextInputType.phone,
-                hintText: 'enter_emergency_phone'.tr,
+                hintText: 'enter_emergency_phone_hint'.tr,
               ),
 
               // Save Button

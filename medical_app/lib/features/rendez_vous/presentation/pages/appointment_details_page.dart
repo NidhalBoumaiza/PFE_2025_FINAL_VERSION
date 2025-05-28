@@ -205,9 +205,10 @@ class _AppointmentDetailsPageState extends State<AppointmentDetailsPage> {
                         doctorId: widget.appointment.doctorId!,
                         patientName: widget.appointment.patientName!,
                         doctorName: widget.appointment.doctorName!,
-                        recipientRole: widget.isDoctor
-                            ? "patient"
-                            : "doctor", // Send notification to the other party
+                        recipientRole:
+                            widget.isDoctor
+                                ? "patient"
+                                : "doctor", // Send notification to the other party
                       ),
                     );
                   }
@@ -236,7 +237,7 @@ class _AppointmentDetailsPageState extends State<AppointmentDetailsPage> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            "Impossible de soumettre l'évaluation, informations manquantes",
+            "unable_to_submit_rating_missing_info".tr,
             style: GoogleFonts.raleway(),
           ),
           backgroundColor: Colors.red,
@@ -528,7 +529,7 @@ class _AppointmentDetailsPageState extends State<AppointmentDetailsPage> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            "Ordonnance créée avec succès !",
+            "prescription_created_successfully".tr,
             style: GoogleFonts.raleway(),
           ),
           backgroundColor: Colors.green,
@@ -616,7 +617,7 @@ class _AppointmentDetailsPageState extends State<AppointmentDetailsPage> {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
                     content: Text(
-                      "Rendez-vous annulé avec succès !",
+                      "appointment_cancelled_successfully".tr,
                       style: GoogleFonts.raleway(),
                     ),
                     backgroundColor: AppColors.primaryColor,
@@ -660,7 +661,7 @@ class _AppointmentDetailsPageState extends State<AppointmentDetailsPage> {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
                     content: Text(
-                      "Évaluation soumise avec succès !",
+                      "rating_submitted_successfully".tr,
                       style: GoogleFonts.raleway(),
                     ),
                     backgroundColor: AppColors.primaryColor,
@@ -673,7 +674,10 @@ class _AppointmentDetailsPageState extends State<AppointmentDetailsPage> {
               } else if (state is RatingError) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
-                    content: Text(state.message, style: GoogleFonts.raleway()),
+                    content: Text(
+                      "unable_to_submit_rating_missing_info".tr,
+                      style: GoogleFonts.raleway(),
+                    ),
                     backgroundColor: Colors.red,
                     behavior: SnackBarBehavior.floating,
                     shape: RoundedRectangleBorder(
@@ -861,7 +865,7 @@ class _AppointmentDetailsPageState extends State<AppointmentDetailsPage> {
                                                 widget.appointment.doctorName !=
                                                         null
                                                     ? "Dr. ${widget.appointment.doctorName}"
-                                                    : "Médecin à assigner",
+                                                    : "doctor_to_assign".tr,
                                                 style: GoogleFonts.raleway(
                                                   fontSize: 18.sp,
                                                   fontWeight: FontWeight.bold,
@@ -872,7 +876,7 @@ class _AppointmentDetailsPageState extends State<AppointmentDetailsPage> {
                                             SizedBox(height: 4.h),
                                             Text(
                                               widget.appointment.speciality ??
-                                                  'Spécialité non spécifiée',
+                                                  'specialty_not_specified'.tr,
                                               style: GoogleFonts.raleway(
                                                 fontSize: 16.sp,
                                                 color: Colors.grey.shade600,
@@ -913,7 +917,7 @@ class _AppointmentDetailsPageState extends State<AppointmentDetailsPage> {
                                                 color: AppColors.primaryColor,
                                               ),
                                               label: Text(
-                                                "Voir profil",
+                                                "view_profile".tr,
                                                 style: GoogleFonts.raleway(
                                                   fontSize: 14.sp,
                                                   fontWeight: FontWeight.w600,
@@ -926,7 +930,7 @@ class _AppointmentDetailsPageState extends State<AppointmentDetailsPage> {
                                         SizedBox(height: 8.h),
                                         Text(
                                           widget.appointment.patientName ??
-                                              "Patient inconnu",
+                                              "unknown_patient".tr,
                                           style: GoogleFonts.raleway(
                                             fontSize: 18.sp,
                                             fontWeight: FontWeight.bold,
@@ -1160,7 +1164,7 @@ class _AppointmentDetailsPageState extends State<AppointmentDetailsPage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            "Évaluer le médecin",
+            "rate_doctor".tr,
             style: GoogleFonts.raleway(
               fontSize: 16.sp,
               fontWeight: FontWeight.bold,
@@ -1191,7 +1195,7 @@ class _AppointmentDetailsPageState extends State<AppointmentDetailsPage> {
             controller: _commentController,
             maxLines: 3,
             decoration: InputDecoration(
-              hintText: 'Ajoutez un commentaire (optionnel)',
+              hintText: "add_comment_optional".tr,
               hintStyle: GoogleFonts.raleway(color: Colors.grey),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(10),
@@ -1220,7 +1224,7 @@ class _AppointmentDetailsPageState extends State<AppointmentDetailsPage> {
                 ),
               ),
               child: Text(
-                hasRatedAppointment ? "Déjà évalué" : "Soumettre l'évaluation",
+                hasRatedAppointment ? "already_rated".tr : "submit_rating".tr,
                 style: GoogleFonts.raleway(
                   fontSize: 14.sp,
                   fontWeight: FontWeight.w600,
@@ -1257,7 +1261,7 @@ class _AppointmentDetailsPageState extends State<AppointmentDetailsPage> {
               CircularProgressIndicator(color: AppColors.primaryColor),
               SizedBox(height: 12.h),
               Text(
-                "Chargement de l'évaluation...",
+                "loading_rating".tr,
                 style: GoogleFonts.raleway(
                   fontSize: 14.sp,
                   color: Colors.grey[700],
@@ -1288,7 +1292,7 @@ class _AppointmentDetailsPageState extends State<AppointmentDetailsPage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            "Évaluation du patient",
+            "patient_rating".tr,
             style: GoogleFonts.raleway(
               fontSize: 16.sp,
               fontWeight: FontWeight.bold,
@@ -1341,7 +1345,7 @@ class _AppointmentDetailsPageState extends State<AppointmentDetailsPage> {
                 _appointmentRating!.comment!.isNotEmpty) ...[
               SizedBox(height: 16.h),
               Text(
-                "Commentaire:",
+                "comment".tr + ":",
                 style: GoogleFonts.raleway(
                   fontSize: 14.sp,
                   fontWeight: FontWeight.w600,
@@ -1368,7 +1372,10 @@ class _AppointmentDetailsPageState extends State<AppointmentDetailsPage> {
             ],
             SizedBox(height: 8.h),
             Text(
-              "Évalué le ${DateFormat('dd/MM/yyyy').format(_appointmentRating!.createdAt)}",
+              "rated_on_date".tr.replaceAll(
+                '{date}',
+                DateFormat('dd/MM/yyyy').format(_appointmentRating!.createdAt),
+              ),
               style: GoogleFonts.raleway(
                 fontSize: 12.sp,
                 color: Colors.grey[600],
@@ -1381,7 +1388,7 @@ class _AppointmentDetailsPageState extends State<AppointmentDetailsPage> {
                   Icon(Icons.star_border, size: 48.sp, color: Colors.grey[400]),
                   SizedBox(height: 16.h),
                   Text(
-                    "Pas encore d'évaluation",
+                    "no_rating_yet".tr,
                     style: GoogleFonts.raleway(
                       fontSize: 16.sp,
                       fontWeight: FontWeight.w600,
@@ -1391,7 +1398,7 @@ class _AppointmentDetailsPageState extends State<AppointmentDetailsPage> {
                   ),
                   SizedBox(height: 8.h),
                   Text(
-                    "Le patient n'a pas encore évalué ce rendez-vous",
+                    "patient_hasnt_rated_yet".tr,
                     style: GoogleFonts.raleway(
                       fontSize: 14.sp,
                       color: Colors.grey[500],
@@ -1431,7 +1438,7 @@ class _AppointmentDetailsPageState extends State<AppointmentDetailsPage> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                "Ordonnance",
+                "prescription".tr,
                 style: GoogleFonts.raleway(
                   fontSize: 16.sp,
                   fontWeight: FontWeight.bold,
@@ -1449,7 +1456,7 @@ class _AppointmentDetailsPageState extends State<AppointmentDetailsPage> {
                   CircularProgressIndicator(color: AppColors.primaryColor),
                   SizedBox(height: 8.h),
                   Text(
-                    "Chargement...",
+                    "loading".tr + "...",
                     style: GoogleFonts.raleway(
                       fontSize: 14.sp,
                       color: Colors.grey[700],
@@ -1502,7 +1509,12 @@ class _AppointmentDetailsPageState extends State<AppointmentDetailsPage> {
                               SizedBox(width: 12.w),
                               Expanded(
                                 child: Text(
-                                  'Ordonnance du ${DateFormat('dd/MM/yyyy').format(_appointmentPrescription!.date)}',
+                                  'prescription_from_date'.tr.replaceAll(
+                                    '{date}',
+                                    DateFormat(
+                                      'dd/MM/yyyy',
+                                    ).format(_appointmentPrescription!.date),
+                                  ),
                                   style: GoogleFonts.raleway(
                                     fontSize: 16.sp,
                                     fontWeight: FontWeight.bold,
@@ -1521,7 +1533,7 @@ class _AppointmentDetailsPageState extends State<AppointmentDetailsPage> {
                               ),
                               SizedBox(width: 8.w),
                               Text(
-                                '${_appointmentPrescription!.medications.length} médicament${_appointmentPrescription!.medications.length > 1 ? 's' : ''}',
+                                '${_appointmentPrescription!.medications.length} ${"medication".tr}${_appointmentPrescription!.medications.length > 1 ? 's' : ''}',
                                 style: GoogleFonts.raleway(
                                   fontSize: 14.sp,
                                   color: Colors.grey[600],
@@ -1534,7 +1546,7 @@ class _AppointmentDetailsPageState extends State<AppointmentDetailsPage> {
                             mainAxisAlignment: MainAxisAlignment.end,
                             children: [
                               Text(
-                                'Voir détails',
+                                "view_details".tr,
                                 style: GoogleFonts.raleway(
                                   fontSize: 14.sp,
                                   color: AppColors.primaryColor,
@@ -1568,8 +1580,8 @@ class _AppointmentDetailsPageState extends State<AppointmentDetailsPage> {
                   SizedBox(height: 12.h),
                   Text(
                     currentUser?.role == 'medecin'
-                        ? "Aucune ordonnance créée pour ce rendez-vous"
-                        : "Aucune ordonnance disponible pour ce rendez-vous",
+                        ? "no_prescription_created_for_appointment".tr
+                        : "no_prescription_available_for_appointment".tr,
                     style: GoogleFonts.raleway(
                       fontSize: 14.sp,
                       color: Colors.grey[600],
@@ -1625,7 +1637,7 @@ class _AppointmentDetailsPageState extends State<AppointmentDetailsPage> {
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
                               content: Text(
-                                "Ordonnance modifiée avec succès !",
+                                "prescription_created_successfully".tr,
                                 style: GoogleFonts.raleway(),
                               ),
                               backgroundColor: Colors.green,
@@ -1656,10 +1668,10 @@ class _AppointmentDetailsPageState extends State<AppointmentDetailsPage> {
         ),
         label: Text(
           isBeforeAppointment
-              ? "Attendre jusqu'à la fin du rendez-vous"
+              ? "wait_until_appointment_end".tr
               : (_appointmentPrescription == null
-                  ? "Créer une ordonnance"
-                  : "Modifier l'ordonnance"),
+                  ? "create_prescription_button".tr
+                  : "edit_prescription_button".tr),
           style: GoogleFonts.raleway(
             color: isBeforeAppointment ? Colors.grey[700] : Colors.white,
             fontSize: 16.sp,

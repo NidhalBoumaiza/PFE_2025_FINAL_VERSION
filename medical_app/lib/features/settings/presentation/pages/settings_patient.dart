@@ -5,16 +5,12 @@ import 'package:medical_app/core/utils/app_colors.dart';
 import 'package:medical_app/features/authentication/data/data%20sources/auth_local_data_source.dart';
 import 'package:medical_app/features/authentication/data/models/patient_model.dart';
 import 'package:medical_app/features/authentication/domain/entities/patient_entity.dart';
-import 'package:medical_app/features/authentication/domain/entities/user_entity.dart';
-import 'package:medical_app/features/profile/presentation/pages/blocs/BLoC%20update%20profile/update_user_bloc.dart';
+import 'package:medical_app/features/authentication/presentation/pages/login_screen.dart';
+import 'package:medical_app/features/settings/presentation/pages/change_password_screen.dart';
 import 'package:medical_app/features/profile/presentation/pages/edit_patient_profile_page.dart';
-import 'package:medical_app/widgets/theme_cubit_switch.dart';
-import 'package:medical_app/i18n/app_translation.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../../authentication/presentation/pages/login_screen.dart';
-import 'package:medical_app/injection_container.dart' as di;
-import 'change_password_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:medical_app/injection_container.dart' as di;
+import 'package:medical_app/widgets/theme_cubit_switch.dart';
 
 class SettingsPatient extends StatefulWidget {
   const SettingsPatient({super.key});
@@ -127,11 +123,11 @@ class _SettingsPatientState extends State<SettingsPatient> {
         padding: const EdgeInsets.all(12),
         child: Column(
           children: [
-            _buildLanguageOption('Français', 'fr'),
+            _buildLanguageOption("french".tr, 'fr'),
             const Divider(height: 1),
-            _buildLanguageOption('English', 'en'),
+            _buildLanguageOption("english".tr, 'en'),
             const Divider(height: 1),
-            _buildLanguageOption('العربية', 'ar'),
+            _buildLanguageOption("arabic".tr, 'ar'),
           ],
         ),
       ),
@@ -143,8 +139,18 @@ class _SettingsPatientState extends State<SettingsPatient> {
 
     return InkWell(
       onTap: () async {
-        Get.updateLocale(Locale(langCode));
-        await LanguageService.saveLanguage(langCode);
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString('app_language', langCode);
+        Get.updateLocale(
+          Locale(
+            langCode,
+            langCode == 'fr'
+                ? 'FR'
+                : langCode == 'en'
+                ? 'US'
+                : 'AR',
+          ),
+        );
       },
       borderRadius: BorderRadius.circular(12),
       child: Padding(
@@ -420,7 +426,7 @@ class _SettingsPatientState extends State<SettingsPatient> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              "Medical App v1.0.0",
+              "app_name_version".tr,
               style: GoogleFonts.raleway(
                 fontWeight: FontWeight.bold,
                 fontSize: 14,
@@ -458,7 +464,9 @@ class _SettingsPatientState extends State<SettingsPatient> {
                   // Redirect to login screen
                   Navigator.pushReplacement(
                     context,
-                    MaterialPageRoute(builder: (context) => LoginScreen()),
+                    MaterialPageRoute(
+                      builder: (context) => const LoginScreen(),
+                    ),
                   );
                 },
                 child: Text("logout".tr),

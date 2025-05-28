@@ -136,6 +136,17 @@ Future<void> main() async {
     await _saveFcmToken(savedToken);
   }
 
+  // Get saved language
+  final savedLanguageCode = prefs.getString('app_language') ?? 'fr';
+  final savedLocale = Locale(
+    savedLanguageCode,
+    savedLanguageCode == 'fr'
+        ? 'FR'
+        : savedLanguageCode == 'en'
+        ? 'US'
+        : 'AR',
+  );
+
   // Determine initial screen
   final authLocalDataSource = di.sl<AuthLocalDataSource>();
   Widget initialScreen;
@@ -151,9 +162,6 @@ Future<void> main() async {
   } catch (e) {
     initialScreen = const LoginScreen();
   }
-
-  // Get saved language
-  final savedLocale = await LanguageService.getSavedLanguage();
 
   runApp(MyApp(initialScreen: initialScreen, savedLocale: savedLocale));
 }
@@ -463,7 +471,7 @@ class _MyAppState extends State<MyApp> {
                 themeMode: themeMode,
                 navigatorKey: navigatorKey,
                 home: widget.initialScreen,
-                translations: AppTranslations(),
+                translations: LanguageService(),
                 locale: widget.savedLocale ?? Get.deviceLocale,
                 fallbackLocale: const Locale('fr', 'FR'),
               );
@@ -474,6 +482,3 @@ class _MyAppState extends State<MyApp> {
     );
   }
 }
-
-
-

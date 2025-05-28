@@ -8,6 +8,7 @@ import 'package:medical_app/core/utils/custom_snack_bar.dart';
 import 'package:medical_app/features/authentication/data/data%20sources/auth_local_data_source.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:medical_app/injection_container.dart' as di;
+import 'package:medical_app/i18n/app_translation.dart';
 
 class ChangePasswordScreen extends StatefulWidget {
   const ChangePasswordScreen({Key? key}) : super(key: key);

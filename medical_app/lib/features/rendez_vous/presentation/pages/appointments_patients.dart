@@ -1050,7 +1050,8 @@ class _AppointmentsPatientsState extends State<AppointmentsPatients> {
                                                                   .doctorId,
                                                               appointment
                                                                       .doctorName ??
-                                                                  "Médecin",
+                                                                  "unknown_doctor"
+                                                                      .tr,
                                                               appointment
                                                                   .speciality,
                                                             ),
@@ -1075,7 +1076,8 @@ class _AppointmentsPatientsState extends State<AppointmentsPatients> {
                                                                       .doctorId,
                                                                   appointment
                                                                           .doctorName ??
-                                                                      "Médecin",
+                                                                      "unknown_doctor"
+                                                                          .tr,
                                                                   appointment
                                                                       .speciality,
                                                                 ),

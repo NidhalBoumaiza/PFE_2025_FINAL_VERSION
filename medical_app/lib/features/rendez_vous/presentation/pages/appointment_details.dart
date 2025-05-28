@@ -8,7 +8,6 @@ import 'package:medical_app/features/rendez_vous/domain/entities/rendez_vous_ent
 import 'package:medical_app/features/rendez_vous/domain/entities/status_appointment.dart';
 import 'package:medical_app/features/rendez_vous/presentation/blocs/rendez-vous%20BLoC/rendez_vous_bloc.dart';
 
-
 class AppointmentDetailsPage extends StatefulWidget {
   final String id;
 
@@ -27,7 +26,9 @@ class _AppointmentDetailsPageState extends State<AppointmentDetailsPage> {
 
   void _loadAppointmentDetails() {
     // Use FetchRendezVous event with an ID filter
-    context.read<RendezVousBloc>().add(FetchRendezVous(appointmentId: widget.id));
+    context.read<RendezVousBloc>().add(
+      FetchRendezVous(appointmentId: widget.id),
+    );
   }
 
   @override
@@ -58,13 +59,14 @@ class _AppointmentDetailsPageState extends State<AppointmentDetailsPage> {
           } else if (state is RendezVousLoaded) {
             // Find appointment by ID
             final appointment = state.rendezVous.firstWhere(
-              (a) => a.id == widget.id, 
-              orElse: () => RendezVousEntity(
-                startTime: DateTime.now(), 
-                status: 'not_found'
-              )
+              (a) => a.id == widget.id,
+              orElse:
+                  () => RendezVousEntity(
+                    startTime: DateTime.now(),
+                    status: 'not_found',
+                  ),
             );
-            
+
             if (appointment.status == 'not_found') {
               return Center(
                 child: Text(
@@ -73,7 +75,7 @@ class _AppointmentDetailsPageState extends State<AppointmentDetailsPage> {
                 ),
               );
             }
-            
+
             return _buildAppointmentDetailsView(appointment);
           } else if (state is RendezVousError) {
             return Center(
@@ -128,17 +130,29 @@ class _AppointmentDetailsPageState extends State<AppointmentDetailsPage> {
               ),
             ),
             Divider(height: 24.h, thickness: 1),
-            _buildInfoRow('patient'.tr, appointment.patientName ?? 'Unknown'),
-            _buildInfoRow('doctor'.tr, appointment.doctorName ?? 'Unknown'),
-            _buildInfoRow('date'.tr, appointment.startTime.toString().substring(0, 10)),
+            _buildInfoRow(
+              'patient'.tr,
+              appointment.patientName ?? 'unknown_patient'.tr,
+            ),
+            _buildInfoRow(
+              'doctor'.tr,
+              appointment.doctorName ?? 'unknown_doctor'.tr,
+            ),
+            _buildInfoRow(
+              'date'.tr,
+              appointment.startTime.toString().substring(0, 10),
+            ),
             _buildInfoRow('time'.tr, _formatTime(appointment.startTime)),
-            _buildInfoRow('specialty'.tr, appointment.speciality ?? 'General'),
+            _buildInfoRow(
+              'specialty'.tr,
+              appointment.speciality ?? 'general'.tr,
+            ),
           ],
         ),
       ),
     );
   }
-  
+
   String _formatTime(DateTime dateTime) {
     return '${dateTime.hour.toString().padLeft(2, '0')}:${dateTime.minute.toString().padLeft(2, '0')}';
   }
@@ -150,23 +164,23 @@ class _AppointmentDetailsPageState extends State<AppointmentDetailsPage> {
     switch (appointment.status.toLowerCase()) {
       case 'pending':
         statusColor = Colors.orange;
-        statusText = 'pending'.tr;
+        statusText = 'status_pending'.tr;
         break;
       case 'accepted':
         statusColor = Colors.green;
-        statusText = 'accepted'.tr;
+        statusText = 'status_confirmed'.tr;
         break;
       case 'rejected':
         statusColor = Colors.red;
-        statusText = 'rejected'.tr;
+        statusText = 'status_cancelled'.tr;
         break;
       case 'completed':
         statusColor = Colors.blue;
-        statusText = 'completed'.tr;
+        statusText = 'status_completed'.tr;
         break;
       default:
         statusColor = Colors.grey;
-        statusText = 'unknown'.tr;
+        statusText = 'status_unknown'.tr;
     }
 
     return Card(
@@ -221,7 +235,8 @@ class _AppointmentDetailsPageState extends State<AppointmentDetailsPage> {
                     patientId: appointment.patientId ?? '',
                     doctorId: appointment.doctorId ?? '',
                     patientName: appointment.patientName ?? '',
-                    doctorName: appointment.doctorName ?? '', recipientRole: "patient",
+                    doctorName: appointment.doctorName ?? '',
+                    recipientRole: "patient",
                   ),
                 );
                 Navigator.pop(context);
@@ -254,7 +269,7 @@ class _AppointmentDetailsPageState extends State<AppointmentDetailsPage> {
                     doctorId: appointment.doctorId ?? '',
                     patientName: appointment.patientName ?? '',
                     doctorName: appointment.doctorName ?? '',
-                    recipientRole:  "patient",
+                    recipientRole: "patient",
                   ),
                 );
                 Navigator.pop(context);
@@ -301,15 +316,10 @@ class _AppointmentDetailsPageState extends State<AppointmentDetailsPage> {
           ),
           SizedBox(width: 16.w),
           Expanded(
-            child: Text(
-              value,
-              style: GoogleFonts.raleway(
-                fontSize: 14.sp,
-              ),
-            ),
+            child: Text(value, style: GoogleFonts.raleway(fontSize: 14.sp)),
           ),
         ],
       ),
     );
   }
-} 
+}

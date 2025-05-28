@@ -336,9 +336,15 @@ class _ProfilePatientState extends State<ProfilePatient> {
                       if (_patient?.bloodType != null)
                         _buildInfoTile('blood_type'.tr, _patient!.bloodType!),
                       if (_patient?.height != null)
-                        _buildInfoTile('height'.tr, "${_patient!.height} cm"),
+                        _buildInfoTile(
+                          'height'.tr,
+                          "${_patient!.height} ${'cm'.tr}",
+                        ),
                       if (_patient?.weight != null)
-                        _buildInfoTile('weight'.tr, "${_patient!.weight} kg"),
+                        _buildInfoTile(
+                          'weight'.tr,
+                          "${_patient!.weight} ${'kg'.tr}",
+                        ),
                       if (_patient?.allergies != null &&
                           _patient!.allergies!.isNotEmpty)
                         _buildInfoTile(

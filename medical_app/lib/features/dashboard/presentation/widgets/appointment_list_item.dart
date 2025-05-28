@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
+import 'package:get/get.dart';
 
 import '../../../../core/utils/app_colors.dart';
 import '../../domain/entities/dashboard_stats_entity.dart';
@@ -22,8 +23,12 @@ class AppointmentListItem extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDarkMode = theme.brightness == Brightness.dark;
-    final formattedDate = DateFormat('dd/MM/yyyy').format(appointment.appointmentDate);
-    final formattedTime = DateFormat('HH:mm').format(appointment.appointmentDate);
+    final formattedDate = DateFormat(
+      'dd/MM/yyyy',
+    ).format(appointment.appointmentDate);
+    final formattedTime = DateFormat(
+      'HH:mm',
+    ).format(appointment.appointmentDate);
 
     return InkWell(
       onTap: onTap,
@@ -38,11 +43,7 @@ class AppointmentListItem extends StatelessWidget {
                 color: AppColors.primaryColor,
                 borderRadius: BorderRadius.circular(8),
               ),
-              child: Icon(
-                Icons.person,
-                color: Colors.white,
-                size: 24.sp,
-              ),
+              child: Icon(Icons.person, color: Colors.white, size: 24.sp),
             ),
             SizedBox(width: 12.w),
             Expanded(
@@ -61,7 +62,7 @@ class AppointmentListItem extends StatelessWidget {
                   ),
                   SizedBox(height: 4.h),
                   Text(
-                    appointment.appointmentType ?? 'Consultation',
+                    appointment.appointmentType ?? 'consultation'.tr,
                     style: GoogleFonts.raleway(
                       fontSize: 13.sp,
                       color: theme.textTheme.bodySmall?.color,
@@ -75,7 +76,10 @@ class AppointmentListItem extends StatelessWidget {
             Container(
               padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 5.h),
               decoration: BoxDecoration(
-                color: isDarkMode ? theme.colorScheme.surface : Colors.grey.shade200,
+                color:
+                    isDarkMode
+                        ? theme.colorScheme.surface
+                        : Colors.grey.shade200,
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Column(
@@ -85,7 +89,10 @@ class AppointmentListItem extends StatelessWidget {
                     style: GoogleFonts.raleway(
                       fontWeight: FontWeight.bold,
                       fontSize: 12.sp,
-                      color: isDarkMode ? theme.textTheme.bodySmall?.color : Colors.grey.shade700,
+                      color:
+                          isDarkMode
+                              ? theme.textTheme.bodySmall?.color
+                              : Colors.grey.shade700,
                     ),
                   ),
                   Text(
@@ -104,4 +111,4 @@ class AppointmentListItem extends StatelessWidget {
       ),
     );
   }
-} 
+}

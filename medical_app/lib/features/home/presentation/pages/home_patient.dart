@@ -38,8 +38,8 @@ class HomePatient extends StatefulWidget {
 class _HomePatientState extends State<HomePatient> {
   int _selectedIndex = 0;
   String userId = '';
-  String patientName = 'John Doe';
-  String email = 'johndoe@example.com';
+  String patientName = 'default_patient_name'.tr;
+  String email = 'default_email'.tr;
   DateTime? _selectedAppointmentDate;
   Timer? _locationUpdateTimer;
 
@@ -79,7 +79,7 @@ class _HomePatientState extends State<HomePatient> {
         userId = userMap['id'] as String? ?? '';
         patientName =
             '${userMap['name'] ?? ''} ${userMap['lastName'] ?? ''}'.trim();
-        email = userMap['email'] as String? ?? 'johndoe@example.com';
+        email = userMap['email'] as String? ?? 'default_email'.tr;
       });
 
       // Start periodic location updates if we have a user ID
@@ -562,7 +562,6 @@ class _HomePatientState extends State<HomePatient> {
                   ),
               ],
               NotificationBadge(iconColor: Colors.white, iconSize: 24),
-
 
               SizedBox(width: 8.w),
             ],

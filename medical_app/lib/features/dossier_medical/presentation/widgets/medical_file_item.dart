@@ -137,14 +137,14 @@ class MedicalFileItem extends StatelessWidget {
                           PopupMenuItem(
                             value: 'edit',
                             child: Row(
-          children: [
+                              children: [
                                 const Icon(Icons.edit, size: 20),
                                 const SizedBox(width: 12),
                                 Text('edit_description'.tr),
                               ],
                             ),
-            ),
-            if (onDelete != null)
+                          ),
+                          if (onDelete != null)
                             PopupMenuItem(
                               value: 'delete',
                               child: Row(
@@ -239,10 +239,10 @@ class MedicalFileItem extends StatelessWidget {
         return ClipRRect(
           borderRadius: BorderRadius.circular(12),
           child: CachedNetworkImage(
-          imageUrl: file.path,
+            imageUrl: file.path,
             width: 60,
             height: 60,
-          fit: BoxFit.cover,
+            fit: BoxFit.cover,
             placeholder:
                 (context, url) => Container(
                   width: 60,
@@ -411,9 +411,9 @@ class MedicalFileItem extends StatelessWidget {
             MaterialPageRoute(
               builder:
                   (_) => PDFViewerScreen(
-                fileUrl: file.path,
-                fileName: file.displayName,
-              ),
+                    fileUrl: file.path,
+                    fileName: file.displayName,
+                  ),
             ),
           );
           break;
@@ -424,14 +424,14 @@ class MedicalFileItem extends StatelessWidget {
           } else {
             ScaffoldMessenger.of(
               context,
-            ).showSnackBar(const SnackBar(content: Text('Cannot open file')));
+            ).showSnackBar(SnackBar(content: Text('cannot_open_file'.tr)));
           }
       }
     } catch (e) {
       print('Error opening file: $e');
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Failed to open file: $e')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('${"failed_to_open_file".tr}: $e')),
+      );
     }
   }
 }

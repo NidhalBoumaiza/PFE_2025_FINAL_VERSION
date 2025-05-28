@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
+import 'package:get/get.dart';
 
 import 'package:medical_app/core/utils/app_colors.dart';
 import 'package:medical_app/features/authentication/data/models/user_model.dart';
@@ -49,10 +50,12 @@ class _SelectAppointmentForPrescriptionPageState
 
         if (currentUser?.id != null) {
           // First check and update past appointments to ensure they're marked as completed
-          _rendezVousBloc.add(CheckAndUpdatePastAppointments(
-            userId: currentUser!.id!,
-            userRole: 'doctor',
-          ));
+          _rendezVousBloc.add(
+            CheckAndUpdatePastAppointments(
+              userId: currentUser!.id!,
+              userRole: 'doctor',
+            ),
+          );
 
           // Then fetch appointments
           _rendezVousBloc.add(FetchRendezVous(doctorId: currentUser!.id));
@@ -73,15 +76,15 @@ class _SelectAppointmentForPrescriptionPageState
   String _getStatusText(String status) {
     switch (status) {
       case 'accepted':
-        return 'Accepté';
+        return 'status_confirmed'.tr;
       case 'pending':
-        return 'En attente';
+        return 'status_pending'.tr;
       case 'cancelled':
-        return 'Annulé';
+        return 'status_cancelled'.tr;
       case 'completed':
-        return 'Terminé';
+        return 'status_completed'.tr;
       default:
-        return 'Inconnu';
+        return 'status_unknown'.tr;
     }
   }
 
@@ -106,23 +109,23 @@ class _SelectAppointmentForPrescriptionPageState
       appointmentEndTime = appointment.endTime!;
     } else {
       // Fallback to estimated duration of 30 minutes if endTime not available
-      appointmentEndTime = appointment.startTime.add(const Duration(minutes: 30));
+      appointmentEndTime = appointment.startTime.add(
+        const Duration(minutes: 30),
+      );
     }
     return DateTime.now().isAfter(appointmentEndTime);
   }
 
   bool _isEligibleForPrescription(RendezVousEntity appointment) {
-    return appointment.status == 'completed' || 
-           (appointment.status == 'accepted' && _isAppointmentPast(appointment));
+    return appointment.status == 'completed' ||
+        (appointment.status == 'accepted' && _isAppointmentPast(appointment));
   }
 
   void _navigateToCreatePrescription(RendezVousEntity appointment) {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => CreatePrescriptionPage(
-          appointment: appointment,
-        ),
+        builder: (context) => CreatePrescriptionPage(appointment: appointment),
       ),
     ).then((_) {
       // Refresh appointments when returning
@@ -132,17 +135,21 @@ class _SelectAppointmentForPrescriptionPageState
     });
   }
 
-  List<RendezVousEntity> _filterAppointments(List<RendezVousEntity> appointments) {
+  List<RendezVousEntity> _filterAppointments(
+    List<RendezVousEntity> appointments,
+  ) {
     // First filter to only eligible appointments
     var filtered = appointments.where(_isEligibleForPrescription).toList();
-    
+
     // Then apply additional status filter if needed
     if (selectedFilter == 'completed') {
       return filtered.where((a) => a.status == 'completed').toList();
     } else if (selectedFilter == 'accepted') {
-      return filtered.where((a) => a.status == 'accepted' && _isAppointmentPast(a)).toList();
+      return filtered
+          .where((a) => a.status == 'accepted' && _isAppointmentPast(a))
+          .toList();
     }
-    
+
     return filtered;
   }
 
@@ -151,7 +158,7 @@ class _SelectAppointmentForPrescriptionPageState
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          'Sélectionner un rendez-vous',
+          'select_appointment_for_prescription'.tr,
           style: GoogleFonts.raleway(
             fontWeight: FontWeight.bold,
             fontSize: 18.sp,
@@ -160,165 +167,186 @@ class _SelectAppointmentForPrescriptionPageState
         ),
         backgroundColor: AppColors.primaryColor,
       ),
-      body: isLoading
-          ? Center(child: CircularProgressIndicator())
-          : BlocConsumer<RendezVousBloc, RendezVousState>(
-              listener: (context, state) {
-                if (state is RendezVousLoaded) {
-                  setState(() {
-                    eligibleAppointments = _filterAppointments(state.rendezVous);
-                  });
-                }
-              },
-              builder: (context, state) {
-                if (state is RendezVousLoading) {
-                  return Center(child: CircularProgressIndicator());
-                } else if (state is RendezVousError) {
-                  return Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.error_outline, color: Colors.red, size: 60.sp),
-                        SizedBox(height: 16.h),
-                        Text(
-                          'Erreur: ${state.message}',
-                          style: GoogleFonts.raleway(fontSize: 16.sp),
-                          textAlign: TextAlign.center,
-                        ),
-                        SizedBox(height: 24.h),
-                        ElevatedButton.icon(
-                          onPressed: () {
-                            if (currentUser?.id != null) {
-                              _rendezVousBloc.add(FetchRendezVous(doctorId: currentUser!.id));
-                            }
-                          },
-                          icon: Icon(Icons.refresh),
-                          label: Text(
-                            'Réessayer',
-                            style: GoogleFonts.raleway(),
-                          ),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.primaryColor,
-                            padding: EdgeInsets.symmetric(
-                              horizontal: 16.w,
-                              vertical: 8.h,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  );
-                }
-
-                if (eligibleAppointments.isEmpty) {
-                  return Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.calendar_today_outlined,
-                          color: Colors.grey,
-                          size: 60.sp,
-                        ),
-                        SizedBox(height: 16.h),
-                        Text(
-                          'Aucun rendez-vous éligible',
-                          style: GoogleFonts.raleway(
-                            fontSize: 18.sp,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.grey[700],
-                          ),
-                        ),
-                        SizedBox(height: 8.h),
-                        Text(
-                          'Aucun rendez-vous terminé ou passé trouvé',
-                          style: GoogleFonts.raleway(
-                            fontSize: 14.sp,
-                            color: Colors.grey[600],
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-                      ],
-                    ),
-                  );
-                }
-
-                return Column(
-                  children: [
-                    Padding(
-                      padding: EdgeInsets.all(16.w),
-                      child: Row(
+      body:
+          isLoading
+              ? Center(child: CircularProgressIndicator())
+              : BlocConsumer<RendezVousBloc, RendezVousState>(
+                listener: (context, state) {
+                  if (state is RendezVousLoaded) {
+                    setState(() {
+                      eligibleAppointments = _filterAppointments(
+                        state.rendezVous,
+                      );
+                    });
+                  }
+                },
+                builder: (context, state) {
+                  if (state is RendezVousLoading) {
+                    return Center(child: CircularProgressIndicator());
+                  } else if (state is RendezVousError) {
+                    return Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Expanded(
-                            child: Text(
-                              'Filtrer par:',
-                              style: GoogleFonts.raleway(
-                                fontSize: 16.sp,
-                                fontWeight: FontWeight.bold,
+                          Icon(
+                            Icons.error_outline,
+                            color: Colors.red,
+                            size: 60.sp,
+                          ),
+                          SizedBox(height: 16.h),
+                          Text(
+                            '${'error'.tr}: ${state.message}',
+                            style: GoogleFonts.raleway(fontSize: 16.sp),
+                            textAlign: TextAlign.center,
+                          ),
+                          SizedBox(height: 24.h),
+                          ElevatedButton.icon(
+                            onPressed: () {
+                              if (currentUser?.id != null) {
+                                _rendezVousBloc.add(
+                                  FetchRendezVous(doctorId: currentUser!.id),
+                                );
+                              }
+                            },
+                            icon: Icon(Icons.refresh),
+                            label: Text(
+                              'retry'.tr,
+                              style: GoogleFonts.raleway(),
+                            ),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppColors.primaryColor,
+                              padding: EdgeInsets.symmetric(
+                                horizontal: 16.w,
+                                vertical: 8.h,
                               ),
                             ),
                           ),
-                          FilterChip(
-                            label: Text('Terminés'),
-                            selected: selectedFilter == 'completed',
-                            onSelected: (selected) {
-                              setState(() {
-                                selectedFilter = 'completed';
-                                if (state is RendezVousLoaded) {
-                                  eligibleAppointments = _filterAppointments(state.rendezVous);
-                                }
-                              });
-                            },
-                            selectedColor: AppColors.primaryColor.withOpacity(0.2),
-                            checkmarkColor: AppColors.primaryColor,
+                        ],
+                      ),
+                    );
+                  }
+
+                  if (eligibleAppointments.isEmpty) {
+                    return Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.calendar_today_outlined,
+                            color: Colors.grey,
+                            size: 60.sp,
                           ),
-                          SizedBox(width: 8.w),
-                          FilterChip(
-                            label: Text('Passés'),
-                            selected: selectedFilter == 'accepted',
-                            onSelected: (selected) {
-                              setState(() {
-                                selectedFilter = 'accepted';
-                                if (state is RendezVousLoaded) {
-                                  eligibleAppointments = _filterAppointments(state.rendezVous);
-                                }
-                              });
-                            },
-                            selectedColor: AppColors.primaryColor.withOpacity(0.2),
-                            checkmarkColor: AppColors.primaryColor,
+                          SizedBox(height: 16.h),
+                          Text(
+                            'no_eligible_appointments'.tr,
+                            style: GoogleFonts.raleway(
+                              fontSize: 18.sp,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.grey[700],
+                            ),
                           ),
-                          SizedBox(width: 8.w),
-                          FilterChip(
-                            label: Text('Tous'),
-                            selected: selectedFilter == 'all',
-                            onSelected: (selected) {
-                              setState(() {
-                                selectedFilter = 'all';
-                                if (state is RendezVousLoaded) {
-                                  eligibleAppointments = _filterAppointments(state.rendezVous);
-                                }
-                              });
-                            },
-                            selectedColor: AppColors.primaryColor.withOpacity(0.2),
-                            checkmarkColor: AppColors.primaryColor,
+                          SizedBox(height: 8.h),
+                          Text(
+                            'no_completed_or_past_appointments'.tr,
+                            style: GoogleFonts.raleway(
+                              fontSize: 14.sp,
+                              color: Colors.grey[600],
+                            ),
+                            textAlign: TextAlign.center,
                           ),
                         ],
                       ),
-                    ),
-                    Expanded(
-                      child: ListView.builder(
+                    );
+                  }
+
+                  return Column(
+                    children: [
+                      Padding(
                         padding: EdgeInsets.all(16.w),
-                        itemCount: eligibleAppointments.length,
-                        itemBuilder: (context, index) {
-                          final appointment = eligibleAppointments[index];
-                          return _buildAppointmentCard(appointment);
-                        },
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                'filter_by'.tr,
+                                style: GoogleFonts.raleway(
+                                  fontSize: 16.sp,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                            FilterChip(
+                              label: Text('completed'.tr),
+                              selected: selectedFilter == 'completed',
+                              onSelected: (selected) {
+                                setState(() {
+                                  selectedFilter = 'completed';
+                                  if (state is RendezVousLoaded) {
+                                    eligibleAppointments = _filterAppointments(
+                                      state.rendezVous,
+                                    );
+                                  }
+                                });
+                              },
+                              selectedColor: AppColors.primaryColor.withOpacity(
+                                0.2,
+                              ),
+                              checkmarkColor: AppColors.primaryColor,
+                            ),
+                            SizedBox(width: 8.w),
+                            FilterChip(
+                              label: Text('past_appointments'.tr),
+                              selected: selectedFilter == 'accepted',
+                              onSelected: (selected) {
+                                setState(() {
+                                  selectedFilter = 'accepted';
+                                  if (state is RendezVousLoaded) {
+                                    eligibleAppointments = _filterAppointments(
+                                      state.rendezVous,
+                                    );
+                                  }
+                                });
+                              },
+                              selectedColor: AppColors.primaryColor.withOpacity(
+                                0.2,
+                              ),
+                              checkmarkColor: AppColors.primaryColor,
+                            ),
+                            SizedBox(width: 8.w),
+                            FilterChip(
+                              label: Text('all'.tr),
+                              selected: selectedFilter == 'all',
+                              onSelected: (selected) {
+                                setState(() {
+                                  selectedFilter = 'all';
+                                  if (state is RendezVousLoaded) {
+                                    eligibleAppointments = _filterAppointments(
+                                      state.rendezVous,
+                                    );
+                                  }
+                                });
+                              },
+                              selectedColor: AppColors.primaryColor.withOpacity(
+                                0.2,
+                              ),
+                              checkmarkColor: AppColors.primaryColor,
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
-                  ],
-                );
-              },
-            ),
+                      Expanded(
+                        child: ListView.builder(
+                          padding: EdgeInsets.all(16.w),
+                          itemCount: eligibleAppointments.length,
+                          itemBuilder: (context, index) {
+                            final appointment = eligibleAppointments[index];
+                            return _buildAppointmentCard(appointment);
+                          },
+                        ),
+                      ),
+                    ],
+                  );
+                },
+              ),
     );
   }
 
@@ -326,9 +354,7 @@ class _SelectAppointmentForPrescriptionPageState
     return Card(
       elevation: 2,
       margin: EdgeInsets.only(bottom: 16.h),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12.r),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
       child: InkWell(
         onTap: () => _navigateToCreatePrescription(appointment),
         borderRadius: BorderRadius.circular(12.r),
@@ -341,14 +367,19 @@ class _SelectAppointmentForPrescriptionPageState
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    DateFormat('dd/MM/yyyy à HH:mm').format(appointment.startTime),
+                    DateFormat(
+                      'dd/MM/yyyy à HH:mm',
+                    ).format(appointment.startTime),
                     style: GoogleFonts.raleway(
                       fontSize: 16.sp,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
                   Container(
-                    padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
+                    padding: EdgeInsets.symmetric(
+                      horizontal: 12.w,
+                      vertical: 6.h,
+                    ),
                     decoration: BoxDecoration(
                       color: _getStatusColor(appointment.status),
                       borderRadius: BorderRadius.circular(30),
@@ -367,14 +398,10 @@ class _SelectAppointmentForPrescriptionPageState
               SizedBox(height: 12.h),
               Row(
                 children: [
-                  Icon(
-                    Icons.person,
-                    size: 20.sp,
-                    color: Colors.grey[600],
-                  ),
+                  Icon(Icons.person, size: 20.sp, color: Colors.grey[600]),
                   SizedBox(width: 8.w),
                   Text(
-                    'Patient: ${appointment.patientName ?? "Inconnu"}',
+                    '${'patient'.tr}: ${appointment.patientName ?? 'unknown_patient'.tr}',
                     style: GoogleFonts.raleway(
                       fontSize: 14.sp,
                       color: Colors.black87,
@@ -392,7 +419,7 @@ class _SelectAppointmentForPrescriptionPageState
                   ),
                   SizedBox(width: 8.w),
                   Text(
-                    appointment.speciality ?? 'Consultation générale',
+                    appointment.speciality ?? 'general_consultation'.tr,
                     style: GoogleFonts.raleway(
                       fontSize: 14.sp,
                       color: Colors.grey[700],
@@ -413,7 +440,7 @@ class _SelectAppointmentForPrescriptionPageState
                       color: Colors.white,
                     ),
                     label: Text(
-                      'Créer une ordonnance',
+                      'create_prescription'.tr,
                       style: GoogleFonts.raleway(
                         color: Colors.white,
                         fontWeight: FontWeight.w600,
@@ -438,4 +465,4 @@ class _SelectAppointmentForPrescriptionPageState
       ),
     );
   }
-} 
+}

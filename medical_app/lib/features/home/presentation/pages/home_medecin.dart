@@ -36,8 +36,8 @@ class HomeMedecin extends StatefulWidget {
 class _HomeMedecinState extends State<HomeMedecin> {
   int selectedItem = 0;
   String userId = '';
-  String doctorName = 'Dr. Unknown';
-  String email = 'doctor@example.com';
+  String doctorName = 'default_doctor_name'.tr;
+  String email = 'default_doctor_email'.tr;
   DateTime? selectedAppointmentDate;
   // Add a global key for the scaffold
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
@@ -58,7 +58,7 @@ class _HomeMedecinState extends State<HomeMedecin> {
         userId = userMap['id'] as String? ?? '';
         doctorName =
             '${userMap['name'] ?? ''} ${userMap['lastName'] ?? ''}'.trim();
-        email = userMap['email'] as String? ?? 'doctor@example.com';
+        email = userMap['email'] as String? ?? 'default_doctor_email'.tr;
       });
     }
   }

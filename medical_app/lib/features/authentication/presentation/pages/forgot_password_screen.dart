@@ -50,7 +50,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                   // Title
                   Center(
                     child: Text(
-                      "Mot de passe oublié",
+                      "forgot_password_title".tr,
                       style: GoogleFonts.raleway(
                         fontSize: 24.sp,
                         fontWeight: FontWeight.bold,
@@ -58,9 +58,9 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                       ),
                     ),
                   ),
-                  
+
                   SizedBox(height: 20.h),
-                  
+
                   // Header image
                   Center(
                     child: Image.asset(
@@ -69,9 +69,9 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                       width: 200.w,
                     ),
                   ),
-                  
+
                   SizedBox(height: 30.h),
-                  
+
                   // Form fields
                   Form(
                     key: _formKey,
@@ -80,16 +80,16 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                       children: [
                         // Email label
                         Text(
-                          "Email",
+                          "email".tr,
                           style: GoogleFonts.raleway(
                             fontSize: 16.sp,
                             fontWeight: FontWeight.w600,
                             color: Colors.black87,
                           ),
                         ),
-                        
+
                         SizedBox(height: 10.h),
-                        
+
                         // Email field
                         Container(
                           decoration: BoxDecoration(
@@ -146,7 +146,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                                   width: 1,
                                 ),
                               ),
-                              hintText: "Entrez votre email",
+                              hintText: "email_placeholder".tr,
                               hintStyle: GoogleFonts.raleway(
                                 color: Colors.grey[400],
                                 fontSize: 15.sp,
@@ -160,11 +160,12 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                             keyboardType: TextInputType.emailAddress,
                             validator: (value) {
                               if (value == null || value.isEmpty) {
-                                return "L'email est obligatoire";
+                                return "email_required".tr;
                               }
-                              if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$')
-                                  .hasMatch(value)) {
-                                return "Veuillez entrer un email valide";
+                              if (!RegExp(
+                                r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
+                              ).hasMatch(value)) {
+                                return "invalid_email_message".tr;
                               }
                               return null;
                             },
@@ -173,14 +174,17 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                       ],
                     ),
                   ),
-                  
+
                   SizedBox(height: 30.h),
-                  
+
                   // Submit button
                   BlocConsumer<ForgotPasswordBloc, ForgotPasswordState>(
                     listener: (context, state) {
                       if (state is ForgotPasswordSuccess) {
-                        showSuccessSnackBar(context, "Code de vérification envoyé");
+                        showSuccessSnackBar(
+                          context,
+                          "verification_code_sent".tr,
+                        );
                         navigateToAnotherScreenWithSlideTransitionFromRightToLeft(
                           context,
                           VerifyCodeScreen(
@@ -206,37 +210,41 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                             ),
                             elevation: 2,
                           ),
-                          onPressed: isLoading
-                              ? null
-                              : () {
-                                  if (_formKey.currentState!.validate()) {
-                                    context.read<ForgotPasswordBloc>().add(
-                                      SendVerificationCode(
-                                        email: emailController.text,
-                                        codeType: VerificationCodeType.motDePasseOublie,
-                                      ),
-                                    );
-                                  }
-                                },
-                          child: isLoading
-                              ? CircularProgressIndicator(
-                                  color: Colors.white,
-                                  strokeWidth: 3,
-                                )
-                              : Text(
-                                  "Envoyer le code",
-                                  style: GoogleFonts.raleway(
-                                    fontSize: 16.sp,
-                                    fontWeight: FontWeight.w600,
+                          onPressed:
+                              isLoading
+                                  ? null
+                                  : () {
+                                    if (_formKey.currentState!.validate()) {
+                                      context.read<ForgotPasswordBloc>().add(
+                                        SendVerificationCode(
+                                          email: emailController.text,
+                                          codeType:
+                                              VerificationCodeType
+                                                  .motDePasseOublie,
+                                        ),
+                                      );
+                                    }
+                                  },
+                          child:
+                              isLoading
+                                  ? CircularProgressIndicator(
+                                    color: Colors.white,
+                                    strokeWidth: 3,
+                                  )
+                                  : Text(
+                                    "send_code_button".tr,
+                                    style: GoogleFonts.raleway(
+                                      fontSize: 16.sp,
+                                      fontWeight: FontWeight.w600,
+                                    ),
                                   ),
-                                ),
                         ),
                       );
                     },
                   ),
-                  
+
                   SizedBox(height: 20.h),
-                  
+
                   // Back to login
                   Center(
                     child: TextButton(
@@ -244,7 +252,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                         Navigator.pop(context);
                       },
                       child: Text(
-                        "Retour à la connexion",
+                        "back_to_login".tr,
                         style: GoogleFonts.raleway(
                           fontSize: 14.sp,
                           fontWeight: FontWeight.w600,

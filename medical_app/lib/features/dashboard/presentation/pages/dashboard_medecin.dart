@@ -846,7 +846,7 @@ class _DashboardMedecinState extends State<DashboardMedecin> {
                     ),
                     SizedBox(height: 4.h),
                     Text(
-                      appointment.appointmentType ?? 'Consultation',
+                      appointment.appointmentType ?? 'consultation'.tr,
                       style: GoogleFonts.raleway(
                         fontSize: 14.sp,
                         color: theme.textTheme.bodySmall?.color,

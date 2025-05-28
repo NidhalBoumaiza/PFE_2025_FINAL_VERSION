@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_pdfview/flutter_pdfview.dart';
 import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
+import 'package:get/get.dart';
 
 class PDFViewerScreen extends StatefulWidget {
   final String fileUrl;
@@ -41,12 +42,14 @@ class _PDFViewerScreenState extends State<PDFViewerScreen> {
           isLoading = false;
         });
       } else {
-        throw Exception('Failed to download PDF: ${response.statusCode}');
+        throw Exception(
+          '${"failed_to_download_pdf".tr}: ${response.statusCode}',
+        );
       }
     } catch (e) {
       print('Error downloading PDF: $e');
       setState(() {
-        error = 'Failed to load PDF: $e';
+        error = '${"failed_to_load_pdf".tr}: $e';
         isLoading = false;
       });
     }
@@ -66,24 +69,23 @@ class _PDFViewerScreenState extends State<PDFViewerScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.fileName),
-      ),
-      body: isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : error != null
-          ? Center(child: Text(error!))
-          : localPath != null
-          ? PDFView(
-        filePath: localPath!,
-        onError: (error) {
-          print('PDFView error: $error');
-          setState(() {
-            error = 'Failed to render PDF: $error';
-          });
-        },
-      )
-          : const Center(child: Text('Failed to load PDF')),
+      appBar: AppBar(title: Text(widget.fileName)),
+      body:
+          isLoading
+              ? const Center(child: CircularProgressIndicator())
+              : error != null
+              ? Center(child: Text(error!))
+              : localPath != null
+              ? PDFView(
+                filePath: localPath!,
+                onError: (error) {
+                  print('PDFView error: $error');
+                  setState(() {
+                    error = '${"failed_to_render_pdf".tr}: $error';
+                  });
+                },
+              )
+              : Center(child: Text('failed_to_load_pdf'.tr)),
     );
   }
 }

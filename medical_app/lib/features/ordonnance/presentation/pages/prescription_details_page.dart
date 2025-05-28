@@ -213,7 +213,7 @@ class _PrescriptionDetailsPageState extends State<PrescriptionDetailsPage> {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
-                                      'Patient',
+                                      'patient'.tr,
                                       style: GoogleFonts.raleway(
                                         fontSize: 14.sp,
                                         color: Colors.grey[600],
@@ -234,7 +234,7 @@ class _PrescriptionDetailsPageState extends State<PrescriptionDetailsPage> {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
-                                      'Médecin',
+                                      'doctor'.tr,
                                       style: GoogleFonts.raleway(
                                         fontSize: 14.sp,
                                         color: Colors.grey[600],
@@ -302,8 +302,7 @@ class _PrescriptionDetailsPageState extends State<PrescriptionDetailsPage> {
                           controller: _noteController,
                           maxLines: 4,
                           decoration: InputDecoration(
-                            hintText:
-                                "Notes ou instructions supplémentaires...",
+                            hintText: 'additional_notes_hint'.tr,
                             border: InputBorder.none,
                             hintStyle: GoogleFonts.raleway(
                               fontSize: 14.sp,
@@ -328,7 +327,7 @@ class _PrescriptionDetailsPageState extends State<PrescriptionDetailsPage> {
                         child: Text(
                           widget.prescription.note?.isNotEmpty == true
                               ? widget.prescription.note!
-                              : 'Aucune note',
+                              : 'no_notes'.tr,
                           style: GoogleFonts.raleway(
                             fontSize: 14.sp,
                             color:
@@ -366,7 +365,7 @@ class _PrescriptionDetailsPageState extends State<PrescriptionDetailsPage> {
                             },
                             icon: Icon(Icons.cancel, color: Colors.white),
                             label: Text(
-                              'Annuler',
+                              'cancel'.tr,
                               style: GoogleFonts.raleway(
                                 color: Colors.white,
                                 fontWeight: FontWeight.bold,
@@ -387,7 +386,7 @@ class _PrescriptionDetailsPageState extends State<PrescriptionDetailsPage> {
                             onPressed: _savePrescription,
                             icon: Icon(Icons.save, color: Colors.white),
                             label: Text(
-                              'Enregistrer',
+                              'save'.tr,
                               style: GoogleFonts.raleway(
                                 color: Colors.white,
                                 fontWeight: FontWeight.bold,
@@ -454,7 +453,7 @@ class _PrescriptionDetailsPageState extends State<PrescriptionDetailsPage> {
                 Icon(Icons.medication, size: 18.sp, color: Colors.grey[600]),
                 SizedBox(width: 8.w),
                 Text(
-                  'Dosage: ',
+                  '${'dosage_label'.tr}: ',
                   style: GoogleFonts.raleway(
                     fontSize: 14.sp,
                     color: Colors.grey[700],
@@ -478,7 +477,7 @@ class _PrescriptionDetailsPageState extends State<PrescriptionDetailsPage> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Instructions: ',
+                        '${'instructions_label'.tr}: ',
                         style: GoogleFonts.raleway(
                           fontSize: 14.sp,
                           color: Colors.grey[700],
@@ -511,7 +510,7 @@ class _PrescriptionDetailsPageState extends State<PrescriptionDetailsPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Ajouter un médicament',
+              'add_medication'.tr,
               style: GoogleFonts.raleway(
                 fontSize: 16.sp,
                 fontWeight: FontWeight.bold,
@@ -521,7 +520,7 @@ class _PrescriptionDetailsPageState extends State<PrescriptionDetailsPage> {
             TextFormField(
               controller: _medicationNameController,
               decoration: InputDecoration(
-                labelText: 'Nom du médicament',
+                labelText: 'medication_name'.tr,
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8.r),
                 ),
@@ -531,7 +530,7 @@ class _PrescriptionDetailsPageState extends State<PrescriptionDetailsPage> {
             TextFormField(
               controller: _dosageController,
               decoration: InputDecoration(
-                labelText: 'Dosage',
+                labelText: 'dosage'.tr,
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8.r),
                 ),
@@ -541,7 +540,7 @@ class _PrescriptionDetailsPageState extends State<PrescriptionDetailsPage> {
             TextFormField(
               controller: _instructionsController,
               decoration: InputDecoration(
-                labelText: 'Instructions',
+                labelText: 'instructions'.tr,
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8.r),
                 ),
@@ -554,7 +553,7 @@ class _PrescriptionDetailsPageState extends State<PrescriptionDetailsPage> {
                 onPressed: _addMedication,
                 icon: Icon(Icons.add, color: Colors.white),
                 label: Text(
-                  'Ajouter',
+                  'add'.tr,
                   style: GoogleFonts.raleway(
                     color: Colors.white,
                     fontWeight: FontWeight.bold,

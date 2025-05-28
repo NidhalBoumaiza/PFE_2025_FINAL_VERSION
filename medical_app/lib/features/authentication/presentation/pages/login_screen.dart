@@ -170,12 +170,12 @@ class _LoginScreenState extends State<LoginScreen> {
                             keyboardType: TextInputType.emailAddress,
                             validator: (value) {
                               if (value == null || value.isEmpty) {
-                                return "L'email est obligatoire".tr;
+                                return "email_required".tr;
                               }
                               if (!RegExp(
                                 r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
                               ).hasMatch(value)) {
-                                return "Veuillez entrer un email valide".tr;
+                                return "invalid_email_message".tr;
                               }
                               return null;
                             },
@@ -186,7 +186,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
                         // Password label
                         Text(
-                          "Mot de passe",
+                          "password".tr,
                           style: GoogleFonts.raleway(
                             fontSize: 16.sp,
                             fontWeight: FontWeight.w600,
@@ -279,11 +279,10 @@ class _LoginScreenState extends State<LoginScreen> {
                             ),
                             validator: (value) {
                               if (value == null || value.isEmpty) {
-                                return "Le mot de passe est obligatoire".tr;
+                                return "password_required".tr;
                               }
                               if (value.length < 6) {
-                                return "Le mot de passe doit contenir au moins 6 caractères"
-                                    .tr;
+                                return "password_min_length".tr;
                               }
                               return null;
                             },
@@ -344,16 +343,18 @@ class _LoginScreenState extends State<LoginScreen> {
                             context: context,
                             builder:
                                 (ctx) => AlertDialog(
-                                  title: Text('Account Verification Required'),
+                                  title: Text(
+                                    'account_verification_required'.tr,
+                                  ),
                                   content: Text(
-                                    'Your account has not been activated. Please verify your email to continue.',
+                                    'account_not_activated_message'.tr,
                                   ),
                                   actions: [
                                     TextButton(
                                       onPressed: () {
                                         Navigator.of(ctx).pop();
                                       },
-                                      child: Text('Cancel'),
+                                      child: Text('cancel'.tr),
                                     ),
                                     TextButton(
                                       onPressed: () {
@@ -367,7 +368,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                           ),
                                         );
                                       },
-                                      child: Text('Verify Now'),
+                                      child: Text('verify_now'.tr),
                                     ),
                                   ],
                                 ),
@@ -602,7 +603,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 children: [
                   CircularProgressIndicator(),
                   SizedBox(height: 16),
-                  Text("Creating test account..."),
+                  Text("creating_test_account"),
                 ],
               ),
             ),
@@ -657,21 +658,21 @@ class _LoginScreenState extends State<LoginScreen> {
             context: context,
             builder:
                 (context) => AlertDialog(
-                  title: const Text("Test Account Created"),
+                  title: const Text("test_account_created"),
                   content: Column(
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text("Email: $email"),
-                      const Text("Password: Test123456"),
+                      Text("email_label: $email"),
+                      const Text("password_label: Test123456"),
                       const SizedBox(height: 16),
-                      const Text("Account is already activated for testing."),
+                      const Text("account_already_activated"),
                     ],
                   ),
                   actions: [
                     TextButton(
                       onPressed: () => Navigator.of(context).pop(),
-                      child: const Text("OK"),
+                      child: const Text("ok"),
                     ),
                   ],
                 ),
@@ -688,12 +689,12 @@ class _LoginScreenState extends State<LoginScreen> {
           context: context,
           builder:
               (context) => AlertDialog(
-                title: const Text("Error"),
-                content: Text("Failed to create test account: $e"),
+                title: const Text("error"),
+                content: Text("failed_to_create_test_account: $e"),
                 actions: [
                   TextButton(
                     onPressed: () => Navigator.of(context).pop(),
-                    child: const Text("OK"),
+                    child: const Text("ok"),
                   ),
                 ],
               ),
