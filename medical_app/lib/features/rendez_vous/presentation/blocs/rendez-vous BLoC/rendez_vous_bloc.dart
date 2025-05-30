@@ -17,6 +17,7 @@ import 'package:medical_app/features/notifications/presentation/bloc/notificatio
 import 'package:medical_app/features/notifications/utils/notification_utils.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:get/get.dart';
 
 part 'rendez_vous_event.dart';
 part 'rendez_vous_state.dart';
@@ -378,9 +379,9 @@ class RendezVousBloc extends Bloc<RendezVousEvent, RendezVousState> {
       // Send through NotificationBloc
       notificationBloc!.add(
         SendNotificationEvent(
-          title: 'Nouveau rendez-vous',
+          title: 'new_appointment'.tr,
           body:
-              '${rendezVous.patientName ?? "Un patient"} a demandé un rendez-vous pour le $formattedDate à $formattedTime',
+              '${rendezVous.patientName ?? "patient_name_unknown".tr} ${"requested_appointment_for".tr} $formattedDate ${"at".tr} $formattedTime',
           senderId: rendezVous.patientId!,
           recipientId: rendezVous.doctorId!,
           type: NotificationType.newAppointment,
@@ -502,9 +503,9 @@ class RendezVousBloc extends Bloc<RendezVousEvent, RendezVousState> {
         rendezVous.doctorId != null) {
       notificationBloc!.add(
         SendNotificationEvent(
-          title: 'Appointment Accepted',
+          title: 'appointment_accepted'.tr,
           body:
-              'Dr. ${rendezVous.doctorName ?? "Unknown"} has accepted your appointment for ${rendezVous.startTime.toString().substring(0, 10)} at ${_formatTime(rendezVous.startTime)}',
+              '${"doctor".tr} ${rendezVous.doctorName ?? "doctor_name_unknown".tr} ${"has_accepted_your_appointment_for".tr} ${rendezVous.startTime.toString().substring(0, 10)} ${"at".tr} ${_formatTime(rendezVous.startTime)}',
           senderId: rendezVous.doctorId!,
           recipientId: rendezVous.patientId!,
           type: NotificationType.appointmentAccepted,
@@ -527,9 +528,9 @@ class RendezVousBloc extends Bloc<RendezVousEvent, RendezVousState> {
         rendezVous.doctorId != null) {
       notificationBloc!.add(
         SendNotificationEvent(
-          title: 'Appointment Rejected',
+          title: 'appointment_rejected'.tr,
           body:
-              'Dr. ${rendezVous.doctorName ?? "Unknown"} has rejected your appointment for ${rendezVous.startTime.toString().substring(0, 10)} at ${_formatTime(rendezVous.startTime)}',
+              '${"doctor".tr} ${rendezVous.doctorName ?? "doctor_name_unknown".tr} ${"has_rejected_your_appointment_for".tr} ${rendezVous.startTime.toString().substring(0, 10)} ${"at".tr} ${_formatTime(rendezVous.startTime)}',
           senderId: rendezVous.doctorId!,
           recipientId: rendezVous.patientId!,
           type: NotificationType.appointmentRejected,

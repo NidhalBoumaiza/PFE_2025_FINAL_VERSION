@@ -60,10 +60,11 @@ class _AiChatbotPageState extends State<AiChatbotPage> {
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
-      builder: (context) => AttachmentBottomSheet(
-        onImageSelected: _handleImageSelection,
-        onPdfSelected: _handlePdfSelection,
-      ),
+      builder:
+          (context) => AttachmentBottomSheet(
+            onImageSelected: _handleImageSelection,
+            onPdfSelected: _handlePdfSelection,
+          ),
     );
   }
 
@@ -81,49 +82,50 @@ class _AiChatbotPageState extends State<AiChatbotPage> {
 
   void _showImagePromptDialog(File imageFile) {
     final TextEditingController promptController = TextEditingController();
-    
+
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text('ai_image_prompt_title'.tr),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text('ai_image_prompt_description'.tr),
-            const SizedBox(height: 16),
-            TextField(
-              controller: promptController,
-              decoration: InputDecoration(
-                hintText: 'ai_image_prompt_hint'.tr,
-                border: const OutlineInputBorder(),
-              ),
-              maxLines: 3,
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text('cancel'.tr),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              final prompt = promptController.text.trim();
-              if (prompt.isNotEmpty) {
-                context.read<AiChatbotBloc>().add(
-                  SendImageMessageEvent(
-                    imageFile: imageFile,
-                    taskPrompt: prompt,
+      builder:
+          (context) => AlertDialog(
+            title: Text('ai_image_prompt_title'.tr),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text('ai_image_prompt_description'.tr),
+                const SizedBox(height: 16),
+                TextField(
+                  controller: promptController,
+                  decoration: InputDecoration(
+                    hintText: 'ai_image_prompt_hint'.tr,
+                    border: const OutlineInputBorder(),
                   ),
-                );
-                Navigator.pop(context);
-                _scrollToBottom();
-              }
-            },
-            child: Text('ai_analyze'.tr),
+                  maxLines: 3,
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: Text('cancel'.tr),
+              ),
+              ElevatedButton(
+                onPressed: () {
+                  final prompt = promptController.text.trim();
+                  if (prompt.isNotEmpty) {
+                    context.read<AiChatbotBloc>().add(
+                      SendImageMessageEvent(
+                        imageFile: imageFile,
+                        taskPrompt: prompt,
+                      ),
+                    );
+                    Navigator.pop(context);
+                    _scrollToBottom();
+                  }
+                },
+                child: Text('ai_analyze'.tr),
+              ),
+            ],
           ),
-        ],
-      ),
     );
   }
 
@@ -146,6 +148,7 @@ class _AiChatbotPageState extends State<AiChatbotPage> {
     final isDarkMode = theme.brightness == Brightness.dark;
 
     return Scaffold(
+      resizeToAvoidBottomInset: true,
       appBar: AppBar(
         title: Text(
           'ai_assistant'.tr,
@@ -163,7 +166,7 @@ class _AiChatbotPageState extends State<AiChatbotPage> {
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.refresh, color: Colors.white),
+            icon: const Icon(Icons.clear_all, color: Colors.white),
             onPressed: () {
               context.read<AiChatbotBloc>().add(const ClearChatEvent());
             },
@@ -192,9 +195,10 @@ class _AiChatbotPageState extends State<AiChatbotPage> {
                 }
 
                 if (state is AiChatbotLoaded || state is AiChatbotError) {
-                  final messages = state is AiChatbotLoaded 
-                      ? state.messages 
-                      : (state as AiChatbotError).messages;
+                  final messages =
+                      state is AiChatbotLoaded
+                          ? state.messages
+                          : (state as AiChatbotError).messages;
                   final isLoading = state is AiChatbotLoaded && state.isLoading;
 
                   if (messages.isEmpty) {
@@ -225,50 +229,50 @@ class _AiChatbotPageState extends State<AiChatbotPage> {
   }
 
   Widget _buildWelcomeScreen() {
-    return Center(
-      child: Padding(
-        padding: EdgeInsets.all(32.w),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.smart_toy_outlined,
-              size: 80.sp,
+    return SingleChildScrollView(
+      padding: EdgeInsets.all(32.w),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          SizedBox(height: 40.h),
+          Icon(
+            Icons.smart_toy_outlined,
+            size: 80.sp,
+            color: AppColors.primaryColor,
+          ),
+          SizedBox(height: 24.h),
+          Text(
+            'ai_welcome_title'.tr,
+            style: GoogleFonts.raleway(
+              fontSize: 24.sp,
+              fontWeight: FontWeight.bold,
               color: AppColors.primaryColor,
             ),
-            SizedBox(height: 24.h),
-            Text(
-              'ai_welcome_title'.tr,
-              style: GoogleFonts.raleway(
-                fontSize: 24.sp,
-                fontWeight: FontWeight.bold,
-                color: AppColors.primaryColor,
-              ),
-              textAlign: TextAlign.center,
+            textAlign: TextAlign.center,
+          ),
+          SizedBox(height: 16.h),
+          Text(
+            'ai_welcome_description'.tr,
+            style: GoogleFonts.raleway(
+              fontSize: 16.sp,
+              color: Colors.grey[600],
             ),
-            SizedBox(height: 16.h),
-            Text(
-              'ai_welcome_description'.tr,
-              style: GoogleFonts.raleway(
-                fontSize: 16.sp,
-                color: Colors.grey[600],
-              ),
-              textAlign: TextAlign.center,
-            ),
-            SizedBox(height: 32.h),
-            _buildFeatureCard(
-              icon: Icons.image,
-              title: 'ai_image_analysis'.tr,
-              description: 'ai_image_analysis_desc'.tr,
-            ),
-            SizedBox(height: 16.h),
-            _buildFeatureCard(
-              icon: Icons.picture_as_pdf,
-              title: 'ai_pdf_analysis'.tr,
-              description: 'ai_pdf_analysis_desc'.tr,
-            ),
-          ],
-        ),
+            textAlign: TextAlign.center,
+          ),
+          SizedBox(height: 32.h),
+          _buildFeatureCard(
+            icon: Icons.image,
+            title: 'ai_image_analysis'.tr,
+            description: 'ai_image_analysis_desc'.tr,
+          ),
+          SizedBox(height: 16.h),
+          _buildFeatureCard(
+            icon: Icons.picture_as_pdf,
+            title: 'ai_pdf_analysis'.tr,
+            description: 'ai_pdf_analysis_desc'.tr,
+          ),
+          SizedBox(height: 40.h),
+        ],
       ),
     );
   }
@@ -283,17 +287,11 @@ class _AiChatbotPageState extends State<AiChatbotPage> {
       decoration: BoxDecoration(
         color: AppColors.primaryColor.withOpacity(0.1),
         borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(
-          color: AppColors.primaryColor.withOpacity(0.2),
-        ),
+        border: Border.all(color: AppColors.primaryColor.withOpacity(0.2)),
       ),
       child: Row(
         children: [
-          Icon(
-            icon,
-            color: AppColors.primaryColor,
-            size: 24.sp,
-          ),
+          Icon(icon, color: AppColors.primaryColor, size: 24.sp),
           SizedBox(width: 16.w),
           Expanded(
             child: Column(
@@ -330,11 +328,7 @@ class _AiChatbotPageState extends State<AiChatbotPage> {
           CircleAvatar(
             radius: 16.r,
             backgroundColor: AppColors.primaryColor,
-            child: Icon(
-              Icons.smart_toy,
-              color: Colors.white,
-              size: 16.sp,
-            ),
+            child: Icon(Icons.smart_toy, color: Colors.white, size: 16.sp),
           ),
           SizedBox(width: 12.w),
           Container(
@@ -368,8 +362,14 @@ class _AiChatbotPageState extends State<AiChatbotPage> {
   }
 
   Widget _buildMessageInput(bool isDarkMode) {
-    return Container(
-      padding: EdgeInsets.all(16.w),
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 200),
+      padding: EdgeInsets.only(
+        left: 16.w,
+        right: 16.w,
+        top: 16.h,
+        bottom: 16.h,
+      ),
       decoration: BoxDecoration(
         color: isDarkMode ? Colors.grey[900] : Colors.white,
         boxShadow: [
@@ -392,40 +392,41 @@ class _AiChatbotPageState extends State<AiChatbotPage> {
               ),
             ),
             Expanded(
-              child: TextField(
-                controller: _messageController,
-                focusNode: _focusNode,
-                decoration: InputDecoration(
-                  hintText: 'ai_type_message'.tr,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(24.r),
-                    borderSide: BorderSide.none,
-                  ),
-                  filled: true,
-                  fillColor: isDarkMode ? Colors.grey[800] : Colors.grey[100],
-                  contentPadding: EdgeInsets.symmetric(
-                    horizontal: 16.w,
-                    vertical: 12.h,
-                  ),
+              child: ConstrainedBox(
+                constraints: BoxConstraints(
+                  maxHeight: 120.h, // Limit max height to prevent overflow
                 ),
-                maxLines: null,
-                textInputAction: TextInputAction.send,
-                onSubmitted: (_) => _sendTextMessage(),
+                child: TextField(
+                  controller: _messageController,
+                  focusNode: _focusNode,
+                  decoration: InputDecoration(
+                    hintText: 'ai_type_message'.tr,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(24.r),
+                      borderSide: BorderSide.none,
+                    ),
+                    filled: true,
+                    fillColor: isDarkMode ? Colors.grey[800] : Colors.grey[100],
+                    contentPadding: EdgeInsets.symmetric(
+                      horizontal: 16.w,
+                      vertical: 12.h,
+                    ),
+                  ),
+                  maxLines: null,
+                  textInputAction: TextInputAction.send,
+                  onSubmitted: (_) => _sendTextMessage(),
+                ),
               ),
             ),
             SizedBox(width: 8.w),
             FloatingActionButton.small(
               onPressed: _sendTextMessage,
               backgroundColor: AppColors.primaryColor,
-              child: Icon(
-                Icons.send,
-                color: Colors.white,
-                size: 20.sp,
-              ),
+              child: Icon(Icons.send, color: Colors.white, size: 20.sp),
             ),
           ],
         ),
       ),
     );
   }
-} 
+}

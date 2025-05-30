@@ -177,6 +177,7 @@ class _HomePatientState extends State<HomePatient> {
     ),
   ];
 
+
   // Widget to display message icon with badge for unread messages
   Widget _buildMessageIcon(bool isActive) {
     return BlocBuilder<ConversationsBloc, ConversationsState>(

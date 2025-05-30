@@ -52,9 +52,9 @@ class _PatientProfilePageState extends State<PatientProfilePage> {
       final userJson = prefs.getString('CACHED_USER');
       if (userJson != null) {
         final userMap = jsonDecode(userJson) as Map<String, dynamic>;
-      setState(() {
+        setState(() {
           currentUser = UserModel.fromJson(userMap);
-      });
+        });
       }
     } catch (e) {
       print('Error loading user data: $e');
@@ -138,7 +138,7 @@ class _PatientProfilePageState extends State<PatientProfilePage> {
             Padding(
               padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
               child: Text(
-                "Informations médicales",
+                "medical_information".tr,
                 style: GoogleFonts.raleway(
                   fontSize: 18.sp,
                   fontWeight: FontWeight.bold,
@@ -162,7 +162,7 @@ class _PatientProfilePageState extends State<PatientProfilePage> {
             Padding(
               padding: EdgeInsets.fromLTRB(16.w, 16.h, 16.w, 8.h),
               child: Text(
-                "Consultations précédentes",
+                "previous_consultations".tr,
                 style: GoogleFonts.raleway(
                   fontSize: 18.sp,
                   fontWeight: FontWeight.bold,
@@ -289,7 +289,7 @@ class _PatientProfilePageState extends State<PatientProfilePage> {
                       ? DateFormat(
                         'dd/MM/yyyy',
                       ).format(widget.patient.dateOfBirth!)
-                      : "Date de naissance non spécifiée",
+                      : "date_of_birth_not_specified".tr,
                   style: GoogleFonts.raleway(
                     fontSize: 14.sp,
                     color: Colors.grey.shade700,
@@ -337,7 +337,7 @@ class _PatientProfilePageState extends State<PatientProfilePage> {
                 SizedBox(width: 8.w),
                 Expanded(
                   child: Text(
-                    "Informations médicales",
+                    "medical_information".tr,
                     style: GoogleFonts.raleway(
                       fontSize: 16.sp,
                       fontWeight: FontWeight.bold,
@@ -351,7 +351,7 @@ class _PatientProfilePageState extends State<PatientProfilePage> {
 
             // Medical history
             Text(
-              "Antécédents médicaux:",
+              "medical_history".tr + ":",
               style: GoogleFonts.raleway(
                 fontSize: 14.sp,
                 fontWeight: FontWeight.bold,
@@ -605,7 +605,7 @@ class _PatientProfilePageState extends State<PatientProfilePage> {
         Padding(
           padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
           child: Text(
-            "Dossier médical",
+            "medical_file".tr,
             style: GoogleFonts.raleway(
               fontSize: 18.sp,
               fontWeight: FontWeight.bold,
@@ -660,7 +660,7 @@ class _PatientProfilePageState extends State<PatientProfilePage> {
                         ),
                         SizedBox(height: 12.h),
                         Text(
-                          "Accès refusé",
+                          "access_denied".tr,
                           style: GoogleFonts.raleway(
                             fontSize: 16.sp,
                             fontWeight: FontWeight.bold,
@@ -669,7 +669,7 @@ class _PatientProfilePageState extends State<PatientProfilePage> {
                         ),
                         SizedBox(height: 8.h),
                         Text(
-                          "Vous devez avoir un rendez-vous confirmé avec ce patient pour accéder à son dossier médical.",
+                          "access_denied_message".tr,
                           textAlign: TextAlign.center,
                           style: GoogleFonts.raleway(
                             fontSize: 14.sp,
@@ -700,7 +700,7 @@ class _PatientProfilePageState extends State<PatientProfilePage> {
                         ),
                         SizedBox(height: 12.h),
                         Text(
-                          "Aucun fichier médical",
+                          "no_medical_files".tr,
                           style: GoogleFonts.raleway(
                             fontSize: 16.sp,
                             fontWeight: FontWeight.bold,
@@ -709,7 +709,7 @@ class _PatientProfilePageState extends State<PatientProfilePage> {
                         ),
                         SizedBox(height: 8.h),
                         Text(
-                          "Ce patient n'a pas encore de fichiers dans son dossier médical.",
+                          "no_medical_files_message".tr,
                           textAlign: TextAlign.center,
                           style: GoogleFonts.raleway(
                             fontSize: 14.sp,
@@ -746,7 +746,7 @@ class _PatientProfilePageState extends State<PatientProfilePage> {
                                 ),
                                 SizedBox(width: 8.w),
                                 Text(
-                                  "Fichiers médicaux",
+                                  "medical_files".tr,
                                   style: GoogleFonts.raleway(
                                     fontSize: 16.sp,
                                     fontWeight: FontWeight.bold,
@@ -792,7 +792,7 @@ class _PatientProfilePageState extends State<PatientProfilePage> {
                                   borderRadius: BorderRadius.circular(20.r),
                                 ),
                                 child: Text(
-                                  "Voir tout",
+                                  "view_all".tr,
                                   style: GoogleFonts.raleway(
                                     fontSize: 12.sp,
                                     fontWeight: FontWeight.w600,

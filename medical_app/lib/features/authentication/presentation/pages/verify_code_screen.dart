@@ -37,7 +37,7 @@ class VerifyCodeScreen extends StatelessWidget {
           backgroundColor: AppColors.primaryColor,
           elevation: 0,
           title: Text(
-            "Vérification",
+            "verification".tr,
             style: GoogleFonts.raleway(
               fontSize: 20.sp,
               fontWeight: FontWeight.bold,

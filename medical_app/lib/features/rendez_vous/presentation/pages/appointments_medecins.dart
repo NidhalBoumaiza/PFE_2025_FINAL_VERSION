@@ -256,12 +256,11 @@ class _AppointmentsMedecinsState extends State<AppointmentsMedecins> {
         status: appointment.status,
       );
 
-      // TODO: Add support for updating appointment time
       // For now show a message
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            "La fonctionnalité de modification d'heure sera disponible prochainement",
+            "modify_time_feature_coming_soon".tr,
             style: GoogleFonts.raleway(),
           ),
           backgroundColor: Colors.orange,
