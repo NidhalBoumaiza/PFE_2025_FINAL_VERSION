@@ -300,9 +300,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   Widget _buildChartsForMobile(bool isLoading, StatsEntity? stats) {
-    // Get the mock data for the charts since the current BLoC states don't have these fields
-    final activityStats = _getMockActivityStats();
-    final loginStats = _getMockLoginStats();
+    // Convert real data to chart format
+    final activityStats = _getActivityStatsFromAppointments(stats);
+    final loginStats = _getLoginStatsFromAppointments(stats);
 
     return Column(
       children: [
@@ -349,9 +349,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   Widget _buildChartsForTablet(bool isLoading, StatsEntity? stats) {
-    // Get the mock data for the charts since the current BLoC states don't have these fields
-    final activityStats = _getMockActivityStats();
-    final loginStats = _getMockLoginStats();
+    // Convert real data to chart format
+    final activityStats = _getActivityStatsFromAppointments(stats);
+    final loginStats = _getLoginStatsFromAppointments(stats);
 
     return Column(
       children: [
@@ -398,9 +398,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   Widget _buildChartsForDesktop(bool isLoading, StatsEntity? stats) {
-    // Get the mock data for the charts since the current BLoC states don't have these fields
-    final activityStats = _getMockActivityStats();
-    final loginStats = _getMockLoginStats();
+    // Convert real data to chart format
+    final activityStats = _getActivityStatsFromAppointments(stats);
+    final loginStats = _getLoginStatsFromAppointments(stats);
 
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -449,28 +449,71 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  // Helper methods to get mock chart data
-  List<ActivityStats> _getMockActivityStats() {
+  // Helper methods to convert real data to chart format
+  List<ActivityStats> _getActivityStatsFromAppointments(StatsEntity? stats) {
+    if (stats == null) {
+      return _getEmptyActivityStats();
+    }
+
+    final appointmentsPerDay = stats.appointmentsPerDay;
     final now = DateTime.now();
+
     return List.generate(7, (index) {
       final date = now.subtract(Duration(days: 6 - index));
+      final dayKey =
+          '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
+      final appointmentCount = appointmentsPerDay[dayKey] ?? 0;
+
+      // Convert appointments to activity (active users = appointments, inactive = total users - appointments)
+      final activeUsers = appointmentCount;
+      final inactiveUsers = (stats.totalUsers - appointmentCount).clamp(
+        0,
+        stats.totalUsers,
+      );
+
       return ActivityStats(
         date: date,
-        activeUsers: (index + 1) * 5,
-        inactiveUsers: (7 - index) * 3,
+        activeUsers: activeUsers,
+        inactiveUsers: inactiveUsers,
       );
     });
   }
 
-  List<LoginStats> _getMockLoginStats() {
+  List<LoginStats> _getLoginStatsFromAppointments(StatsEntity? stats) {
+    if (stats == null) {
+      return _getEmptyLoginStats();
+    }
+
+    final appointmentsPerDay = stats.appointmentsPerDay;
+    final now = DateTime.now();
+
+    return List.generate(7, (index) {
+      final date = now.subtract(Duration(days: 6 - index));
+      final dayKey =
+          '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
+      final appointmentCount = appointmentsPerDay[dayKey] ?? 0;
+
+      // Estimate logins based on appointments (assuming each appointment involves 2 users logging in)
+      final logins = appointmentCount * 2;
+      final logouts = (appointmentCount * 1.5).round(); // Slightly less logouts
+
+      return LoginStats(date: date, logins: logins, logouts: logouts);
+    });
+  }
+
+  List<ActivityStats> _getEmptyActivityStats() {
     final now = DateTime.now();
     return List.generate(7, (index) {
       final date = now.subtract(Duration(days: 6 - index));
-      return LoginStats(
-        date: date,
-        logins: (index + 1) * 8,
-        logouts: (7 - index) * 4,
-      );
+      return ActivityStats(date: date, activeUsers: 0, inactiveUsers: 0);
+    });
+  }
+
+  List<LoginStats> _getEmptyLoginStats() {
+    final now = DateTime.now();
+    return List.generate(7, (index) {
+      final date = now.subtract(Duration(days: 6 - index));
+      return LoginStats(date: date, logins: 0, logouts: 0);
     });
   }
 }

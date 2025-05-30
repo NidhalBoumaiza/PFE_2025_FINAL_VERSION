@@ -471,7 +471,7 @@ class _MyAppState extends State<MyApp> {
                 themeMode: themeMode,
                 navigatorKey: navigatorKey,
                 home: widget.initialScreen,
-                translations: LanguageService(),
+                translations: AppTranslations(),
                 locale: widget.savedLocale ?? Get.deviceLocale,
                 fallbackLocale: const Locale('fr', 'FR'),
               );

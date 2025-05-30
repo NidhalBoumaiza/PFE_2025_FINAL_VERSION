@@ -488,8 +488,20 @@ class _DoctorProfilePageState extends State<DoctorProfilePage> {
     String? address;
 
     if (widget.doctor.location != null) {
-      latitude = widget.doctor.location!['latitude']?.toDouble();
-      longitude = widget.doctor.location!['longitude']?.toDouble();
+      // Handle both old format (separate lat/lng fields) and new GeoJSON format
+      if (widget.doctor.location!.containsKey('coordinates') &&
+          widget.doctor.location!['coordinates'] is List) {
+        // New GeoJSON format: [longitude, latitude]
+        final coordinates = widget.doctor.location!['coordinates'] as List;
+        if (coordinates.length >= 2) {
+          longitude = (coordinates[0] as num?)?.toDouble();
+          latitude = (coordinates[1] as num?)?.toDouble();
+        }
+      } else {
+        // Old format: separate latitude and longitude fields
+        latitude = widget.doctor.location!['latitude']?.toDouble();
+        longitude = widget.doctor.location!['longitude']?.toDouble();
+      }
     }
 
     if (widget.doctor.address != null) {

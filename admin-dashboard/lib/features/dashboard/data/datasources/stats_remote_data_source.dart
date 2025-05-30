@@ -22,18 +22,19 @@ class StatsRemoteDataSourceImpl implements StatsRemoteDataSource {
   @override
   Future<StatsModel> getStats() async {
     try {
-      // Get user counts
-      final userQuery = await firestore.collection('users').get();
-      final users = userQuery.docs;
+      // Get patient counts from patients collection
+      final patientsQuery = await firestore.collection('patients').get();
+      final totalPatients = patientsQuery.docs.length;
 
-      final totalUsers = users.length;
-      final totalDoctors =
-          users.where((user) => user.data()['role'] == 'medecin').length;
-      final totalPatients =
-          users.where((user) => user.data()['role'] == 'patient').length;
+      // Get doctor counts from medecins collection
+      final doctorsQuery = await firestore.collection('medecins').get();
+      final totalDoctors = doctorsQuery.docs.length;
 
-      // Get appointment counts
-      final appointmentQuery = await firestore.collection('appointments').get();
+      // Total users (patients + doctors)
+      final totalUsers = totalPatients + totalDoctors;
+
+      // Get appointment counts from rendez_vous collection
+      final appointmentQuery = await firestore.collection('rendez_vous').get();
       final appointments = appointmentQuery.docs;
 
       final totalAppointments = appointments.length;
@@ -41,16 +42,22 @@ class StatsRemoteDataSourceImpl implements StatsRemoteDataSource {
           appointments
               .where((appointment) => appointment.data()['status'] == 'pending')
               .length;
+      final acceptedAppointments =
+          appointments
+              .where(
+                (appointment) => appointment.data()['status'] == 'accepted',
+              )
+              .length;
+      final rejectedAppointments =
+          appointments
+              .where(
+                (appointment) => appointment.data()['status'] == 'rejected',
+              )
+              .length;
       final completedAppointments =
           appointments
               .where(
                 (appointment) => appointment.data()['status'] == 'completed',
-              )
-              .length;
-      final cancelledAppointments =
-          appointments
-              .where(
-                (appointment) => appointment.data()['status'] == 'cancelled',
               )
               .length;
 
@@ -74,8 +81,8 @@ class StatsRemoteDataSourceImpl implements StatsRemoteDataSource {
         totalPatients: totalPatients,
         totalAppointments: totalAppointments,
         pendingAppointments: pendingAppointments,
-        completedAppointments: completedAppointments,
-        cancelledAppointments: cancelledAppointments,
+        completedAppointments: acceptedAppointments + completedAppointments,
+        cancelledAppointments: rejectedAppointments,
         appointmentsPerDay: appointmentsPerDay,
         appointmentsPerMonth: appointmentsPerMonth,
         appointmentsPerYear: appointmentsPerYear,
@@ -84,6 +91,7 @@ class StatsRemoteDataSourceImpl implements StatsRemoteDataSource {
         topPatientsByCancelledAppointments: topPatientsByCancelledAppointments,
       );
     } catch (e) {
+      print('Error getting stats: $e');
       throw ServerException(e.toString());
     }
   }
@@ -118,12 +126,8 @@ class StatsRemoteDataSourceImpl implements StatsRemoteDataSource {
   @override
   Future<List<DoctorStatistics>> getTopDoctorsByCompletedAppointments() async {
     try {
-      // Get all doctors
-      final doctorsQuery =
-          await firestore
-              .collection('users')
-              .where('role', isEqualTo: 'medecin')
-              .get();
+      // Get all doctors from medecins collection
+      final doctorsQuery = await firestore.collection('medecins').get();
 
       if (doctorsQuery.docs.isEmpty) {
         return [];
@@ -136,21 +140,21 @@ class StatsRemoteDataSourceImpl implements StatsRemoteDataSource {
         final doctorData = doctorDoc.data();
         final doctorId = doctorDoc.id;
 
-        // Count completed appointments for this doctor
-        final appointmentsQuery =
+        // Count completed/accepted appointments for this doctor
+        final completedAppointmentsQuery =
             await firestore
-                .collection('appointments')
+                .collection('rendez_vous')
                 .where('doctorId', isEqualTo: doctorId)
-                .where('status', isEqualTo: 'completed')
+                .where('status', whereIn: ['accepted', 'completed'])
                 .get();
 
         final totalAppointments =
             await firestore
-                .collection('appointments')
+                .collection('rendez_vous')
                 .where('doctorId', isEqualTo: doctorId)
                 .get();
 
-        final completedCount = appointmentsQuery.docs.length;
+        final completedCount = completedAppointmentsQuery.docs.length;
         final totalCount = totalAppointments.docs.length;
         final completionRate =
             totalCount > 0 ? completedCount / totalCount : 0.0;
@@ -159,7 +163,8 @@ class StatsRemoteDataSourceImpl implements StatsRemoteDataSource {
           doctorStats.add(
             DoctorStatistics(
               id: doctorId,
-              name: doctorData['name'] ?? 'Unknown',
+              name:
+                  '${doctorData['name'] ?? 'Unknown'} ${doctorData['lastName'] ?? ''}',
               email: doctorData['email'] ?? '',
               appointmentCount: completedCount,
               completionRate: completionRate,
@@ -176,6 +181,7 @@ class StatsRemoteDataSourceImpl implements StatsRemoteDataSource {
       // Return top 10 or less if there are fewer doctors
       return doctorStats.take(10).toList();
     } catch (e) {
+      print('Error getting top doctors by completed appointments: $e');
       throw ServerException(e.toString());
     }
   }
@@ -183,12 +189,8 @@ class StatsRemoteDataSourceImpl implements StatsRemoteDataSource {
   @override
   Future<List<DoctorStatistics>> getTopDoctorsByCancelledAppointments() async {
     try {
-      // Get all doctors
-      final doctorsQuery =
-          await firestore
-              .collection('users')
-              .where('role', isEqualTo: 'medecin')
-              .get();
+      // Get all doctors from medecins collection
+      final doctorsQuery = await firestore.collection('medecins').get();
 
       if (doctorsQuery.docs.isEmpty) {
         return [];
@@ -201,38 +203,38 @@ class StatsRemoteDataSourceImpl implements StatsRemoteDataSource {
         final doctorData = doctorDoc.data();
         final doctorId = doctorDoc.id;
 
-        // Count cancelled appointments for this doctor
-        final appointmentsQuery =
+        // Count rejected appointments for this doctor
+        final rejectedAppointmentsQuery =
             await firestore
-                .collection('appointments')
+                .collection('rendez_vous')
                 .where('doctorId', isEqualTo: doctorId)
-                .where('status', isEqualTo: 'cancelled')
+                .where('status', isEqualTo: 'rejected')
                 .get();
 
         final totalAppointments =
             await firestore
-                .collection('appointments')
+                .collection('rendez_vous')
                 .where('doctorId', isEqualTo: doctorId)
                 .get();
 
-        final cancelledCount = appointmentsQuery.docs.length;
+        final rejectedCount = rejectedAppointmentsQuery.docs.length;
         final totalCount = totalAppointments.docs.length;
 
         if (totalCount > 0) {
           doctorStats.add(
             DoctorStatistics(
               id: doctorId,
-              name: doctorData['name'] ?? 'Unknown',
+              name:
+                  '${doctorData['name'] ?? 'Unknown'} ${doctorData['lastName'] ?? ''}',
               email: doctorData['email'] ?? '',
-              appointmentCount: cancelledCount,
-              completionRate:
-                  totalCount > 0 ? cancelledCount / totalCount : 0.0,
+              appointmentCount: rejectedCount,
+              completionRate: totalCount > 0 ? rejectedCount / totalCount : 0.0,
             ),
           );
         }
       }
 
-      // Sort by cancelled appointment count in descending order
+      // Sort by rejected appointment count in descending order
       doctorStats.sort(
         (a, b) => b.appointmentCount.compareTo(a.appointmentCount),
       );
@@ -240,6 +242,7 @@ class StatsRemoteDataSourceImpl implements StatsRemoteDataSource {
       // Return top 10 or less if there are fewer doctors
       return doctorStats.take(10).toList();
     } catch (e) {
+      print('Error getting top doctors by cancelled appointments: $e');
       throw ServerException(e.toString());
     }
   }
@@ -248,12 +251,8 @@ class StatsRemoteDataSourceImpl implements StatsRemoteDataSource {
   Future<List<PatientStatistics>>
   getTopPatientsByCancelledAppointments() async {
     try {
-      // Get all patients
-      final patientsQuery =
-          await firestore
-              .collection('users')
-              .where('role', isEqualTo: 'patient')
-              .get();
+      // Get all patients from patients collection
+      final patientsQuery = await firestore.collection('patients').get();
 
       if (patientsQuery.docs.isEmpty) {
         return [];
@@ -266,33 +265,34 @@ class StatsRemoteDataSourceImpl implements StatsRemoteDataSource {
         final patientData = patientDoc.data();
         final patientId = patientDoc.id;
 
-        // Count cancelled appointments for this patient
-        final cancelledAppointmentsQuery =
+        // Count rejected appointments for this patient
+        final rejectedAppointmentsQuery =
             await firestore
-                .collection('appointments')
+                .collection('rendez_vous')
                 .where('patientId', isEqualTo: patientId)
-                .where('status', isEqualTo: 'cancelled')
+                .where('status', isEqualTo: 'rejected')
                 .get();
 
         final totalAppointmentsQuery =
             await firestore
-                .collection('appointments')
+                .collection('rendez_vous')
                 .where('patientId', isEqualTo: patientId)
                 .get();
 
-        final cancelledCount = cancelledAppointmentsQuery.docs.length;
+        final rejectedCount = rejectedAppointmentsQuery.docs.length;
         final totalCount = totalAppointmentsQuery.docs.length;
 
-        if (cancelledCount > 0) {
+        if (rejectedCount > 0) {
           patientStats.add(
             PatientStatistics(
               id: patientId,
-              name: patientData['name'] ?? 'Unknown',
+              name:
+                  '${patientData['name'] ?? 'Unknown'} ${patientData['lastName'] ?? ''}',
               email: patientData['email'] ?? '',
-              cancelledAppointments: cancelledCount,
+              cancelledAppointments: rejectedCount,
               totalAppointments: totalCount,
               cancellationRate:
-                  totalCount > 0 ? cancelledCount / totalCount : 0.0,
+                  totalCount > 0 ? rejectedCount / totalCount : 0.0,
             ),
           );
         }
@@ -306,126 +306,174 @@ class StatsRemoteDataSourceImpl implements StatsRemoteDataSource {
       // Return top 10 or less if there are fewer patients
       return patientStats.take(10).toList();
     } catch (e) {
+      print('Error getting top patients by cancelled appointments: $e');
       throw ServerException(e.toString());
     }
   }
 
   Future<Map<String, int>> _getAppointmentsPerDayFromFirestore() async {
-    // Get appointments for the last 7 days
-    final DateTime now = DateTime.now();
-    final DateTime sevenDaysAgo = now.subtract(const Duration(days: 7));
+    try {
+      // Get appointments for the last 7 days
+      final DateTime now = DateTime.now();
+      final DateTime sevenDaysAgo = now.subtract(const Duration(days: 7));
 
-    final appointmentQuery =
-        await firestore
-            .collection('appointments')
-            .where(
-              'date',
-              isGreaterThanOrEqualTo: sevenDaysAgo.toIso8601String(),
-            )
-            .get();
+      final appointmentQuery =
+          await firestore
+              .collection('rendez_vous')
+              .where(
+                'startTime',
+                isGreaterThanOrEqualTo: sevenDaysAgo.toIso8601String(),
+              )
+              .get();
 
-    final appointments = appointmentQuery.docs;
+      final appointments = appointmentQuery.docs;
 
-    // Group by day
-    Map<String, int> result = {};
+      // Group by day
+      Map<String, int> result = {};
 
-    // Initialize with past 7 days
-    for (int i = 6; i >= 0; i--) {
-      final day = now.subtract(Duration(days: i));
-      final dayKey =
-          '${day.year}-${day.month.toString().padLeft(2, '0')}-${day.day.toString().padLeft(2, '0')}';
-      result[dayKey] = 0;
+      // Initialize with past 7 days
+      for (int i = 6; i >= 0; i--) {
+        final day = now.subtract(Duration(days: i));
+        final dayKey =
+            '${day.year}-${day.month.toString().padLeft(2, '0')}-${day.day.toString().padLeft(2, '0')}';
+        result[dayKey] = 0;
+      }
+
+      // Count appointments per day
+      for (var appointment in appointments) {
+        final appointmentData = appointment.data();
+        final startTimeString = appointmentData['startTime'] as String;
+        final date = DateTime.parse(startTimeString);
+        final dayKey =
+            '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
+
+        if (result.containsKey(dayKey)) {
+          result[dayKey] = (result[dayKey] ?? 0) + 1;
+        }
+      }
+
+      return result;
+    } catch (e) {
+      print('Error getting appointments per day: $e');
+      // Return empty data if error
+      final DateTime now = DateTime.now();
+      Map<String, int> result = {};
+      for (int i = 6; i >= 0; i--) {
+        final day = now.subtract(Duration(days: i));
+        final dayKey =
+            '${day.year}-${day.month.toString().padLeft(2, '0')}-${day.day.toString().padLeft(2, '0')}';
+        result[dayKey] = 0;
+      }
+      return result;
     }
-
-    // Count appointments per day
-    for (var appointment in appointments) {
-      final appointmentData = appointment.data();
-      final dateString = appointmentData['date'] as String;
-      final date = DateTime.parse(dateString);
-      final dayKey =
-          '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
-
-      result[dayKey] = (result[dayKey] ?? 0) + 1;
-    }
-
-    return result;
   }
 
   Future<Map<String, int>> _getAppointmentsPerMonthFromFirestore() async {
-    // Get appointments for the last 12 months
-    final DateTime now = DateTime.now();
-    final DateTime twelveMonthsAgo = DateTime(now.year - 1, now.month, 1);
+    try {
+      // Get appointments for the last 12 months
+      final DateTime now = DateTime.now();
+      final DateTime twelveMonthsAgo = DateTime(now.year - 1, now.month, 1);
 
-    final appointmentQuery =
-        await firestore
-            .collection('appointments')
-            .where(
-              'date',
-              isGreaterThanOrEqualTo: twelveMonthsAgo.toIso8601String(),
-            )
-            .get();
+      final appointmentQuery =
+          await firestore
+              .collection('rendez_vous')
+              .where(
+                'startTime',
+                isGreaterThanOrEqualTo: twelveMonthsAgo.toIso8601String(),
+              )
+              .get();
 
-    final appointments = appointmentQuery.docs;
+      final appointments = appointmentQuery.docs;
 
-    // Group by month
-    Map<String, int> result = {};
+      // Group by month
+      Map<String, int> result = {};
 
-    // Initialize with past 12 months
-    for (int i = 11; i >= 0; i--) {
-      final month = DateTime(now.year, now.month - i, 1);
-      final monthKey =
-          '${month.year}-${month.month.toString().padLeft(2, '0')}';
-      result[monthKey] = 0;
+      // Initialize with past 12 months
+      for (int i = 11; i >= 0; i--) {
+        final month = DateTime(now.year, now.month - i, 1);
+        final monthKey =
+            '${month.year}-${month.month.toString().padLeft(2, '0')}';
+        result[monthKey] = 0;
+      }
+
+      // Count appointments per month
+      for (var appointment in appointments) {
+        final appointmentData = appointment.data();
+        final startTimeString = appointmentData['startTime'] as String;
+        final date = DateTime.parse(startTimeString);
+        final monthKey =
+            '${date.year}-${date.month.toString().padLeft(2, '0')}';
+
+        if (result.containsKey(monthKey)) {
+          result[monthKey] = (result[monthKey] ?? 0) + 1;
+        }
+      }
+
+      return result;
+    } catch (e) {
+      print('Error getting appointments per month: $e');
+      // Return empty data if error
+      final DateTime now = DateTime.now();
+      Map<String, int> result = {};
+      for (int i = 11; i >= 0; i--) {
+        final month = DateTime(now.year, now.month - i, 1);
+        final monthKey =
+            '${month.year}-${month.month.toString().padLeft(2, '0')}';
+        result[monthKey] = 0;
+      }
+      return result;
     }
-
-    // Count appointments per month
-    for (var appointment in appointments) {
-      final appointmentData = appointment.data();
-      final dateString = appointmentData['date'] as String;
-      final date = DateTime.parse(dateString);
-      final monthKey = '${date.year}-${date.month.toString().padLeft(2, '0')}';
-
-      result[monthKey] = (result[monthKey] ?? 0) + 1;
-    }
-
-    return result;
   }
 
   Future<Map<String, int>> _getAppointmentsPerYearFromFirestore() async {
-    // Get appointments for the last 5 years
-    final DateTime now = DateTime.now();
-    final DateTime fiveYearsAgo = DateTime(now.year - 5, 1, 1);
+    try {
+      // Get appointments for the last 5 years
+      final DateTime now = DateTime.now();
+      final DateTime fiveYearsAgo = DateTime(now.year - 5, 1, 1);
 
-    final appointmentQuery =
-        await firestore
-            .collection('appointments')
-            .where(
-              'date',
-              isGreaterThanOrEqualTo: fiveYearsAgo.toIso8601String(),
-            )
-            .get();
+      final appointmentQuery =
+          await firestore
+              .collection('rendez_vous')
+              .where(
+                'startTime',
+                isGreaterThanOrEqualTo: fiveYearsAgo.toIso8601String(),
+              )
+              .get();
 
-    final appointments = appointmentQuery.docs;
+      final appointments = appointmentQuery.docs;
 
-    // Group by year
-    Map<String, int> result = {};
+      // Group by year
+      Map<String, int> result = {};
 
-    // Initialize with past 5 years
-    for (int i = 4; i >= 0; i--) {
-      final year = now.year - i;
-      result[year.toString()] = 0;
+      // Initialize with past 5 years
+      for (int i = 4; i >= 0; i--) {
+        final year = now.year - i;
+        result[year.toString()] = 0;
+      }
+
+      // Count appointments per year
+      for (var appointment in appointments) {
+        final appointmentData = appointment.data();
+        final startTimeString = appointmentData['startTime'] as String;
+        final date = DateTime.parse(startTimeString);
+        final yearKey = date.year.toString();
+
+        if (result.containsKey(yearKey)) {
+          result[yearKey] = (result[yearKey] ?? 0) + 1;
+        }
+      }
+
+      return result;
+    } catch (e) {
+      print('Error getting appointments per year: $e');
+      // Return empty data if error
+      final DateTime now = DateTime.now();
+      Map<String, int> result = {};
+      for (int i = 4; i >= 0; i--) {
+        final year = now.year - i;
+        result[year.toString()] = 0;
+      }
+      return result;
     }
-
-    // Count appointments per year
-    for (var appointment in appointments) {
-      final appointmentData = appointment.data();
-      final dateString = appointmentData['date'] as String;
-      final date = DateTime.parse(dateString);
-      final yearKey = date.year.toString();
-
-      result[yearKey] = (result[yearKey] ?? 0) + 1;
-    }
-
-    return result;
   }
 }

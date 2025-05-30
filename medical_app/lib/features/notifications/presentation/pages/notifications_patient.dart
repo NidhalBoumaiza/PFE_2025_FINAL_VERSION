@@ -14,6 +14,7 @@ import 'package:medical_app/features/notifications/presentation/bloc/notificatio
 import 'package:medical_app/features/rendez_vous/presentation/pages/appointment_details.dart';
 import 'package:medical_app/features/notifications/utils/notification_utils.dart';
 import 'package:medical_app/injection_container.dart' as di;
+import 'package:firebase_auth/firebase_auth.dart';
 
 class NotificationsPatient extends StatefulWidget {
   const NotificationsPatient({super.key});
@@ -36,7 +37,7 @@ class _NotificationsPatientState extends State<NotificationsPatient>
   @override
   void initState() {
     super.initState();
-    _loadUserData();
+    _initializeNotifications();
   }
 
   @override
@@ -45,6 +46,62 @@ class _NotificationsPatientState extends State<NotificationsPatient>
     // This ensures notification refresh when page is navigated back to
     if (!_isLoading && _currentUser.id != null) {
       _refreshNotifications(showLoading: false);
+    }
+  }
+
+  void _initializeNotifications() {
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user != null) {
+        // Load notifications first
+        context.read<NotificationBloc>().add(
+          GetNotificationsEvent(userId: user.uid),
+        );
+
+        // Then setup stream
+        context.read<NotificationBloc>().add(
+          GetNotificationsStreamEvent(userId: user.uid),
+        );
+
+        // Load unread count
+        context.read<NotificationBloc>().add(
+          GetUnreadNotificationsCountEvent(userId: user.uid),
+        );
+      }
+    } catch (e) {
+      print('Error initializing notifications: $e');
+      // Show error message to user
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error loading notifications: ${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  void _markAllAsRead() {
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user != null) {
+        context.read<NotificationBloc>().add(
+          MarkAllNotificationsAsReadEvent(userId: user.uid),
+        );
+      }
+    } catch (e) {
+      print('Error marking all notifications as read: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Error marking notifications as read: ${e.toString()}',
+            ),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   }
 
@@ -445,10 +502,26 @@ class _NotificationsPatientState extends State<NotificationsPatient>
     final theme = Theme.of(context);
     final isDarkMode = theme.brightness == Brightness.dark;
 
+    // Get notification type colors
+    final notificationColors = _getNotificationColors(notification.type);
+
+    // Extract sender name from data if available
+    String senderName = '';
+    if (notification.data != null) {
+      senderName =
+          notification.data!['senderName'] ??
+          notification.data!['doctorName'] ??
+          notification.data!['patientName'] ??
+          '';
+    }
+
     return Dismissible(
       key: Key(notification.id),
       background: Container(
-        color: Colors.red,
+        decoration: BoxDecoration(
+          color: Colors.red,
+          borderRadius: BorderRadius.circular(10.r),
+        ),
         alignment: Alignment.centerRight,
         padding: EdgeInsets.only(right: 16.w),
         child: Icon(Icons.delete, color: Colors.white, size: 24.sp),
@@ -505,95 +578,193 @@ class _NotificationsPatientState extends State<NotificationsPatient>
         },
         child: Card(
           margin: EdgeInsets.only(bottom: 12.h),
-          elevation: 1,
+          elevation: 2,
           color:
-              notification.isRead
-                  ? theme.cardColor
-                  : isDarkMode
-                  ? AppColors.primaryColor.withOpacity(0.15)
-                  : AppColors.primaryColor.withOpacity(0.05),
+              isDarkMode
+                  ? (notification.isRead
+                      ? theme.cardColor
+                      : notificationColors.backgroundColor.withOpacity(0.1))
+                  : (notification.isRead
+                      ? theme.cardColor
+                      : notificationColors.backgroundColor),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10.r),
+            borderRadius: BorderRadius.circular(12.r),
             side: BorderSide(
               color:
                   notification.isRead
-                      ? isDarkMode
+                      ? (isDarkMode
                           ? Colors.grey.shade800
-                          : Colors.grey.shade300
-                      : AppColors.primaryColor.withOpacity(0.3),
-              width: 1,
+                          : Colors.grey.shade300)
+                      : notificationColors.primaryColor.withOpacity(0.5),
+              width: notification.isRead ? 1 : 2,
             ),
           ),
-          child: Padding(
-            padding: EdgeInsets.all(12.h),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _getNotificationTypeIcon(notification.type),
-                SizedBox(width: 12.w),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Expanded(
-                            child: Text(
-                              notification.title,
-                              style: GoogleFonts.raleway(
-                                fontSize: 14.sp,
-                                fontWeight:
-                                    notification.isRead
-                                        ? FontWeight.normal
-                                        : FontWeight.bold,
-                                color: theme.textTheme.bodyLarge?.color,
-                              ),
-                            ),
+          child: Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(12.r),
+              gradient:
+                  notification.isRead
+                      ? null
+                      : LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [
+                          notificationColors.backgroundColor.withOpacity(
+                            isDarkMode ? 0.1 : 0.3,
                           ),
-                          if (!notification.isRead)
-                            Container(
-                              width: 10.w,
-                              height: 10.h,
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                color: AppColors.primaryColor,
-                              ),
-                            ),
+                          notificationColors.backgroundColor.withOpacity(
+                            isDarkMode ? 0.05 : 0.1,
+                          ),
                         ],
                       ),
-                      SizedBox(height: 4.h),
-                      Text(
-                        notification.body,
-                        style: GoogleFonts.raleway(
-                          fontSize: 12.sp,
-                          color: theme.textTheme.bodyMedium?.color,
+            ),
+            child: Padding(
+              padding: EdgeInsets.all(16.h),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _getNotificationIcon(notification.type),
+                  SizedBox(width: 12.w),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Expanded(
+                              child: Row(
+                                children: [
+                                  Container(
+                                    padding: EdgeInsets.symmetric(
+                                      horizontal: 8.w,
+                                      vertical: 4.h,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: notificationColors.primaryColor
+                                          .withOpacity(0.1),
+                                      borderRadius: BorderRadius.circular(12.r),
+                                      border: Border.all(
+                                        color: notificationColors.primaryColor
+                                            .withOpacity(0.3),
+                                        width: 1,
+                                      ),
+                                    ),
+                                    child: Text(
+                                      _getNotificationTypeLabel(
+                                        notification.type,
+                                      ),
+                                      style: GoogleFonts.raleway(
+                                        fontSize: 10.sp,
+                                        fontWeight: FontWeight.w600,
+                                        color: notificationColors.primaryColor,
+                                      ),
+                                    ),
+                                  ),
+                                  if (!notification.isRead) ...[
+                                    SizedBox(width: 8.w),
+                                    Container(
+                                      padding: EdgeInsets.symmetric(
+                                        horizontal: 6.w,
+                                        vertical: 2.h,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: notificationColors.primaryColor,
+                                        borderRadius: BorderRadius.circular(
+                                          8.r,
+                                        ),
+                                      ),
+                                      child: Text(
+                                        'new'.tr,
+                                        style: GoogleFonts.raleway(
+                                          fontSize: 8.sp,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ],
+                              ),
+                            ),
+                            if (!notification.isRead)
+                              Container(
+                                width: 8.w,
+                                height: 8.h,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: notificationColors.primaryColor,
+                                ),
+                              ),
+                          ],
                         ),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      SizedBox(height: 8.h),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            _formatNotificationTime(notification.createdAt),
-                            style: GoogleFonts.raleway(
-                              fontSize: 10.sp,
-                              color: theme.textTheme.bodySmall?.color,
-                            ),
+                        SizedBox(height: 8.h),
+                        Text(
+                          notification.title,
+                          style: GoogleFonts.raleway(
+                            fontSize: 14.sp,
+                            fontWeight:
+                                notification.isRead
+                                    ? FontWeight.w500
+                                    : FontWeight.bold,
+                            color: theme.textTheme.bodyLarge?.color,
                           ),
-                          Icon(
-                            Icons.chevron_right,
-                            size: 18.sp,
-                            color: theme.textTheme.bodySmall?.color,
+                        ),
+                        SizedBox(height: 4.h),
+                        Text(
+                          notification.body,
+                          style: GoogleFonts.raleway(
+                            fontSize: 12.sp,
+                            color: theme.textTheme.bodyMedium?.color,
+                          ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        if (senderName.isNotEmpty) ...[
+                          SizedBox(height: 6.h),
+                          Row(
+                            children: [
+                              Icon(
+                                Icons.person_outline,
+                                size: 14.sp,
+                                color: notificationColors.primaryColor,
+                              ),
+                              SizedBox(width: 4.w),
+                              Text(
+                                senderName,
+                                style: GoogleFonts.raleway(
+                                  fontSize: 11.sp,
+                                  fontWeight: FontWeight.w500,
+                                  color: notificationColors.primaryColor,
+                                ),
+                              ),
+                            ],
                           ),
                         ],
-                      ),
-                    ],
+                        SizedBox(height: 8.h),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              _formatNotificationTime(notification.createdAt),
+                              style: GoogleFonts.raleway(
+                                fontSize: 10.sp,
+                                color: theme.textTheme.bodySmall?.color,
+                              ),
+                            ),
+                            Icon(
+                              Icons.chevron_right,
+                              size: 18.sp,
+                              color: notificationColors.primaryColor
+                                  .withOpacity(0.7),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),
@@ -601,54 +772,101 @@ class _NotificationsPatientState extends State<NotificationsPatient>
     );
   }
 
-  Widget _getNotificationTypeIcon(NotificationType type) {
+  Widget _getNotificationIcon(NotificationType type) {
     final theme = Theme.of(context);
     final isDarkMode = theme.brightness == Brightness.dark;
+    final notificationColors = _getNotificationColors(type);
 
-    IconData iconData;
-    Color iconColor;
-    Color backgroundColor;
+    IconData icon;
+    String label = '';
 
     switch (type) {
       case NotificationType.newAppointment:
-      case NotificationType.appointmentAccepted:
-      case NotificationType.appointmentRejected:
-        iconData = Icons.calendar_today;
-        iconColor = AppColors.primaryColor;
-        backgroundColor =
-            isDarkMode
-                ? AppColors.primaryColor.withOpacity(0.2)
-                : AppColors.primaryColor.withOpacity(0.1);
+        icon = Icons.calendar_today_rounded;
+        label = 'appointment'.tr;
         break;
-      case NotificationType.newPrescription:
-        iconData = Icons.medical_services;
-        iconColor = Colors.green;
-        backgroundColor =
-            isDarkMode
-                ? Colors.green.withOpacity(0.2)
-                : Colors.green.withOpacity(0.1);
+      case NotificationType.appointmentAccepted:
+        icon = Icons.check_circle_rounded;
+        label = 'accepted'.tr;
+        break;
+      case NotificationType.appointmentRejected:
+        icon = Icons.cancel_rounded;
+        label = 'rejected'.tr;
+        break;
+      case NotificationType.appointmentCanceled:
+        icon = Icons.event_busy_rounded;
+        label = 'canceled'.tr;
+        break;
+      case NotificationType.appointmentAssigned:
+        icon = Icons.assignment_ind_rounded;
+        label = 'assigned'.tr;
+        break;
+      case NotificationType.appointmentReminder:
+        icon = Icons.alarm_rounded;
+        label = 'reminder'.tr;
         break;
       case NotificationType.newRating:
-        iconData = Icons.star;
-        iconColor = Colors.amber;
-        backgroundColor =
-            isDarkMode
-                ? Colors.amber.withOpacity(0.2)
-                : Colors.amber.withOpacity(0.1);
+        icon = Icons.star_rounded;
+        label = 'rating'.tr;
+        break;
+      case NotificationType.newPrescription:
+        icon = Icons.medical_services_rounded;
+        label = 'prescription'.tr;
+        break;
+      case NotificationType.prescriptionUpdated:
+        icon = Icons.update_rounded;
+        label = 'updated'.tr;
+        break;
+      case NotificationType.prescriptionRefilled:
+        icon = Icons.refresh_rounded;
+        label = 'refilled'.tr;
+        break;
+      case NotificationType.prescriptionCanceled:
+        icon = Icons.block_rounded;
+        label = 'canceled'.tr;
+        break;
+      case NotificationType.newMessage:
+        icon = Icons.message_rounded;
+        label = 'message'.tr;
+        break;
+      case NotificationType.dossierUpdate:
+        icon = Icons.folder_rounded;
+        label = 'dossier'.tr;
+        break;
+      case NotificationType.medicationReminder:
+        icon = Icons.medication_rounded;
+        label = 'medication'.tr;
+        break;
+      case NotificationType.emergencyAlert:
+        icon = Icons.emergency_rounded;
+        label = 'emergency'.tr;
         break;
       default:
-        iconData = Icons.notifications;
-        iconColor = Colors.grey;
-        backgroundColor =
-            isDarkMode
-                ? Colors.grey.withOpacity(0.2)
-                : Colors.grey.withOpacity(0.1);
+        icon = Icons.notifications_rounded;
+        label = 'notification'.tr;
     }
 
     return Container(
-      decoration: BoxDecoration(color: backgroundColor, shape: BoxShape.circle),
-      padding: EdgeInsets.all(10.r),
-      child: Icon(iconData, color: iconColor, size: 20.sp),
+      decoration: BoxDecoration(
+        color:
+            isDarkMode
+                ? notificationColors.primaryColor.withOpacity(0.2)
+                : notificationColors.backgroundColor,
+        shape: BoxShape.circle,
+        border: Border.all(
+          color: notificationColors.primaryColor.withOpacity(0.3),
+          width: 1.5,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: notificationColors.primaryColor.withOpacity(0.1),
+            blurRadius: 4,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      padding: EdgeInsets.all(12.r),
+      child: Icon(icon, color: notificationColors.primaryColor, size: 20.sp),
     );
   }
 
@@ -689,4 +907,155 @@ class _NotificationsPatientState extends State<NotificationsPatient>
       return '${difference.inSeconds}s';
     }
   }
+
+  NotificationColors _getNotificationColors(NotificationType type) {
+    switch (type) {
+      case NotificationType.newAppointment:
+        return NotificationColors(
+          primaryColor: const Color(0xFF4CAF50), // Green
+          secondaryColor: const Color(0xFF2E7D32),
+          backgroundColor: const Color(0xFFE8F5E8),
+        );
+      case NotificationType.appointmentAccepted:
+        return NotificationColors(
+          primaryColor: const Color(0xFF2196F3), // Blue
+          secondaryColor: const Color(0xFF1565C0),
+          backgroundColor: const Color(0xFFE3F2FD),
+        );
+      case NotificationType.appointmentRejected:
+        return NotificationColors(
+          primaryColor: const Color(0xFFF44336), // Red
+          secondaryColor: const Color(0xFFC62828),
+          backgroundColor: const Color(0xFFFFEBEE),
+        );
+      case NotificationType.appointmentCanceled:
+        return NotificationColors(
+          primaryColor: const Color(0xFFFF9800), // Orange
+          secondaryColor: const Color(0xFFE65100),
+          backgroundColor: const Color(0xFFFFF3E0),
+        );
+      case NotificationType.appointmentAssigned:
+        return NotificationColors(
+          primaryColor: const Color(0xFF9C27B0), // Purple
+          secondaryColor: const Color(0xFF6A1B9A),
+          backgroundColor: const Color(0xFFF3E5F5),
+        );
+      case NotificationType.appointmentReminder:
+        return NotificationColors(
+          primaryColor: const Color(0xFFFFEB3B), // Yellow
+          secondaryColor: const Color(0xFFF57F17),
+          backgroundColor: const Color(0xFFFFFDE7),
+        );
+      case NotificationType.newRating:
+        return NotificationColors(
+          primaryColor: const Color(0xFFFF5722), // Deep Orange
+          secondaryColor: const Color(0xFFD84315),
+          backgroundColor: const Color(0xFFFBE9E7),
+        );
+      case NotificationType.newPrescription:
+        return NotificationColors(
+          primaryColor: const Color(0xFF00BCD4), // Cyan
+          secondaryColor: const Color(0xFF00838F),
+          backgroundColor: const Color(0xFFE0F2F1),
+        );
+      case NotificationType.prescriptionUpdated:
+        return NotificationColors(
+          primaryColor: const Color(0xFF795548), // Brown
+          secondaryColor: const Color(0xFF5D4037),
+          backgroundColor: const Color(0xFFEFEBE9),
+        );
+      case NotificationType.prescriptionRefilled:
+        return NotificationColors(
+          primaryColor: const Color(0xFF607D8B), // Blue Grey
+          secondaryColor: const Color(0xFF455A64),
+          backgroundColor: const Color(0xFFECEFF1),
+        );
+      case NotificationType.prescriptionCanceled:
+        return NotificationColors(
+          primaryColor: const Color(0xFF795548), // Brown
+          secondaryColor: const Color(0xFF5D4037),
+          backgroundColor: const Color(0xFFEFEBE9),
+        );
+      case NotificationType.newMessage:
+        return NotificationColors(
+          primaryColor: const Color(0xFF3F51B5), // Indigo
+          secondaryColor: const Color(0xFF283593),
+          backgroundColor: const Color(0xFFE8EAF6),
+        );
+      case NotificationType.dossierUpdate:
+        return NotificationColors(
+          primaryColor: const Color(0xFF8BC34A), // Light Green
+          secondaryColor: const Color(0xFF689F38),
+          backgroundColor: const Color(0xFFF1F8E9),
+        );
+      case NotificationType.medicationReminder:
+        return NotificationColors(
+          primaryColor: const Color(0xFFE91E63), // Pink
+          secondaryColor: const Color(0xFFC2185B),
+          backgroundColor: const Color(0xFFFCE4EC),
+        );
+      case NotificationType.emergencyAlert:
+        return NotificationColors(
+          primaryColor: const Color(0xFFD32F2F), // Dark Red
+          secondaryColor: const Color(0xFFB71C1C),
+          backgroundColor: const Color(0xFFFFCDD2),
+        );
+      default:
+        return NotificationColors(
+          primaryColor: const Color(0xFF9E9E9E), // Grey
+          secondaryColor: const Color(0xFF616161),
+          backgroundColor: const Color(0xFFF5F5F5),
+        );
+    }
+  }
+
+  String _getNotificationTypeLabel(NotificationType type) {
+    switch (type) {
+      case NotificationType.newAppointment:
+        return 'new_appointment'.tr;
+      case NotificationType.appointmentAccepted:
+        return 'accepted'.tr;
+      case NotificationType.appointmentRejected:
+        return 'rejected'.tr;
+      case NotificationType.appointmentCanceled:
+        return 'canceled'.tr;
+      case NotificationType.appointmentAssigned:
+        return 'assigned'.tr;
+      case NotificationType.appointmentReminder:
+        return 'reminder'.tr;
+      case NotificationType.newRating:
+        return 'rating'.tr;
+      case NotificationType.newPrescription:
+        return 'prescription'.tr;
+      case NotificationType.prescriptionUpdated:
+        return 'updated'.tr;
+      case NotificationType.prescriptionRefilled:
+        return 'refilled'.tr;
+      case NotificationType.prescriptionCanceled:
+        return 'canceled'.tr;
+      case NotificationType.newMessage:
+        return 'message'.tr;
+      case NotificationType.dossierUpdate:
+        return 'dossier_update'.tr;
+      case NotificationType.medicationReminder:
+        return 'medication'.tr;
+      case NotificationType.emergencyAlert:
+        return 'emergency'.tr;
+      default:
+        return 'notification'.tr;
+    }
+  }
+}
+
+// Add this class to define notification colors
+class NotificationColors {
+  final Color primaryColor;
+  final Color secondaryColor;
+  final Color backgroundColor;
+
+  NotificationColors({
+    required this.primaryColor,
+    required this.secondaryColor,
+    required this.backgroundColor,
+  });
 }

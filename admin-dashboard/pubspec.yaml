@@ -60,7 +60,6 @@ dependencies:
   # Utils
   uuid: ^4.3.3
   logger: ^2.0.2+1
-  internet_connection_checker: ^1.0.0+1
   flutter_screenutil: ^5.9.3
 
 dev_dependencies:

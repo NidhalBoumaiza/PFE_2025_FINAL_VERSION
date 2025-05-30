@@ -26,8 +26,16 @@ import 'features/settings/presentation/pages/settings_screen.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
+  WidgetsFlutterBinding.ensureInitialized();
   // Initialize Firebase
-  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  await Firebase.initializeApp(
+    options: FirebaseOptions(
+      apiKey: "AIzaSyDJamW00Hmzxxp_4KgLSDJbEvApW1jTKMU",
+      appId: "1:347722856442:web:4d1dd398b584b0db39d643",
+      messagingSenderId: "347722856442",
+      projectId: "medicalapp-f1951",
+    ),
+  );
 
   // Initialize dependency injection
   await di.init();

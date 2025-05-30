@@ -235,9 +235,9 @@ class _AvailableDoctorsScreenState extends State<AvailableDoctorsScreen> {
                   SizedBox(height: 16.h),
                   Slider(
                     value: tempRadius,
-                    min: 1.0,
+                    min: 0.0,
                     max: 100.0,
-                    divisions: 99,
+                    divisions: 100,
                     activeColor: AppColors.primaryColor,
                     inactiveColor: AppColors.primaryColor.withOpacity(0.3),
                     onChanged: (value) {
@@ -251,7 +251,7 @@ class _AvailableDoctorsScreenState extends State<AvailableDoctorsScreen> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        '1 km',
+                        '0 km',
                         style: GoogleFonts.raleway(
                           fontSize: 12.sp,
                           color: Colors.grey,

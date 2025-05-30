@@ -16,19 +16,19 @@ abstract class RendezVousRemoteDataSource {
   });
 
   Future<void> updateRendezVousStatus(
-      String rendezVousId,
-      String status,
-      String patientId,
-      String doctorId,
-      String patientName,
-      String doctorName,
-      String recipientRole,
-      );
+    String rendezVousId,
+    String status,
+    String patientId,
+    String doctorId,
+    String patientName,
+    String doctorName,
+    String recipientRole,
+  );
 
   Future<void> createRendezVous(RendezVousModel rendezVous);
 
   Future<List<MedecinEntity>> getDoctorsBySpecialty(
-      String specialty,
+    String specialty,
     DateTime startTime, {
     double? searchRadiusKm,
     double? userLatitude,
@@ -36,10 +36,10 @@ abstract class RendezVousRemoteDataSource {
   });
 
   Future<void> assignDoctorToRendezVous(
-      String rendezVousId,
-      String doctorId,
-      String doctorName,
-      );
+    String rendezVousId,
+    String doctorId,
+    String doctorName,
+  );
 }
 
 class RendezVousRemoteDataSourceImpl implements RendezVousRemoteDataSource {
@@ -81,12 +81,12 @@ class RendezVousRemoteDataSourceImpl implements RendezVousRemoteDataSource {
 
       final rendezVous =
           snapshot.docs.map((doc) {
-        final data = doc.data();
-        data['id'] = doc.id; // Ensure the ID is set correctly
+            final data = doc.data();
+            data['id'] = doc.id; // Ensure the ID is set correctly
             print(
               'RendezVousRemoteDataSource: Processing appointment ${doc.id}: status=${data['status']}',
             );
-        return RendezVousModel.fromJson(data);
+            return RendezVousModel.fromJson(data);
           }).toList();
 
       await localDataSource.cacheRendezVous(rendezVous);
@@ -102,14 +102,14 @@ class RendezVousRemoteDataSourceImpl implements RendezVousRemoteDataSource {
 
   @override
   Future<void> updateRendezVousStatus(
-      String rendezVousId,
-      String status,
-      String patientId,
-      String doctorId,
-      String patientName,
-      String doctorName,
-      String recipientRole,
-      ) async {
+    String rendezVousId,
+    String status,
+    String patientId,
+    String doctorId,
+    String patientName,
+    String doctorName,
+    String recipientRole,
+  ) async {
     try {
       // Get the current appointment data
       final appointmentDoc =
@@ -146,10 +146,10 @@ class RendezVousRemoteDataSourceImpl implements RendezVousRemoteDataSource {
         // Create conversation if it doesn't exist
         final existingConversation =
             await firestore
-            .collection('conversations')
-            .where('patientId', isEqualTo: patientId)
-            .where('doctorId', isEqualTo: doctorId)
-            .get();
+                .collection('conversations')
+                .where('patientId', isEqualTo: patientId)
+                .where('doctorId', isEqualTo: doctorId)
+                .get();
 
         if (existingConversation.docs.isEmpty) {
           await firestore.collection('conversations').add({
@@ -359,7 +359,7 @@ class RendezVousRemoteDataSourceImpl implements RendezVousRemoteDataSource {
 
   @override
   Future<List<MedecinEntity>> getDoctorsBySpecialty(
-      String specialty,
+    String specialty,
     DateTime startTime, {
     double? searchRadiusKm,
     double? userLatitude,
@@ -374,9 +374,9 @@ class RendezVousRemoteDataSourceImpl implements RendezVousRemoteDataSource {
 
       final doctorSnapshot =
           await firestore
-          .collection('medecins')
-          .where('speciality', isEqualTo: specialty)
-          .get();
+              .collection('medecins')
+              .where('speciality', isEqualTo: specialty)
+              .get();
 
       print(
         'Found ${doctorSnapshot.docs.length} doctors with specialty $specialty',
@@ -384,8 +384,8 @@ class RendezVousRemoteDataSourceImpl implements RendezVousRemoteDataSource {
 
       final doctors =
           doctorSnapshot.docs
-          .map((doc) => MedecinModel.fromJson(doc.data()).toEntity())
-          .toList();
+              .map((doc) => MedecinModel.fromJson(doc.data()).toEntity())
+              .toList();
 
       final availableDoctors = <MedecinEntity>[];
 
@@ -394,17 +394,33 @@ class RendezVousRemoteDataSourceImpl implements RendezVousRemoteDataSource {
         if (searchRadiusKm != null &&
             userLatitude != null &&
             userLongitude != null) {
-          // Skip doctors without location data
-          if (doctor.location == null ||
-              doctor.location!['coordinates'] == null ||
-              (doctor.location!['coordinates'] as List).length < 2) {
-            print('Skipping doctor ${doctor.name} - no location data');
-            continue;
+          double? doctorLatitude;
+          double? doctorLongitude;
+
+          // Handle both old format (separate lat/lng fields) and new GeoJSON format
+          if (doctor.location != null) {
+            if (doctor.location!.containsKey('coordinates') &&
+                doctor.location!['coordinates'] is List &&
+                (doctor.location!['coordinates'] as List).length >= 2) {
+              // New GeoJSON format: [longitude, latitude]
+              final coordinates = doctor.location!['coordinates'] as List;
+              doctorLongitude = (coordinates[0] as num).toDouble();
+              doctorLatitude = (coordinates[1] as num).toDouble();
+            } else if (doctor.location!.containsKey('latitude') &&
+                doctor.location!.containsKey('longitude')) {
+              // Old format: separate latitude and longitude fields
+              doctorLatitude =
+                  (doctor.location!['latitude'] as num?)?.toDouble();
+              doctorLongitude =
+                  (doctor.location!['longitude'] as num?)?.toDouble();
+            }
           }
 
-          final doctorCoordinates = doctor.location!['coordinates'] as List;
-          final doctorLongitude = (doctorCoordinates[0] as num).toDouble();
-          final doctorLatitude = (doctorCoordinates[1] as num).toDouble();
+          // Skip doctors without valid location data
+          if (doctorLatitude == null || doctorLongitude == null) {
+            print('Skipping doctor ${doctor.name} - no valid location data');
+            continue;
+          }
 
           // Calculate distance using LocationService
           final distance = LocationService.getDistanceBetween(
@@ -428,14 +444,14 @@ class RendezVousRemoteDataSourceImpl implements RendezVousRemoteDataSource {
         // Check for appointment conflicts with improved status checking
         final rendezVousSnapshot =
             await firestore
-            .collection('rendez_vous')
-            .where('doctorId', isEqualTo: doctor.id)
-            .where('startTime', isEqualTo: startTime.toIso8601String())
+                .collection('rendez_vous')
+                .where('doctorId', isEqualTo: doctor.id)
+                .where('startTime', isEqualTo: startTime.toIso8601String())
                 .where(
                   'status',
                   whereIn: ['accepted', 'pending'],
                 ) // Check both accepted and pending appointments
-            .get();
+                .get();
 
         if (rendezVousSnapshot.docs.isEmpty) {
           print(
@@ -462,10 +478,10 @@ class RendezVousRemoteDataSourceImpl implements RendezVousRemoteDataSource {
 
   @override
   Future<void> assignDoctorToRendezVous(
-      String rendezVousId,
-      String doctorId,
-      String doctorName,
-      ) async {
+    String rendezVousId,
+    String doctorId,
+    String doctorName,
+  ) async {
     try {
       // Get the current appointment data to access the startTime and patient info
       final appointmentDoc =

@@ -56,8 +56,23 @@ class _EditDoctorProfilePageState extends State<EditDoctorProfilePage> {
 
   void _loadCurrentLocation() {
     if (widget.doctor.location != null) {
-      final lat = widget.doctor.location!['latitude']?.toDouble();
-      final lng = widget.doctor.location!['longitude']?.toDouble();
+      double? lat;
+      double? lng;
+      
+      // Handle both old format (separate lat/lng fields) and new GeoJSON format
+      if (widget.doctor.location!.containsKey('coordinates') && 
+          widget.doctor.location!['coordinates'] is List) {
+        // New GeoJSON format: [longitude, latitude]
+        final coordinates = widget.doctor.location!['coordinates'] as List;
+        if (coordinates.length >= 2) {
+          lng = (coordinates[0] as num?)?.toDouble();
+          lat = (coordinates[1] as num?)?.toDouble();
+        }
+      } else {
+        // Old format: separate latitude and longitude fields
+        lat = widget.doctor.location!['latitude']?.toDouble();
+        lng = widget.doctor.location!['longitude']?.toDouble();
+      }
 
       if (lat != null && lng != null) {
         _selectedLocation = LatLng(lat, lng);
@@ -104,9 +119,13 @@ class _EditDoctorProfilePageState extends State<EditDoctorProfilePage> {
       Map<String, String?>? addressData;
 
       if (_selectedLocation != null) {
+        // Use GeoJSON format to match patient location format
         locationData = {
-          'latitude': _selectedLocation!.latitude,
-          'longitude': _selectedLocation!.longitude,
+          'type': 'Point',
+          'coordinates': [
+            _selectedLocation!.longitude,
+            _selectedLocation!.latitude,
+          ],
         };
         addressData = {
           'formatted_address':

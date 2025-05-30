@@ -16,6 +16,20 @@ import 'package:medical_app/features/rendez_vous/presentation/blocs/rendez-vous%
 import 'package:medical_app/features/rendez_vous/presentation/pages/appointment_details.dart';
 import 'package:medical_app/features/notifications/utils/notification_utils.dart';
 import 'package:medical_app/injection_container.dart' as di;
+import 'package:firebase_auth/firebase_auth.dart';
+
+// Define notification colors class at top level
+class NotificationColors {
+  final Color primaryColor;
+  final Color secondaryColor;
+  final Color backgroundColor;
+
+  NotificationColors({
+    required this.primaryColor,
+    required this.secondaryColor,
+    required this.backgroundColor,
+  });
+}
 
 class NotificationsPage extends StatefulWidget {
   const NotificationsPage({Key? key}) : super(key: key);
@@ -31,139 +45,145 @@ class _NotificationsPageState extends State<NotificationsPage> {
   @override
   void initState() {
     super.initState();
-    _loadCurrentUser();
-    _refreshNotifications();
+    _initializeNotifications();
   }
 
-  Future<void> _loadCurrentUser() async {
+  void _initializeNotifications() {
     try {
-      final authLocalDataSource = di.sl<AuthLocalDataSource>();
-      final user = await authLocalDataSource.getUser();
-
-      setState(() {
-        _currentUser = user;
-        _isLoading = false;
-      });
-
-      // Set up notifications stream first to ensure we're listening for updates
-      if (user.id != null) {
-        print('Setting up notifications stream for user: ${user.id}');
+      final user = FirebaseAuth.instance.currentUser;
+      if (user != null) {
+        // Load notifications first
         context.read<NotificationBloc>().add(
-          GetNotificationsStreamEvent(userId: user.id!),
+          GetNotificationsEvent(userId: user.uid),
         );
 
-        // Load notifications for the current user
-        print('Loading notifications for user: ${user.id}');
+        // Then setup stream
         context.read<NotificationBloc>().add(
-          GetNotificationsEvent(userId: user.id!),
+          GetNotificationsStreamEvent(userId: user.uid),
         );
 
-        // Mark all as read when the page is opened
+        // Load unread count
         context.read<NotificationBloc>().add(
-          MarkAllNotificationsAsReadEvent(userId: user.id!),
+          GetUnreadNotificationsCountEvent(userId: user.uid),
         );
       }
     } catch (e) {
-      setState(() {
-        _isLoading = false;
-      });
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('error_loading_user_data'.tr)));
+      print('Error initializing notifications: $e');
+      // Show error message to user
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error loading notifications: ${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   }
 
-  Future<void> _refreshNotifications() async {
-    if (_currentUser.id != null) {
-      context.read<NotificationBloc>().add(
-        GetNotificationsEvent(userId: _currentUser.id!),
-      );
+  void _markAllAsRead() {
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user != null) {
+        context.read<NotificationBloc>().add(
+          MarkAllNotificationsAsReadEvent(userId: user.uid),
+        );
+      }
+    } catch (e) {
+      print('Error marking all notifications as read: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Error marking notifications as read: ${e.toString()}',
+            ),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final isDarkMode = theme.brightness == Brightness.dark;
-
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-          'notifications'.tr,
-          style: GoogleFonts.raleway(
-            fontSize: 20.sp,
-            fontWeight: FontWeight.bold,
-            color: Colors.white,
-          ),
-        ),
-        backgroundColor: AppColors.primaryColor,
-        elevation: 0,
+        title: Text('notifications'.tr),
+        backgroundColor: const Color(0xFF2FA7BB),
+        foregroundColor: Colors.white,
         actions: [
-          IconButton(
-            icon: Icon(Icons.done_all, color: Colors.white),
-            tooltip: 'mark_all_read'.tr,
-            onPressed: () {
-              if (_currentUser.id != null) {
-                context.read<NotificationBloc>().add(
-                  MarkAllNotificationsAsReadEvent(userId: _currentUser.id!),
-                );
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text('all_notifications_marked_as_read'.tr),
-                    behavior: SnackBarBehavior.floating,
-                    backgroundColor: AppColors.primaryColor,
-                  ),
+          BlocBuilder<NotificationBloc, NotificationState>(
+            builder: (context, state) {
+              // Only show mark all as read if we have unread notifications
+              if (state is UnreadNotificationsCountLoaded && state.count > 0) {
+                return IconButton(
+                  icon: const Icon(Icons.mark_email_read),
+                  onPressed: () => _markAllAsRead(),
+                  tooltip: 'mark_all_as_read'.tr,
                 );
               }
-            },
-          ),
-          IconButton(
-            icon: Icon(Icons.refresh, color: Colors.white),
-            tooltip: 'refresh'.tr,
-            onPressed: () {
-              if (_currentUser.id != null) {
-                context.read<NotificationBloc>().add(
-                  GetNotificationsEvent(userId: _currentUser.id!),
-                );
-              }
+              return const SizedBox.shrink();
             },
           ),
         ],
       ),
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [AppColors.primaryColor.withOpacity(0.05), Colors.white],
-          ),
-        ),
+      body: SafeArea(
         child: BlocConsumer<NotificationBloc, NotificationState>(
           listener: (context, state) {
             if (state is NotificationError) {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
                   content: Text(state.message),
-                  behavior: SnackBarBehavior.floating,
                   backgroundColor: Colors.red,
+                  duration: const Duration(seconds: 3),
+                ),
+              );
+            } else if (state is AllNotificationsMarkedAsRead) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('all_notifications_marked_as_read'.tr),
+                  backgroundColor: Colors.green,
+                  duration: const Duration(seconds: 2),
                 ),
               );
             }
           },
           builder: (context, state) {
-            if (state is NotificationLoading && _isLoading) {
+            if (state is NotificationLoading) {
+              return const Center(
+                child: CircularProgressIndicator(color: Color(0xFF2FA7BB)),
+              );
+            }
+
+            if (state is NotificationError) {
               return Center(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    CircularProgressIndicator(color: AppColors.primaryColor),
-                    SizedBox(height: 16.h),
+                    Icon(
+                      Icons.error_outline,
+                      size: 64,
+                      color: Colors.grey[400],
+                    ),
+                    const SizedBox(height: 16),
                     Text(
-                      'loading_notifications'.tr,
-                      style: GoogleFonts.raleway(
-                        fontSize: 16.sp,
-                        color: Colors.grey[600],
+                      'error_loading_notifications'.tr,
+                      style: TextStyle(fontSize: 18, color: Colors.grey[600]),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      state.message,
+                      style: TextStyle(fontSize: 14, color: Colors.grey[500]),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 16),
+                    ElevatedButton(
+                      onPressed: _initializeNotifications,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF2FA7BB),
+                        foregroundColor: Colors.white,
                       ),
+                      child: Text('retry'.tr),
                     ),
                   ],
                 ),
@@ -171,45 +191,20 @@ class _NotificationsPageState extends State<NotificationsPage> {
             }
 
             if (state is NotificationsLoaded) {
-              final notifications = state.notifications;
-              print('Loaded ${notifications.length} notifications');
-
-              if (notifications.isEmpty) {
+              if (state.notifications.isEmpty) {
                 return Center(
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Container(
-                        padding: EdgeInsets.all(24.r),
-                        decoration: BoxDecoration(
-                          color:
-                          isDarkMode ? Colors.grey[800] : Colors.grey[100],
-                          shape: BoxShape.circle,
-                        ),
-                        child: Icon(
-                          Icons.notifications_off_outlined,
-                          size: 80.sp,
-                          color:
-                          isDarkMode ? Colors.grey[400] : Colors.grey[500],
-                        ),
+                      Icon(
+                        Icons.notifications_none,
+                        size: 64,
+                        color: Colors.grey[400],
                       ),
-                      SizedBox(height: 24.h),
+                      const SizedBox(height: 16),
                       Text(
                         'no_notifications'.tr,
-                        style: GoogleFonts.raleway(
-                          fontSize: 20.sp,
-                          fontWeight: FontWeight.bold,
-                          color: isDarkMode ? Colors.white : Colors.grey[800],
-                        ),
-                      ),
-                      SizedBox(height: 8.h),
-                      Text(
-                        'you_have_no_notifications_yet'.tr,
-                        style: GoogleFonts.raleway(
-                          fontSize: 16.sp,
-                          color: Colors.grey[600],
-                        ),
-                        textAlign: TextAlign.center,
+                        style: TextStyle(fontSize: 18, color: Colors.grey[600]),
                       ),
                     ],
                   ),
@@ -218,100 +213,23 @@ class _NotificationsPageState extends State<NotificationsPage> {
 
               return RefreshIndicator(
                 onRefresh: () async {
-                  if (_currentUser.id != null) {
-                    context.read<NotificationBloc>().add(
-                      GetNotificationsEvent(userId: _currentUser.id!),
-                    );
-                  }
+                  _initializeNotifications();
                 },
-                color: AppColors.primaryColor,
+                color: const Color(0xFF2FA7BB),
                 child: ListView.builder(
-                  padding: EdgeInsets.symmetric(
-                    horizontal: 16.w,
-                    vertical: 12.h,
-                  ),
-                  itemCount: notifications.length,
+                  padding: const EdgeInsets.all(16),
+                  itemCount: state.notifications.length,
                   itemBuilder: (context, index) {
-                    // Add staggered animation for each item
-                    return AnimatedOpacity(
-                      duration: Duration(milliseconds: 500),
-                      opacity: 1.0,
-                      curve: Curves.easeInOut,
-                      child: AnimatedPadding(
-                        duration: Duration(milliseconds: 300),
-                        padding: EdgeInsets.only(
-                          top: index == 0 ? 8.h : 0,
-                          bottom: 12.h,
-                        ),
-                        child: _buildNotificationCard(notifications[index]),
-                      ),
-                    );
+                    final notification = state.notifications[index];
+                    return _buildNotificationCard(notification);
                   },
                 ),
               );
             }
 
-            // If we're not loading and don't have notifications loaded yet,
-            // show a message to encourage refreshing
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Container(
-                    padding: EdgeInsets.all(24.r),
-                    decoration: BoxDecoration(
-                      color: isDarkMode ? Colors.grey[800] : Colors.grey[100],
-                      shape: BoxShape.circle,
-                    ),
-                    child: Icon(
-                      Icons.notifications_none,
-                      size: 80.sp,
-                      color: isDarkMode ? Colors.grey[400] : Colors.grey[500],
-                    ),
-                  ),
-                  SizedBox(height: 24.h),
-                  Text(
-                    'no_notifications_found'.tr,
-                    style: GoogleFonts.raleway(
-                      fontSize: 20.sp,
-                      fontWeight: FontWeight.bold,
-                      color: isDarkMode ? Colors.white : Colors.grey[800],
-                    ),
-                  ),
-                  SizedBox(height: 8.h),
-                  Text(
-                    'try_refreshing_the_page'.tr,
-                    style: GoogleFonts.raleway(
-                      fontSize: 16.sp,
-                      color: Colors.grey[600],
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                  SizedBox(height: 24.h),
-                  ElevatedButton.icon(
-                    onPressed: () {
-                      if (_currentUser.id != null) {
-                        context.read<NotificationBloc>().add(
-                          GetNotificationsEvent(userId: _currentUser.id!),
-                        );
-                      }
-                    },
-                    icon: Icon(Icons.refresh),
-                    label: Text('refresh'.tr),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.primaryColor,
-                      padding: EdgeInsets.symmetric(
-                        horizontal: 32.w,
-                        vertical: 16.h,
-                      ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12.r),
-                      ),
-                      elevation: 2,
-                    ),
-                  ),
-                ],
-              ),
+            // Default loading state for initial load
+            return const Center(
+              child: CircularProgressIndicator(color: Color(0xFF2FA7BB)),
             );
           },
         ),
@@ -323,14 +241,17 @@ class _NotificationsPageState extends State<NotificationsPage> {
     final theme = Theme.of(context);
     final isDarkMode = theme.brightness == Brightness.dark;
 
+    // Get notification type colors
+    final notificationColors = _getNotificationColors(notification.type);
+
     // Extract sender name from data if available
     String senderName = '';
     if (notification.data != null) {
       senderName =
           notification.data!['senderName'] ??
-              notification.data!['doctorName'] ??
-              notification.data!['patientName'] ??
-              '';
+          notification.data!['doctorName'] ??
+          notification.data!['patientName'] ??
+          '';
     }
 
     return Dismissible(
@@ -350,22 +271,22 @@ class _NotificationsPageState extends State<NotificationsPage> {
           context: context,
           builder:
               (context) => AlertDialog(
-            title: Text('delete_notification'.tr),
-            content: Text('confirm_delete_notification'.tr),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(false),
-                child: Text('cancel'.tr),
+                title: Text('delete_notification'.tr),
+                content: Text('confirm_delete_notification'.tr),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.of(context).pop(false),
+                    child: Text('cancel'.tr),
+                  ),
+                  TextButton(
+                    onPressed: () => Navigator.of(context).pop(true),
+                    child: Text(
+                      'delete'.tr,
+                      style: TextStyle(color: Colors.red),
+                    ),
+                  ),
+                ],
               ),
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(true),
-                child: Text(
-                  'delete'.tr,
-                  style: TextStyle(color: Colors.red),
-                ),
-              ),
-            ],
-          ),
         );
       },
       onDismissed: (direction) {
@@ -380,187 +301,236 @@ class _NotificationsPageState extends State<NotificationsPage> {
           ),
         );
       },
-      child: Card(
-        margin: EdgeInsets.zero,
-        elevation: notification.isRead ? 1 : 3,
-        shadowColor: AppColors.primaryColor.withOpacity(0.3),
-        shape: RoundedRectangleBorder(
+      child: Container(
+        margin: EdgeInsets.only(bottom: 12.h),
+        decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(16.r),
-          side:
-          notification.isRead
-              ? BorderSide.none
-              : BorderSide(
-            color: AppColors.primaryColor.withOpacity(0.5),
-            width: 1.5,
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              notificationColors.backgroundColor.withOpacity(0.05),
+              notificationColors.backgroundColor.withOpacity(0.02),
+            ],
           ),
+          border: Border.all(
+            color:
+                notification.isRead
+                    ? notificationColors.primaryColor.withOpacity(0.3)
+                    : notificationColors.primaryColor.withOpacity(0.6),
+            width: notification.isRead ? 1 : 2,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: notificationColors.primaryColor.withOpacity(0.1),
+              blurRadius: notification.isRead ? 4 : 8,
+              offset: Offset(0, 2),
+              spreadRadius: notification.isRead ? 0 : 1,
+            ),
+          ],
         ),
-        child: InkWell(
-          onTap: () {
-            // Mark as read when tapped
-            context.read<NotificationBloc>().add(
-              MarkNotificationAsReadEvent(notificationId: notification.id),
-            );
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: () {
+              // Mark as read when tapped
+              context.read<NotificationBloc>().add(
+                MarkNotificationAsReadEvent(notificationId: notification.id),
+              );
 
-            // Navigate to details if applicable
-            _navigateToDetails(notification);
-          },
-          borderRadius: BorderRadius.circular(16.r),
-          child: Padding(
-            padding: EdgeInsets.all(16.r),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _getNotificationIcon(notification.type),
-                    SizedBox(width: 16.w),
-                    Expanded(
-                      child: Padding(
-                        padding: EdgeInsets.only(top: 4.h),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              notification.title,
-                              style: GoogleFonts.raleway(
-                                fontSize: 16.sp,
-                                fontWeight:
-                                notification.isRead
-                                    ? FontWeight.w600
-                                    : FontWeight.bold,
-                                color:
-                                isDarkMode ? Colors.white : Colors.black87,
+              // Navigate to details if applicable
+              _navigateToDetails(notification);
+            },
+            borderRadius: BorderRadius.circular(16.r),
+            child: Padding(
+              padding: EdgeInsets.all(16.r),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _getNotificationIcon(notification.type),
+                      SizedBox(width: 16.w),
+                      Expanded(
+                        child: Padding(
+                          padding: EdgeInsets.only(top: 4.h),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: Text(
+                                      notification.title,
+                                      style: GoogleFonts.raleway(
+                                        fontSize: 16.sp,
+                                        fontWeight:
+                                            notification.isRead
+                                                ? FontWeight.w600
+                                                : FontWeight.bold,
+                                        color:
+                                            isDarkMode
+                                                ? Colors.white
+                                                : Colors.black87,
+                                      ),
+                                    ),
+                                  ),
+                                  if (!notification.isRead)
+                                    Container(
+                                      width: 8.w,
+                                      height: 8.h,
+                                      decoration: BoxDecoration(
+                                        color: notificationColors.primaryColor,
+                                        shape: BoxShape.circle,
+                                      ),
+                                    ),
+                                ],
                               ),
-                            ),
-                            SizedBox(height: 6.h),
-                            Text(
-                              notification.body,
-                              style: GoogleFonts.raleway(
-                                fontSize: 14.sp,
-                                color:
-                                isDarkMode
-                                    ? Colors.grey[300]
-                                    : Colors.black54,
-                                height: 1.3,
+                              SizedBox(height: 6.h),
+                              Text(
+                                notification.body,
+                                style: GoogleFonts.raleway(
+                                  fontSize: 14.sp,
+                                  color:
+                                      isDarkMode
+                                          ? Colors.grey[300]
+                                          : Colors.black54,
+                                  height: 1.3,
+                                ),
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
                               ),
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                            SizedBox(height: 12.h),
-                            Wrap(
-                              spacing: 8.w,
-                              runSpacing: 8.h,
-                              crossAxisAlignment: WrapCrossAlignment.center,
-                              children: [
-                                if (senderName.isNotEmpty)
+                              SizedBox(height: 12.h),
+                              Wrap(
+                                spacing: 8.w,
+                                runSpacing: 8.h,
+                                crossAxisAlignment: WrapCrossAlignment.center,
+                                children: [
+                                  if (senderName.isNotEmpty)
+                                    Container(
+                                      padding: EdgeInsets.symmetric(
+                                        horizontal: 10.w,
+                                        vertical: 4.h,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: notificationColors.primaryColor
+                                            .withOpacity(0.15),
+                                        borderRadius: BorderRadius.circular(
+                                          20.r,
+                                        ),
+                                        border: Border.all(
+                                          color: notificationColors.primaryColor
+                                              .withOpacity(0.3),
+                                          width: 1,
+                                        ),
+                                      ),
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Icon(
+                                            Icons.person,
+                                            size: 12.sp,
+                                            color:
+                                                notificationColors.primaryColor,
+                                          ),
+                                          SizedBox(width: 4.w),
+                                          Text(
+                                            senderName,
+                                            style: GoogleFonts.raleway(
+                                              fontSize: 12.sp,
+                                              color:
+                                                  notificationColors
+                                                      .primaryColor,
+                                              fontWeight: FontWeight.w500,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
                                   Container(
                                     padding: EdgeInsets.symmetric(
                                       horizontal: 10.w,
                                       vertical: 4.h,
                                     ),
                                     decoration: BoxDecoration(
-                                      color:
-                                      isDarkMode
-                                          ? Colors.blue.withOpacity(0.2)
-                                          : Colors.blue.withOpacity(0.1),
+                                      color: Colors.grey.withOpacity(0.1),
                                       borderRadius: BorderRadius.circular(20.r),
+                                      border: Border.all(
+                                        color: Colors.grey.withOpacity(0.3),
+                                        width: 1,
+                                      ),
                                     ),
                                     child: Row(
                                       mainAxisSize: MainAxisSize.min,
                                       children: [
                                         Icon(
-                                          Icons.person,
+                                          Icons.access_time,
                                           size: 12.sp,
-                                          color: Colors.blue,
+                                          color:
+                                              isDarkMode
+                                                  ? Colors.grey[400]
+                                                  : Colors.grey[700],
                                         ),
                                         SizedBox(width: 4.w),
                                         Text(
-                                          senderName,
+                                          _getFormattedTime(
+                                            notification.createdAt,
+                                          ),
                                           style: GoogleFonts.raleway(
                                             fontSize: 12.sp,
-                                            color: Colors.blue,
-                                            fontWeight: FontWeight.w500,
+                                            color:
+                                                isDarkMode
+                                                    ? Colors.grey[400]
+                                                    : Colors.grey[700],
                                           ),
                                         ),
                                       ],
                                     ),
                                   ),
-                                Container(
-                                  padding: EdgeInsets.symmetric(
-                                    horizontal: 10.w,
-                                    vertical: 4.h,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color:
-                                    isDarkMode
-                                        ? Colors.grey.withOpacity(0.2)
-                                        : Colors.grey.withOpacity(0.1),
-                                    borderRadius: BorderRadius.circular(20.r),
-                                  ),
-                                  child: Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Icon(
-                                        Icons.access_time,
-                                        size: 12.sp,
-                                        color:
-                                        isDarkMode
-                                            ? Colors.grey[400]
-                                            : Colors.grey[700],
-                                      ),
-                                      SizedBox(width: 4.w),
-                                      Text(
-                                        _getFormattedTime(
-                                          notification.createdAt,
-                                        ),
-                                        style: GoogleFonts.raleway(
-                                          fontSize: 12.sp,
-                                          color:
-                                          isDarkMode
-                                              ? Colors.grey[400]
-                                              : Colors.grey[700],
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                if (!notification.isRead)
                                   Container(
                                     padding: EdgeInsets.symmetric(
                                       horizontal: 10.w,
                                       vertical: 4.h,
                                     ),
                                     decoration: BoxDecoration(
-                                      color: AppColors.primaryColor.withOpacity(
-                                        0.1,
-                                      ),
+                                      color: notificationColors.secondaryColor
+                                          .withOpacity(0.15),
                                       borderRadius: BorderRadius.circular(20.r),
+                                      border: Border.all(
+                                        color: notificationColors.secondaryColor
+                                            .withOpacity(0.4),
+                                        width: 1,
+                                      ),
                                     ),
                                     child: Text(
-                                      'new'.tr,
+                                      _getNotificationTypeLabel(
+                                        notification.type,
+                                      ),
                                       style: GoogleFonts.raleway(
-                                        fontSize: 12.sp,
-                                        color: AppColors.primaryColor,
-                                        fontWeight: FontWeight.bold,
+                                        fontSize: 11.sp,
+                                        color:
+                                            notificationColors.secondaryColor,
+                                        fontWeight: FontWeight.w600,
                                       ),
                                     ),
                                   ),
-                              ],
-                            ),
-                          ],
+                                ],
+                              ),
+                            ],
+                          ),
                         ),
                       ),
-                    ),
-                  ],
-                ),
+                    ],
+                  ),
 
-                // Show action buttons for appointment notifications
-                if (notification.type == NotificationType.newAppointment &&
-                    _currentUser.role == 'medecin' &&
-                    !notification.isRead)
-                  _buildActionButtons(notification),
-              ],
+                  // Show action buttons for appointment notifications
+                  if (notification.type == NotificationType.newAppointment &&
+                      _currentUser.role == 'medecin' &&
+                      !notification.isRead)
+                    _buildActionButtons(notification),
+                ],
+              ),
             ),
           ),
         ),
@@ -588,85 +558,70 @@ class _NotificationsPageState extends State<NotificationsPage> {
   Widget _getNotificationIcon(NotificationType type) {
     final theme = Theme.of(context);
     final isDarkMode = theme.brightness == Brightness.dark;
+    final notificationColors = _getNotificationColors(type);
 
     IconData icon;
-    Color color;
     String label = '';
 
     switch (type) {
       case NotificationType.newAppointment:
         icon = Icons.calendar_today_rounded;
-        color = Colors.green;
         label = 'appointment'.tr;
         break;
       case NotificationType.appointmentAccepted:
         icon = Icons.check_circle_rounded;
-        color = Colors.green;
         label = 'accepted'.tr;
         break;
       case NotificationType.appointmentRejected:
         icon = Icons.cancel_rounded;
-        color = Colors.red;
         label = 'rejected'.tr;
         break;
       case NotificationType.appointmentCanceled:
         icon = Icons.event_busy_rounded;
-        color = Colors.orange;
         label = 'canceled'.tr;
         break;
       case NotificationType.appointmentAssigned:
         icon = Icons.assignment_rounded;
-        color = Colors.blue;
         label = 'assigned'.tr;
         break;
       case NotificationType.appointmentReminder:
         icon = Icons.alarm_rounded;
-        color = Colors.orange;
         label = 'reminder'.tr;
         break;
       case NotificationType.newRating:
         icon = Icons.star_rounded;
-        color = Colors.amber;
         label = 'rating'.tr;
         break;
       case NotificationType.newPrescription:
         icon = Icons.medical_services_rounded;
-        color = AppColors.primaryColor;
         label = 'prescription'.tr;
         break;
       case NotificationType.prescriptionUpdated:
         icon = Icons.update_rounded;
-        color = AppColors.primaryColor;
         label = 'updated'.tr;
         break;
       case NotificationType.prescriptionCanceled:
         icon = Icons.cancel_rounded;
-        color = Colors.red;
         label = 'canceled'.tr;
         break;
       case NotificationType.prescriptionRefilled:
         icon = Icons.refresh_rounded;
-        color = Colors.green;
         label = 'refilled'.tr;
         break;
       case NotificationType.newMessage:
         icon = Icons.message_rounded;
-        color = Colors.purple;
         label = 'message'.tr;
         break;
       case NotificationType.dossierUpdate:
         icon = Icons.folder_rounded;
-        color = Colors.teal;
         label = 'dossier'.tr;
         break;
       case NotificationType.medicationReminder:
         icon = Icons.medication_rounded;
-        color = Colors.green;
         label = 'medication'.tr;
         break;
       case NotificationType.emergencyAlert:
         icon = Icons.emergency_rounded;
-        color = Colors.red;
         label = 'emergency'.tr;
         break;
     }
@@ -674,30 +629,44 @@ class _NotificationsPageState extends State<NotificationsPage> {
     return Column(
       children: [
         Container(
-          padding: EdgeInsets.all(10.r),
+          padding: EdgeInsets.all(12.r),
           decoration: BoxDecoration(
-            color: isDarkMode ? color.withOpacity(0.2) : color.withOpacity(0.1),
-            borderRadius: BorderRadius.circular(12.r),
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                notificationColors.primaryColor.withOpacity(0.15),
+                notificationColors.secondaryColor.withOpacity(0.1),
+              ],
+            ),
+            borderRadius: BorderRadius.circular(14.r),
             boxShadow: [
               BoxShadow(
-                color: color.withOpacity(0.1),
+                color: notificationColors.primaryColor.withOpacity(0.2),
                 blurRadius: 8,
                 offset: Offset(0, 2),
               ),
             ],
-            border: Border.all(color: color.withOpacity(0.3), width: 1.5),
+            border: Border.all(
+              color: notificationColors.primaryColor.withOpacity(0.4),
+              width: 1.5,
+            ),
           ),
-          child: Icon(icon, color: color, size: 26.sp),
+          child: Icon(
+            icon,
+            color: notificationColors.primaryColor,
+            size: 28.sp,
+          ),
         ),
         if (label.isNotEmpty)
           Padding(
-            padding: EdgeInsets.only(top: 4.h),
+            padding: EdgeInsets.only(top: 6.h),
             child: Text(
               label,
               style: GoogleFonts.raleway(
                 fontSize: 10.sp,
-                fontWeight: FontWeight.w500,
-                color: isDarkMode ? color.withOpacity(0.8) : color,
+                fontWeight: FontWeight.w600,
+                color: notificationColors.primaryColor,
               ),
             ),
           ),
@@ -914,7 +883,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
         MaterialPageRoute(
           builder:
               (context) =>
-              AppointmentDetailsPage(id: notification.appointmentId!),
+                  AppointmentDetailsPage(id: notification.appointmentId!),
         ),
       );
     } else if (notification.prescriptionId != null) {
@@ -923,6 +892,136 @@ class _NotificationsPageState extends State<NotificationsPage> {
     } else if (notification.ratingId != null) {
       // Navigate to rating details
       // TODO: Implement rating details navigation
+    }
+  }
+
+  NotificationColors _getNotificationColors(NotificationType type) {
+    switch (type) {
+      case NotificationType.newAppointment:
+        return NotificationColors(
+          primaryColor: const Color(0xFF4CAF50), // Green
+          secondaryColor: const Color(0xFF2E7D32),
+          backgroundColor: const Color(0xFFE8F5E8),
+        );
+      case NotificationType.appointmentAccepted:
+        return NotificationColors(
+          primaryColor: const Color(0xFF4CAF50), // Green
+          secondaryColor: const Color(0xFF1B5E20),
+          backgroundColor: const Color(0xFFE8F5E8),
+        );
+      case NotificationType.appointmentRejected:
+        return NotificationColors(
+          primaryColor: const Color(0xFFF44336), // Red
+          secondaryColor: const Color(0xFFC62828),
+          backgroundColor: const Color(0xFFFFEBEE),
+        );
+      case NotificationType.appointmentCanceled:
+        return NotificationColors(
+          primaryColor: const Color(0xFFFF9800), // Orange
+          secondaryColor: const Color(0xFFE65100),
+          backgroundColor: const Color(0xFFFFF3E0),
+        );
+      case NotificationType.appointmentAssigned:
+        return NotificationColors(
+          primaryColor: const Color(0xFF2196F3), // Blue
+          secondaryColor: const Color(0xFF0D47A1),
+          backgroundColor: const Color(0xFFE3F2FD),
+        );
+      case NotificationType.appointmentReminder:
+        return NotificationColors(
+          primaryColor: const Color(0xFFFF9800), // Orange
+          secondaryColor: const Color(0xFFEF6C00),
+          backgroundColor: const Color(0xFFFFF3E0),
+        );
+      case NotificationType.newRating:
+        return NotificationColors(
+          primaryColor: const Color(0xFFFFC107), // Amber
+          secondaryColor: const Color(0xFFFF8F00),
+          backgroundColor: const Color(0xFFFFFDE7),
+        );
+      case NotificationType.newPrescription:
+        return NotificationColors(
+          primaryColor: const Color(0xFF2FA7BB), // Teal (App primary)
+          secondaryColor: const Color(0xFF00695C),
+          backgroundColor: const Color(0xFFE0F2F1),
+        );
+      case NotificationType.prescriptionUpdated:
+        return NotificationColors(
+          primaryColor: const Color(0xFF00BCD4), // Cyan
+          secondaryColor: const Color(0xFF006064),
+          backgroundColor: const Color(0xFFE0F7FA),
+        );
+      case NotificationType.prescriptionCanceled:
+        return NotificationColors(
+          primaryColor: const Color(0xFFF44336), // Red
+          secondaryColor: const Color(0xFFB71C1C),
+          backgroundColor: const Color(0xFFFFEBEE),
+        );
+      case NotificationType.prescriptionRefilled:
+        return NotificationColors(
+          primaryColor: const Color(0xFF4CAF50), // Green
+          secondaryColor: const Color(0xFF2E7D32),
+          backgroundColor: const Color(0xFFE8F5E8),
+        );
+      case NotificationType.newMessage:
+        return NotificationColors(
+          primaryColor: const Color(0xFF9C27B0), // Purple
+          secondaryColor: const Color(0xFF4A148C),
+          backgroundColor: const Color(0xFFF3E5F5),
+        );
+      case NotificationType.dossierUpdate:
+        return NotificationColors(
+          primaryColor: const Color(0xFF607D8B), // Blue Grey
+          secondaryColor: const Color(0xFF263238),
+          backgroundColor: const Color(0xFFECEFF1),
+        );
+      case NotificationType.medicationReminder:
+        return NotificationColors(
+          primaryColor: const Color(0xFF8BC34A), // Light Green
+          secondaryColor: const Color(0xFF33691E),
+          backgroundColor: const Color(0xFFF1F8E9),
+        );
+      case NotificationType.emergencyAlert:
+        return NotificationColors(
+          primaryColor: const Color(0xFFD32F2F), // Dark Red
+          secondaryColor: const Color(0xFF8B0000),
+          backgroundColor: const Color(0xFFFFEBEE),
+        );
+    }
+  }
+
+  String _getNotificationTypeLabel(NotificationType type) {
+    switch (type) {
+      case NotificationType.newAppointment:
+        return 'new_appointment'.tr;
+      case NotificationType.appointmentAccepted:
+        return 'accepted'.tr;
+      case NotificationType.appointmentRejected:
+        return 'rejected'.tr;
+      case NotificationType.appointmentCanceled:
+        return 'canceled'.tr;
+      case NotificationType.appointmentAssigned:
+        return 'assigned'.tr;
+      case NotificationType.appointmentReminder:
+        return 'reminder'.tr;
+      case NotificationType.newRating:
+        return 'rating'.tr;
+      case NotificationType.newPrescription:
+        return 'prescription'.tr;
+      case NotificationType.prescriptionUpdated:
+        return 'updated'.tr;
+      case NotificationType.prescriptionCanceled:
+        return 'canceled'.tr;
+      case NotificationType.prescriptionRefilled:
+        return 'refilled'.tr;
+      case NotificationType.newMessage:
+        return 'message'.tr;
+      case NotificationType.dossierUpdate:
+        return 'dossier_update'.tr;
+      case NotificationType.medicationReminder:
+        return 'medication'.tr;
+      case NotificationType.emergencyAlert:
+        return 'emergency'.tr;
     }
   }
 }

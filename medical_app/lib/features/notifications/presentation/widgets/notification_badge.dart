@@ -10,6 +10,7 @@ import 'package:medical_app/features/notifications/presentation/bloc/notificatio
 import 'package:medical_app/features/notifications/presentation/pages/notifications_medecin.dart';
 import 'package:medical_app/features/notifications/presentation/pages/notifications_patient.dart';
 import 'package:medical_app/injection_container.dart' as di;
+import 'package:firebase_auth/firebase_auth.dart';
 
 class NotificationBadge extends StatefulWidget {
   final Color? iconColor;
@@ -34,6 +35,7 @@ class _NotificationBadgeState extends State<NotificationBadge>
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     _loadUserData();
+    _loadUnreadCount();
   }
 
   @override
@@ -82,6 +84,20 @@ class _NotificationBadgeState extends State<NotificationBadge>
           _isInitialized = true;
         });
       }
+    }
+  }
+
+  void _loadUnreadCount() {
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user != null) {
+        context.read<NotificationBloc>().add(
+          GetUnreadNotificationsCountEvent(userId: user.uid),
+        );
+      }
+    } catch (e) {
+      print('Error loading unread notification count: $e');
+      // Don't show error to user for badge, just fail silently
     }
   }
 
@@ -172,10 +188,26 @@ class _NotificationBadgeState extends State<NotificationBadge>
                 current is NotificationsLoaded;
           },
           builder: (context, state) {
-            int count = 0;
+            int unreadCount = 0;
 
+            // Handle different states
             if (state is UnreadNotificationsCountLoaded) {
-              count = state.count;
+              unreadCount = state.count;
+            } else if (state is NotificationsLoaded) {
+              // Fallback: count unread notifications from loaded notifications
+              unreadCount = state.notifications.where((n) => !n.isRead).length;
+            }
+
+            // Don't show badge if no unread notifications
+            if (unreadCount <= 0) {
+              return IconButton(
+                icon: Icon(
+                  Icons.notifications_none,
+                  color: widget.iconColor,
+                  size: widget.iconSize ?? 24,
+                ),
+                onPressed: _navigateToNotificationsPage,
+              );
             }
 
             return Stack(
@@ -193,15 +225,13 @@ class _NotificationBadgeState extends State<NotificationBadge>
                             ),
                           )
                           : Icon(
-                            count > 0
-                                ? Icons.notifications_active
-                                : Icons.notifications_none,
+                            Icons.notifications_active,
                             color: widget.iconColor,
                             size: widget.iconSize ?? 24,
                           ),
                   onPressed: _navigateToNotificationsPage,
                 ),
-                if (count > 0 && !_isRefreshing)
+                if (unreadCount > 0 && !_isRefreshing)
                   Positioned(
                     right: 5,
                     top: 5,
@@ -221,7 +251,7 @@ class _NotificationBadgeState extends State<NotificationBadge>
                       ),
                       child: Center(
                         child: Text(
-                          count > 99 ? '99+' : count.toString(),
+                          unreadCount > 99 ? '99+' : unreadCount.toString(),
                           style: TextStyle(
                             color: Colors.white,
                             fontSize: 10.sp,

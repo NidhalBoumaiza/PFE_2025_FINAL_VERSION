@@ -100,20 +100,42 @@ wwxt8k2z9k2sCyBaXijtjTDC
   @override
   Future<List<NotificationModel>> getNotifications(String userId) async {
     try {
-      final notificationsQuery =
-      await firestore
-          .collection('notifications')
-          .where('recipientId', isEqualTo: userId)
-          .orderBy('createdAt', descending: true)
-          .get();
+      if (userId.isEmpty) {
+        throw Exception('User ID cannot be empty');
+      }
 
-      return notificationsQuery.docs
-          .map(
-            (doc) => NotificationModel.fromJson({'id': doc.id, ...doc.data()}),
-      )
+      final querySnapshot =
+          await firestore
+              .collection('notifications')
+              .where('recipientId', isEqualTo: userId)
+              .orderBy('createdAt', descending: true)
+              .get();
+
+      if (querySnapshot.docs.isEmpty) {
+        return [];
+      }
+
+      return querySnapshot.docs
+          .map((doc) {
+            try {
+              final data = doc.data();
+              if (data.isEmpty) {
+                print('Warning: Empty notification document found: ${doc.id}');
+                return null;
+              }
+              final jsonData = {'id': doc.id, ...data};
+              return NotificationModel.fromJson(jsonData);
+            } catch (e) {
+              print('Error parsing notification ${doc.id}: $e');
+              return null;
+            }
+          })
+          .where((notification) => notification != null)
+          .cast<NotificationModel>()
           .toList();
     } catch (e) {
-      throw ServerException('Failed to fetch notifications: $e');
+      print('Error getting notifications: $e');
+      throw Exception('Failed to load notifications: ${e.toString()}');
     }
   }
 
@@ -196,21 +218,21 @@ wwxt8k2z9k2sCyBaXijtjTDC
       while (retryCount < maxRetries) {
         try {
           docRef = await firestore.collection('notifications').add({
-        'title': notification.title,
-        'body': notification.body,
-        'senderId': notification.senderId,
-        'recipientId': notification.recipientId,
+            'title': notification.title,
+            'body': notification.body,
+            'senderId': notification.senderId,
+            'recipientId': notification.recipientId,
             'type': NotificationUtils.notificationTypeToString(
               notification.type,
             ),
-        'appointmentId': notification.appointmentId,
-        'prescriptionId': notification.prescriptionId,
-        'ratingId': notification.ratingId,
-        'createdAt': notification.createdAt.toIso8601String(),
-        'isRead': notification.isRead,
-        'data': notification.data,
+            'appointmentId': notification.appointmentId,
+            'prescriptionId': notification.prescriptionId,
+            'ratingId': notification.ratingId,
+            'createdAt': notification.createdAt.toIso8601String(),
+            'isRead': notification.isRead,
+            'data': notification.data,
             'priority': priority,
-      });
+          });
           break;
         } catch (e) {
           retryCount++;
@@ -325,8 +347,8 @@ wwxt8k2z9k2sCyBaXijtjTDC
 
         // Enhanced FCM payload
         final fcmPayload = {
-            'message': {
-              'token': fcmToken,
+          'message': {
+            'token': fcmToken,
             'notification': {'title': title, 'body': body},
             'data': {
               'notificationId': docRef.id,
@@ -352,11 +374,11 @@ wwxt8k2z9k2sCyBaXijtjTDC
                 'color': _getNotificationColor(type),
               },
               'data': {'click_action': 'FLUTTER_NOTIFICATION_CLICK'},
-              },
-              'apns': {
-                'payload': {
-                  'aps': {
-                    'badge': 1,
+            },
+            'apns': {
+              'payload': {
+                'aps': {
+                  'badge': 1,
                   'sound': sound == 'default' ? 'default' : '$sound.caf',
                   'alert': {'title': title, 'body': body},
                   'category': NotificationUtils.notificationTypeToString(type),
@@ -371,27 +393,27 @@ wwxt8k2z9k2sCyBaXijtjTDC
             },
             'webpush': {
               'headers': {'Urgency': priority == 'max' ? 'high' : 'normal'},
-            'notification': {
+              'notification': {
                 'title': title,
                 'body': body,
                 'icon': '/icons/$icon.png',
                 'badge': '/icons/badge.png',
                 'tag': NotificationUtils.notificationTypeToString(type),
                 'requireInteraction': priority == 'max',
+              },
             },
           },
-        },
-      };
+        };
 
         // Send FCM message
-      final response = await http.post(
-        Uri.parse(
+        final response = await http.post(
+          Uri.parse(
             'https://fcm.googleapis.com/v1/projects/$_projectId/messages:send',
-        ),
-        headers: {
-          'Content-Type': 'application/json',
+          ),
+          headers: {
+            'Content-Type': 'application/json',
             'Authorization': 'Bearer ${accessToken.accessToken.data}',
-        },
+          },
           body: jsonEncode(fcmPayload),
         );
 
@@ -410,7 +432,7 @@ wwxt8k2z9k2sCyBaXijtjTDC
       } catch (e) {
         retryCount++;
         if (retryCount >= maxRetries) {
-        throw ServerException(
+          throw ServerException(
             'Failed to send FCM notification after $maxRetries attempts: $e',
           );
         }
@@ -436,7 +458,7 @@ wwxt8k2z9k2sCyBaXijtjTDC
         return 'prescription_channel';
       default:
         return 'default_channel';
-      }
+    }
   }
 
   /// Get notification color based on type
@@ -496,11 +518,11 @@ wwxt8k2z9k2sCyBaXijtjTDC
     try {
       final batch = firestore.batch();
       final notificationsQuery =
-      await firestore
-          .collection('notifications')
-          .where('recipientId', isEqualTo: userId)
-          .where('isRead', isEqualTo: false)
-          .get();
+          await firestore
+              .collection('notifications')
+              .where('recipientId', isEqualTo: userId)
+              .where('isRead', isEqualTo: false)
+              .get();
 
       for (var doc in notificationsQuery.docs) {
         batch.update(doc.reference, {'isRead': true});
@@ -526,12 +548,12 @@ wwxt8k2z9k2sCyBaXijtjTDC
     try {
       // Requires Firestore SDK with aggregate query support
       final notificationsQuery =
-      await firestore
-          .collection('notifications')
-          .where('recipientId', isEqualTo: userId)
-          .where('isRead', isEqualTo: false)
-          .count()
-          .get();
+          await firestore
+              .collection('notifications')
+              .where('recipientId', isEqualTo: userId)
+              .where('isRead', isEqualTo: false)
+              .count()
+              .get();
 
       return notificationsQuery.count ?? 0;
     } catch (e) {
@@ -569,15 +591,15 @@ wwxt8k2z9k2sCyBaXijtjTDC
         );
         await flutterLocalNotificationsPlugin
             .resolvePlatformSpecificImplementation<
-            AndroidFlutterLocalNotificationsPlugin
-        >()
+              AndroidFlutterLocalNotificationsPlugin
+            >()
             ?.createNotificationChannel(channel);
 
         // Initialize local notifications for iOS
         await flutterLocalNotificationsPlugin
             .resolvePlatformSpecificImplementation<
-            IOSFlutterLocalNotificationsPlugin
-        >()
+              IOSFlutterLocalNotificationsPlugin
+            >()
             ?.requestPermissions(alert: true, badge: true, sound: true);
 
         return token;
@@ -602,25 +624,53 @@ wwxt8k2z9k2sCyBaXijtjTDC
 
   @override
   Stream<List<NotificationModel>> notificationsStream(String userId) {
-    return firestore
-        .collection('notifications')
-        .where('recipientId', isEqualTo: userId)
-        .orderBy('createdAt', descending: true)
-        .snapshots()
-        .map(
-          (snapshot) =>
-          snapshot.docs
-              .map(
-                (doc) => NotificationModel.fromJson({
-              'id': doc.id,
-              ...doc.data(),
-            }),
-          )
-              .toList(),
-    )
-        .handleError((error) {
-      print('Error in notifications stream for user $userId: $error');
-      throw ServerException('Failed to stream notifications: $error');
-    });
+    try {
+      if (userId.isEmpty) {
+        return Stream.error('User ID cannot be empty');
+      }
+
+      return firestore
+          .collection('notifications')
+          .where('recipientId', isEqualTo: userId)
+          .orderBy('createdAt', descending: true)
+          .snapshots()
+          .map((snapshot) {
+            if (snapshot.docs.isEmpty) {
+              return <NotificationModel>[];
+            }
+
+            return snapshot.docs
+                .map((doc) {
+                  try {
+                    final data = doc.data();
+                    if (data.isEmpty) {
+                      print(
+                        'Warning: Empty notification document found: ${doc.id}',
+                      );
+                      return null;
+                    }
+                    final jsonData = {'id': doc.id, ...data};
+                    return NotificationModel.fromJson(jsonData);
+                  } catch (e) {
+                    print('Error parsing notification ${doc.id}: $e');
+                    return null;
+                  }
+                })
+                .where((notification) => notification != null)
+                .cast<NotificationModel>()
+                .toList();
+          })
+          .handleError((error) {
+            print('Error in notifications stream: $error');
+            throw Exception(
+              'Failed to stream notifications: ${error.toString()}',
+            );
+          });
+    } catch (e) {
+      print('Error setting up notifications stream: $e');
+      return Stream.error(
+        'Failed to setup notifications stream: ${e.toString()}',
+      );
+    }
   }
 }

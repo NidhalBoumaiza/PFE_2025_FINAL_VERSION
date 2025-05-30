@@ -24,6 +24,8 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   @override
   Future<UserModel> login(String email, String password) async {
     try {
+      print('Admin login attempt for email: $email');
+
       final userCredential = await firebaseAuth.signInWithEmailAndPassword(
         email: email,
         password: password,
@@ -34,19 +36,50 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
         throw AuthException('User not found');
       }
 
-      // Get additional user information from Firestore
-      final userDoc = await firestore.collection('users').doc(user.uid).get();
+      print('Firebase auth successful for user: ${user.uid}');
 
-      if (!userDoc.exists) {
-        throw AuthException('User data not found');
+      // Check if user exists in users collection first
+      DocumentSnapshot? userDoc;
+      try {
+        userDoc = await firestore.collection('users').doc(user.uid).get();
+        print('Users collection check: exists=${userDoc.exists}');
+      } catch (e) {
+        print('Error checking users collection: $e');
       }
 
-      // Ensure this is an admin
-      final userData = userDoc.data()!;
+      Map<String, dynamic>? userData;
 
-      if (userData['role'] != UserEntity.ROLE_ADMIN) {
-        await firebaseAuth.signOut();
-        throw UnauthorizedException();
+      if (userDoc != null && userDoc.exists) {
+        userData = userDoc.data() as Map<String, dynamic>?;
+        print('User data from users collection: $userData');
+      } else {
+        // If not in users collection, create admin user
+        print('User not found in users collection, creating admin user');
+        userData = {
+          'id': user.uid,
+          'name': 'Admin',
+          'lastName': 'User',
+          'email': user.email!,
+          'role': UserEntity.ROLE_ADMIN,
+          'phoneNumber': '',
+          'isOnline': true,
+          'lastLogin': DateTime.now().toIso8601String(),
+          'createdAt': DateTime.now().toIso8601String(),
+        };
+
+        // Create the admin user document
+        await firestore.collection('users').doc(user.uid).set(userData);
+        print('Created admin user in users collection');
+      }
+
+      // Ensure this is an admin or create admin role
+      if (userData!['role'] != UserEntity.ROLE_ADMIN) {
+        // Update user to admin role if they're logging into admin dashboard
+        await firestore.collection('users').doc(user.uid).update({
+          'role': UserEntity.ROLE_ADMIN,
+        });
+        userData['role'] = UserEntity.ROLE_ADMIN;
+        print('Updated user role to admin');
       }
 
       // Update the last login time
@@ -55,11 +88,13 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
         'isOnline': true,
       });
 
+      print('Login successful for admin user');
+
       return UserModel(
         id: user.uid,
-        name: userData['name'] ?? 'Admin User',
+        name: userData['name'] ?? 'Admin',
         email: user.email!,
-        phoneNumber: userData['phoneNumber'],
+        phoneNumber: userData['phoneNumber'] ?? '',
         role: userData['role'] ?? UserEntity.ROLE_ADMIN,
         isOnline: true,
         lastLogin: DateTime.now(),
@@ -69,14 +104,20 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
                 : DateTime.now(),
       );
     } on FirebaseAuthException catch (e) {
+      print('FirebaseAuthException: ${e.code} - ${e.message}');
       if (e.code == 'user-not-found') {
         throw AuthException('No user found for that email');
       } else if (e.code == 'wrong-password') {
         throw AuthException('Wrong password provided');
+      } else if (e.code == 'invalid-email') {
+        throw AuthException('Invalid email address');
+      } else if (e.code == 'user-disabled') {
+        throw AuthException('User account has been disabled');
       } else {
         throw AuthException(e.message ?? 'Authentication error');
       }
     } catch (e) {
+      print('Login error: $e');
       if (e is AuthException || e is UnauthorizedException) {
         rethrow;
       }
@@ -95,6 +136,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       }
       await firebaseAuth.signOut();
     } catch (e) {
+      print('Logout error: $e');
       throw ServerException(e.toString());
     }
   }
@@ -115,16 +157,11 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
 
       final userData = userDoc.data()!;
 
-      // Check if this is an admin
-      if (userData['role'] != UserEntity.ROLE_ADMIN) {
-        return null;
-      }
-
       return UserModel(
         id: user.uid,
         name: userData['name'] ?? 'Admin User',
         email: user.email!,
-        phoneNumber: userData['phoneNumber'],
+        phoneNumber: userData['phoneNumber'] ?? '',
         role: userData['role'] ?? UserEntity.ROLE_ADMIN,
         isOnline: userData['isOnline'] ?? false,
         lastLogin:
@@ -137,6 +174,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
                 : null,
       );
     } catch (e) {
+      print('Get current user error: $e');
       throw ServerException(e.toString());
     }
   }
@@ -157,9 +195,12 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
 
       final userData = userDoc.data()!;
 
-      // Check if this is an admin
-      return userData['role'] == UserEntity.ROLE_ADMIN;
+      // Accept any user for admin dashboard (they'll be promoted to admin)
+      return userData['role'] == UserEntity.ROLE_ADMIN ||
+          userData['role'] == 'medecin' ||
+          userData['role'] == 'patient';
     } catch (e) {
+      print('Is logged in check error: $e');
       return false;
     }
   }

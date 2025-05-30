@@ -96,10 +96,10 @@ class LocationService {
         return false;
       }
 
-      // Format location data for Firestore
+      // Format location data for Firestore using GeoJSON format [longitude, latitude]
       final locationData = {
         'type': 'Point',
-        'coordinates': [position.latitude, position.longitude],
+        'coordinates': [position.longitude, position.latitude],
       };
 
       // Add timestamp separately to avoid serialization issues

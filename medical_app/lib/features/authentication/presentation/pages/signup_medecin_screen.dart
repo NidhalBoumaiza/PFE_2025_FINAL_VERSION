@@ -853,9 +853,13 @@ class _SignupMedecinScreenState extends State<SignupMedecinScreen> {
                           Map<String, String?>? addressData;
 
                           if (_selectedLocation != null) {
+                            // Use GeoJSON format to match patient location format
                             locationData = {
-                              'latitude': _selectedLocation!.latitude,
-                              'longitude': _selectedLocation!.longitude,
+                              'type': 'Point',
+                              'coordinates': [
+                                _selectedLocation!.longitude,
+                                _selectedLocation!.latitude,
+                              ],
                             };
                             addressData = {
                               'formatted_address':
