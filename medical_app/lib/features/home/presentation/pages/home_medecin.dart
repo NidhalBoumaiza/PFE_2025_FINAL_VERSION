@@ -25,6 +25,7 @@ import '../../../messagerie/presentation/blocs/conversation BLoC/conversations_b
 import '../../../messagerie/presentation/blocs/conversation BLoC/conversations_state.dart';
 import '../../../messagerie/presentation/blocs/conversation BLoC/conversations_event.dart';
 import '../../../secours/presentation/pages/secours_screen.dart';
+import 'package:medical_app/features/ai_chatbot/presentation/pages/ai_chatbot_page.dart';
 
 class HomeMedecin extends StatefulWidget {
   const HomeMedecin({super.key});
@@ -385,6 +386,23 @@ class _HomeMedecinState extends State<HomeMedecin> {
           ),
         ),
         drawer: _buildDrawer(isDarkMode, theme),
+        floatingActionButton: FloatingActionButton(
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const AiChatbotPage(),
+              ),
+            );
+          },
+          backgroundColor: AppColors.primaryColor,
+          child: Icon(
+            Icons.smart_toy,
+            color: Colors.white,
+            size: 28.sp,
+          ),
+          tooltip: 'ai_assistant'.tr,
+        ),
       ),
     );
   }

@@ -27,6 +27,7 @@ import 'package:medical_app/core/services/location_service.dart';
 import 'dart:async';
 import 'package:medical_app/core/widgets/location_indicator.dart';
 import 'package:medical_app/core/widgets/location_activation_screen.dart';
+import 'package:medical_app/features/ai_chatbot/presentation/pages/ai_chatbot_page.dart';
 
 class HomePatient extends StatefulWidget {
   const HomePatient({super.key});
@@ -849,6 +850,23 @@ class _HomePatientState extends State<HomePatient> {
                 ),
               ),
             ),
+          ),
+          floatingActionButton: FloatingActionButton(
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const AiChatbotPage(),
+                ),
+              );
+            },
+            backgroundColor: AppColors.primaryColor,
+            child: Icon(
+              Icons.smart_toy,
+              color: Colors.white,
+              size: 28.sp,
+            ),
+            tooltip: 'ai_assistant'.tr,
           ),
         ),
       ),

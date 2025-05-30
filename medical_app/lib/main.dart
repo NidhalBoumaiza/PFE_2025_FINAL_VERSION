@@ -45,6 +45,7 @@ import 'package:geolocator/geolocator.dart';
 import 'features/authentication/presentation/blocs/forget password bloc/forgot_password_bloc.dart';
 import 'features/authentication/presentation/blocs/reset password bloc/reset_password_bloc.dart';
 import 'features/authentication/presentation/blocs/verify code bloc/verify_code_bloc.dart';
+import 'features/ai_chatbot/presentation/bloc/ai_chatbot_bloc.dart';
 
 @pragma('vm:entry-point')
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
@@ -508,6 +509,7 @@ class _MyAppState extends State<MyApp> {
         BlocProvider(create: (_) => di.sl<PrescriptionBloc>()),
         BlocProvider(create: (_) => di.sl<NotificationBloc>()),
         BlocProvider(create: (_) => di.sl<DossierMedicalBloc>()),
+        BlocProvider(create: (_) => di.sl<AiChatbotBloc>()),
       ],
       child: BlocBuilder<ThemeCubit, ThemeState>(
         builder: (context, themeState) {

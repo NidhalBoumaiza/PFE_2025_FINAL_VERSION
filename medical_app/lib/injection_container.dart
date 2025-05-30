@@ -101,6 +101,13 @@ import 'package:medical_app/features/dossier_medical/domain/usecases/has_dossier
 import 'package:medical_app/features/dossier_medical/domain/usecases/update_file_description.dart';
 import 'package:medical_app/features/dossier_medical/domain/usecases/check_doctor_access.dart';
 import 'package:medical_app/features/dossier_medical/presentation/bloc/dossier_medical_bloc.dart';
+import 'package:medical_app/features/ai_chatbot/data/datasources/ai_chatbot_remote_datasource.dart';
+import 'package:medical_app/features/ai_chatbot/data/repositories/ai_chatbot_repository_impl.dart';
+import 'package:medical_app/features/ai_chatbot/domain/repositories/ai_chatbot_repository.dart';
+import 'package:medical_app/features/ai_chatbot/domain/usecases/analyze_image_usecase.dart';
+import 'package:medical_app/features/ai_chatbot/domain/usecases/analyze_pdf_usecase.dart';
+import 'package:medical_app/features/ai_chatbot/presentation/bloc/ai_chatbot_bloc.dart';
+import 'package:dio/dio.dart';
 
 final sl = GetIt.instance;
 
@@ -189,6 +196,12 @@ Future<void> init() async {
       updateFileDescription: sl(),
     ),
   );
+  sl.registerFactory(
+    () => AiChatbotBloc(
+      analyzeImageUseCase: sl(),
+      analyzePdfUseCase: sl(),
+    ),
+  );
 
   // Use Cases
   sl.registerLazySingleton(() => LoginUseCase(sl()));
@@ -237,6 +250,8 @@ Future<void> init() async {
   sl.registerLazySingleton(() => UpdateFileDescription(sl()));
   sl.registerLazySingleton(() => CheckDoctorAccess(sl()));
   sl.registerLazySingleton(() => DeleteAccountUseCase(sl()));
+  sl.registerLazySingleton(() => AnalyzeImageUseCase(repository: sl()));
+  sl.registerLazySingleton(() => AnalyzePdfUseCase(repository: sl()));
 
   // Repositories
   sl.registerLazySingleton<AuthRepository>(
@@ -267,6 +282,9 @@ Future<void> init() async {
   sl.registerLazySingleton<DossierMedicalRepository>(
     () =>
         DossierMedicalRepositoryImpl(remoteDataSource: sl(), networkInfo: sl()),
+  );
+  sl.registerLazySingleton<AiChatbotRepository>(
+    () => AiChatbotRepositoryImpl(remoteDataSource: sl()),
   );
 
   // Data Sources
@@ -334,6 +352,9 @@ Future<void> init() async {
       notificationRemoteDataSource: sl(),
     ),
   );
+  sl.registerLazySingleton<AiChatbotRemoteDataSource>(
+    () => AiChatbotRemoteDataSourceImpl(dio: sl()),
+  );
 
   // Core
   sl.registerLazySingleton<NetworkInfo>(() => NetworkInfoImpl(sl()));
@@ -351,4 +372,5 @@ Future<void> init() async {
   sl.registerLazySingleton(() => FirebaseMessaging.instance);
   sl.registerLazySingleton(() => FlutterLocalNotificationsPlugin());
   sl.registerLazySingleton(() => http.Client());
+  sl.registerLazySingleton(() => Dio());
 }
