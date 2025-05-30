@@ -79,6 +79,7 @@ class _NotificationBadgeState extends State<NotificationBadge>
         _refreshNotifications();
       }
     } catch (e) {
+      print('NotificationBadge: Error loading user data: $e');
       if (mounted) {
         setState(() {
           _isInitialized = true;
@@ -137,29 +138,46 @@ class _NotificationBadgeState extends State<NotificationBadge>
   }
 
   void _navigateToNotificationsPage() {
-    if (!mounted || userId == null) return;
+    print('NotificationBadge: _navigateToNotificationsPage called');
 
-    // Mark all notifications as read when the user taps the notification badge
-    context.read<NotificationBloc>().add(
-      MarkAllNotificationsAsReadEvent(userId: userId!),
+    // Show a snackbar to confirm the button is being pressed
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Notification badge pressed!'),
+        duration: Duration(seconds: 1),
+      ),
     );
 
-    if (userRole == 'medecin') {
-      navigateToAnotherScreenWithSlideTransitionFromRightToLeft(
-        context,
-        const NotificationsMedecin(),
-      ).then((_) => _refreshNotifications());
-    } else {
-      // Default to patient notifications
-      navigateToAnotherScreenWithSlideTransitionFromRightToLeft(
-        context,
-        const NotificationsPatient(),
-      ).then((_) => _refreshNotifications());
+    if (!mounted) {
+      print('NotificationBadge: Widget not mounted');
+      return;
+    }
+
+    // Try simple navigation first to test if navigation works at all
+    try {
+      Navigator.of(context)
+          .push(
+            MaterialPageRoute(
+              builder: (context) => const NotificationsPatient(),
+            ),
+          )
+          .then((_) {
+            print('NotificationBadge: Returned from NotificationsPatient');
+            if (userId != null) {
+              _refreshNotifications();
+            }
+          });
+    } catch (e) {
+      print('NotificationBadge: Navigation error: $e');
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    print(
+      'NotificationBadge build: _isInitialized=$_isInitialized, userId=$userId',
+    );
+
     return !_isInitialized || userId == null
         ? IconButton(
           icon: Icon(
@@ -167,7 +185,10 @@ class _NotificationBadgeState extends State<NotificationBadge>
             color: widget.iconColor,
             size: widget.iconSize ?? 24,
           ),
-          onPressed: _navigateToNotificationsPage,
+          onPressed: () {
+            print('NotificationBadge: Simple IconButton pressed');
+            _navigateToNotificationsPage();
+          },
         )
         : BlocConsumer<NotificationBloc, NotificationState>(
           listenWhen: (previous, current) {
@@ -198,6 +219,8 @@ class _NotificationBadgeState extends State<NotificationBadge>
               unreadCount = state.notifications.where((n) => !n.isRead).length;
             }
 
+            print('NotificationBadge BlocConsumer: unreadCount=$unreadCount');
+
             // Don't show badge if no unread notifications
             if (unreadCount <= 0) {
               return IconButton(
@@ -206,7 +229,12 @@ class _NotificationBadgeState extends State<NotificationBadge>
                   color: widget.iconColor,
                   size: widget.iconSize ?? 24,
                 ),
-                onPressed: _navigateToNotificationsPage,
+                onPressed: () {
+                  print(
+                    'NotificationBadge: BlocConsumer IconButton (no unread) pressed',
+                  );
+                  _navigateToNotificationsPage();
+                },
               );
             }
 
@@ -229,7 +257,12 @@ class _NotificationBadgeState extends State<NotificationBadge>
                             color: widget.iconColor,
                             size: widget.iconSize ?? 24,
                           ),
-                  onPressed: _navigateToNotificationsPage,
+                  onPressed: () {
+                    print(
+                      'NotificationBadge: BlocConsumer IconButton (with badge) pressed',
+                    );
+                    _navigateToNotificationsPage();
+                  },
                 ),
                 if (unreadCount > 0 && !_isRefreshing)
                   Positioned(

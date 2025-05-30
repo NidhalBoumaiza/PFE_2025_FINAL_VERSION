@@ -17,6 +17,8 @@ class UserEntity extends Equatable {
   // Added fields for address and location
   final Map<String, String?>? address;
   final Map<String, dynamic>? location;
+  // Added field for profile picture
+  final String? profilePictureUrl; // profilePictureUrl is optional
 
   UserEntity({
     this.id, // id is not required
@@ -33,6 +35,7 @@ class UserEntity extends Equatable {
     this.fcmToken, // fcmToken is not required
     this.address,
     this.location,
+    this.profilePictureUrl, // profilePictureUrl is not required
   });
 
   factory UserEntity.create({
@@ -50,6 +53,7 @@ class UserEntity extends Equatable {
     String? fcmToken, // fcmToken is optional
     Map<String, String?>? address,
     Map<String, dynamic>? location,
+    String? profilePictureUrl, // profilePictureUrl is optional
   }) {
     return UserEntity(
       id: id,
@@ -66,6 +70,7 @@ class UserEntity extends Equatable {
       fcmToken: fcmToken,
       address: address,
       location: location,
+      profilePictureUrl: profilePictureUrl,
     );
   }
 
@@ -85,5 +90,6 @@ class UserEntity extends Equatable {
     fcmToken,
     address,
     location,
+    profilePictureUrl,
   ];
 }

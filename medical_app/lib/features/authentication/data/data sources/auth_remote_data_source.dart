@@ -39,6 +39,10 @@ abstract class AuthRemoteDataSource {
     required String newPassword,
     required int verificationCode,
   });
+  Future<Unit> deleteAccount({
+    required String userId,
+    required String password,
+  });
 }
 
 class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
@@ -1116,6 +1120,175 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     } catch (e) {
       print('_updateFutureAppointmentsEndTime: Error: $e');
       // Don't throw exception, as this is an enhancement, not a critical operation
+    }
+  }
+
+  @override
+  Future<Unit> deleteAccount({
+    required String userId,
+    required String password,
+  }) async {
+    try {
+      print('deleteAccount: Starting for userId=$userId');
+
+      // Get current Firebase user
+      final currentUser = firebaseAuth.currentUser;
+      if (currentUser == null || currentUser.uid != userId) {
+        throw AuthException('User not authenticated or user ID mismatch');
+      }
+
+      // Re-authenticate user with password before deletion
+      final credential = EmailAuthProvider.credential(
+        email: currentUser.email!,
+        password: password,
+      );
+      await currentUser.reauthenticateWithCredential(credential);
+      print('deleteAccount: User re-authenticated successfully');
+
+      // Get user data to determine role and collection
+      final userDoc = await firestore.collection('users').doc(userId).get();
+      String? userRole;
+      if (userDoc.exists) {
+        userRole = userDoc.data()?['role'] as String?;
+      }
+
+      // Delete user data from Firestore collections
+      final batch = firestore.batch();
+
+      // Delete from main collection (patients or medecins)
+      if (userRole == 'patient') {
+        batch.delete(firestore.collection('patients').doc(userId));
+      } else if (userRole == 'medecin') {
+        batch.delete(firestore.collection('medecins').doc(userId));
+      }
+
+      // Delete from users collection
+      batch.delete(firestore.collection('users').doc(userId));
+
+      // Delete related data
+      // Delete notifications
+      final notificationsQuery =
+          await firestore
+              .collection('notifications')
+              .where('recipientId', isEqualTo: userId)
+              .get();
+      for (final doc in notificationsQuery.docs) {
+        batch.delete(doc.reference);
+      }
+
+      final sentNotificationsQuery =
+          await firestore
+              .collection('notifications')
+              .where('senderId', isEqualTo: userId)
+              .get();
+      for (final doc in sentNotificationsQuery.docs) {
+        batch.delete(doc.reference);
+      }
+
+      // Delete appointments
+      final appointmentsQuery =
+          await firestore
+              .collection('rendez_vous')
+              .where('patientId', isEqualTo: userId)
+              .get();
+      for (final doc in appointmentsQuery.docs) {
+        batch.delete(doc.reference);
+      }
+
+      final doctorAppointmentsQuery =
+          await firestore
+              .collection('rendez_vous')
+              .where('doctorId', isEqualTo: userId)
+              .get();
+      for (final doc in doctorAppointmentsQuery.docs) {
+        batch.delete(doc.reference);
+      }
+
+      // Delete conversations
+      final conversationsQuery =
+          await firestore
+              .collection('conversations')
+              .where('participants', arrayContains: userId)
+              .get();
+      for (final doc in conversationsQuery.docs) {
+        batch.delete(doc.reference);
+      }
+
+      // Delete prescriptions
+      final prescriptionsQuery =
+          await firestore
+              .collection('prescriptions')
+              .where('patientId', isEqualTo: userId)
+              .get();
+      for (final doc in prescriptionsQuery.docs) {
+        batch.delete(doc.reference);
+      }
+
+      final doctorPrescriptionsQuery =
+          await firestore
+              .collection('prescriptions')
+              .where('doctorId', isEqualTo: userId)
+              .get();
+      for (final doc in doctorPrescriptionsQuery.docs) {
+        batch.delete(doc.reference);
+      }
+
+      // Delete ratings
+      final ratingsQuery =
+          await firestore
+              .collection('ratings')
+              .where('patientId', isEqualTo: userId)
+              .get();
+      for (final doc in ratingsQuery.docs) {
+        batch.delete(doc.reference);
+      }
+
+      final doctorRatingsQuery =
+          await firestore
+              .collection('ratings')
+              .where('doctorId', isEqualTo: userId)
+              .get();
+      for (final doc in doctorRatingsQuery.docs) {
+        batch.delete(doc.reference);
+      }
+
+      // Delete medical files if patient
+      if (userRole == 'patient') {
+        final medicalFilesQuery =
+            await firestore
+                .collection('dossier_medical')
+                .where('patientId', isEqualTo: userId)
+                .get();
+        for (final doc in medicalFilesQuery.docs) {
+          batch.delete(doc.reference);
+        }
+      }
+
+      // Commit all deletions
+      await batch.commit();
+      print('deleteAccount: Firestore data deleted successfully');
+
+      // Clear local data
+      await localDataSource.signOut();
+      print('deleteAccount: Local data cleared');
+
+      // Delete Firebase Auth user (this must be done last)
+      await currentUser.delete();
+      print('deleteAccount: Firebase Auth user deleted successfully');
+
+      return unit;
+    } on FirebaseAuthException catch (e) {
+      print('deleteAccount: FirebaseAuthException: ${e.code} - ${e.message}');
+      if (e.code == 'wrong-password') {
+        throw AuthException('Incorrect password provided');
+      } else if (e.code == 'requires-recent-login') {
+        throw AuthException('Please log in again before deleting your account');
+      } else {
+        throw AuthException(e.message ?? 'Failed to delete account');
+      }
+    } catch (e) {
+      print('deleteAccount: Unexpected error: $e');
+      throw ServerException('Failed to delete account: $e');
     }
   }
 }

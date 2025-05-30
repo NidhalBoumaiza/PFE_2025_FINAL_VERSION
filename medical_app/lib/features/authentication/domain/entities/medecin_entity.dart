@@ -28,6 +28,7 @@ class MedecinEntity extends UserEntity {
     String? fcmToken,
     Map<String, String?>? address,
     Map<String, dynamic>? location,
+    String? profilePictureUrl,
     this.education,
     this.experience,
     this.consultationFee,
@@ -46,6 +47,7 @@ class MedecinEntity extends UserEntity {
          fcmToken: fcmToken,
          address: address,
          location: location,
+         profilePictureUrl: profilePictureUrl,
        );
 
   factory MedecinEntity.create({
@@ -66,6 +68,7 @@ class MedecinEntity extends UserEntity {
     String? fcmToken,
     Map<String, String?>? address,
     Map<String, dynamic>? location,
+    String? profilePictureUrl,
     List<Map<String, String>>? education,
     List<Map<String, String>>? experience,
     double? consultationFee,
@@ -88,6 +91,7 @@ class MedecinEntity extends UserEntity {
       fcmToken: fcmToken,
       address: address,
       location: location,
+      profilePictureUrl: profilePictureUrl,
       education: education,
       experience: experience,
       consultationFee: consultationFee,

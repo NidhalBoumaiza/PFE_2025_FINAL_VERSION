@@ -81,14 +81,20 @@ class ConversationsBloc extends Bloc<ConversationsEvent, ConversationsState> {
     final updatedConversations =
         event.conversations.map((serverConversation) {
           // Try to find the same conversation in our current list
-          final existingConversation = _currentConversations.firstWhere(
-            (c) => c.id == serverConversation.id,
-            orElse: () => serverConversation,
-          );
+          ConversationEntity? existingConversation;
+          try {
+            existingConversation = _currentConversations.firstWhere(
+              (c) => c.id == serverConversation.id,
+            );
+          } catch (e) {
+            // No existing conversation found, use server version
+            existingConversation = null;
+          }
 
           // If this is an existing conversation and the only thing that changed is the read status,
           // prioritize the local version if the local version shows it as read
-          if (existingConversation.id == serverConversation.id &&
+          if (existingConversation != null &&
+              existingConversation.id == serverConversation.id &&
               existingConversation.lastMessageRead &&
               !serverConversation.lastMessageRead) {
             print(

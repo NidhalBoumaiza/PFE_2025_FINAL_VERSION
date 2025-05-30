@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:get/get.dart';
 import 'package:medical_app/core/utils/app_colors.dart';
@@ -7,6 +8,9 @@ import 'package:medical_app/features/authentication/data/models/medecin_model.da
 import 'package:medical_app/features/authentication/data/models/user_model.dart';
 import 'package:medical_app/features/authentication/domain/entities/user_entity.dart';
 import 'package:medical_app/features/authentication/domain/entities/medecin_entity.dart';
+import 'package:medical_app/features/authentication/presentation/blocs/delete_account_bloc/delete_account_bloc.dart';
+import 'package:medical_app/features/authentication/presentation/blocs/delete_account_bloc/delete_account_event.dart';
+import 'package:medical_app/features/authentication/presentation/blocs/delete_account_bloc/delete_account_state.dart';
 import 'package:medical_app/features/profile/presentation/pages/ProfilMedecin.dart';
 import 'package:medical_app/features/profile/presentation/pages/edit_patient_profile_page.dart';
 import 'package:medical_app/widgets/theme_cubit_switch.dart';
@@ -403,6 +407,26 @@ class _SettingsPageState extends State<SettingsPage> {
               _showLogoutDialog();
             },
           ),
+          const Divider(height: 1),
+          ListTile(
+            leading: const Icon(Icons.delete_forever, color: Colors.red),
+            title: Text(
+              "delete_account".tr,
+              style: GoogleFonts.raleway(fontSize: 14, color: Colors.red),
+            ),
+            subtitle: Text(
+              "delete_account_warning".tr,
+              style: GoogleFonts.raleway(fontSize: 12, color: Colors.grey[600]),
+            ),
+            trailing: const Icon(Icons.chevron_right, size: 20),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 8,
+            ),
+            onTap: () {
+              _showDeleteAccountDialog();
+            },
+          ),
         ],
       ),
     );
@@ -587,6 +611,201 @@ class _SettingsPageState extends State<SettingsPage> {
                 child: Text("logout".tr),
               ),
             ],
+          ),
+    );
+  }
+
+  void _showDeleteAccountDialog() {
+    final TextEditingController passwordController = TextEditingController();
+    final GlobalKey<FormState> formKey = GlobalKey<FormState>();
+
+    showDialog(
+      context: context,
+      builder:
+          (context) => BlocProvider(
+            create: (context) => di.sl<DeleteAccountBloc>(),
+            child: BlocConsumer<DeleteAccountBloc, DeleteAccountState>(
+              listener: (context, state) {
+                if (state is DeleteAccountSuccess) {
+                  Navigator.of(context).pop(); // Close dialog
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text("account_deleted_successfully".tr),
+                      backgroundColor: Colors.green,
+                    ),
+                  );
+                  // Navigate to login screen
+                  Navigator.pushAndRemoveUntil(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const LoginScreen(),
+                    ),
+                    (route) => false,
+                  );
+                } else if (state is DeleteAccountError) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(state.message),
+                      backgroundColor: Colors.red,
+                    ),
+                  );
+                }
+              },
+              builder: (context, state) {
+                return AlertDialog(
+                  title: Row(
+                    children: [
+                      const Icon(Icons.warning, color: Colors.red),
+                      const SizedBox(width: 8),
+                      Text(
+                        "delete_account".tr,
+                        style: GoogleFonts.raleway(
+                          fontWeight: FontWeight.bold,
+                          color: Colors.red,
+                        ),
+                      ),
+                    ],
+                  ),
+                  content: Form(
+                    key: formKey,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          "delete_account_description".tr,
+                          style: GoogleFonts.raleway(fontSize: 14),
+                        ),
+                        const SizedBox(height: 16),
+                        Text(
+                          "confirm_password_to_delete".tr,
+                          style: GoogleFonts.raleway(
+                            fontWeight: FontWeight.w600,
+                            fontSize: 14,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        TextFormField(
+                          controller: passwordController,
+                          obscureText: true,
+                          decoration: InputDecoration(
+                            hintText: "enter_password".tr,
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            prefixIcon: const Icon(Icons.lock_outline),
+                          ),
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return "enter_password".tr;
+                            }
+                            return null;
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+                  actions: [
+                    TextButton(
+                      onPressed:
+                          state is DeleteAccountLoading
+                              ? null
+                              : () => Navigator.of(context).pop(),
+                      child: Text("cancel".tr),
+                    ),
+                    ElevatedButton(
+                      onPressed:
+                          state is DeleteAccountLoading
+                              ? null
+                              : () async {
+                                if (formKey.currentState!.validate()) {
+                                  // Show confirmation dialog
+                                  final confirmed = await showDialog<bool>(
+                                    context: context,
+                                    builder:
+                                        (context) => AlertDialog(
+                                          title: Text(
+                                            "confirm_delete_account".tr,
+                                          ),
+                                          content: Text(
+                                            "delete_account_warning".tr,
+                                          ),
+                                          actions: [
+                                            TextButton(
+                                              onPressed:
+                                                  () => Navigator.of(
+                                                    context,
+                                                  ).pop(false),
+                                              child: Text("cancel".tr),
+                                            ),
+                                            ElevatedButton(
+                                              onPressed:
+                                                  () => Navigator.of(
+                                                    context,
+                                                  ).pop(true),
+                                              style: ElevatedButton.styleFrom(
+                                                backgroundColor: Colors.red,
+                                                foregroundColor: Colors.white,
+                                              ),
+                                              child: Text("delete".tr),
+                                            ),
+                                          ],
+                                        ),
+                                  );
+
+                                  if (confirmed == true) {
+                                    // Get current user ID
+                                    try {
+                                      final authLocalDataSource =
+                                          di.sl<AuthLocalDataSource>();
+                                      final userModel =
+                                          await authLocalDataSource.getUser();
+
+                                      if (userModel.id != null) {
+                                        context.read<DeleteAccountBloc>().add(
+                                          DeleteAccountRequested(
+                                            userId: userModel.id!,
+                                            password: passwordController.text,
+                                          ),
+                                        );
+                                      }
+                                    } catch (e) {
+                                      ScaffoldMessenger.of(
+                                        context,
+                                      ).showSnackBar(
+                                        SnackBar(
+                                          content: Text(
+                                            "delete_account_error".tr,
+                                          ),
+                                          backgroundColor: Colors.red,
+                                        ),
+                                      );
+                                    }
+                                  }
+                                }
+                              },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.red,
+                        foregroundColor: Colors.white,
+                      ),
+                      child:
+                          state is DeleteAccountLoading
+                              ? SizedBox(
+                                width: 20,
+                                height: 20,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  valueColor: AlwaysStoppedAnimation<Color>(
+                                    Colors.white,
+                                  ),
+                                ),
+                              )
+                              : Text("delete".tr),
+                    ),
+                  ],
+                );
+              },
+            ),
           ),
     );
   }

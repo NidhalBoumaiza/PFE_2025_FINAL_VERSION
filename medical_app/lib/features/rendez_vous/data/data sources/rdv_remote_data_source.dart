@@ -143,63 +143,78 @@ class RendezVousRemoteDataSourceImpl implements RendezVousRemoteDataSource {
           'endTime': endTime.toIso8601String(),
         });
 
-        // Create conversation if it doesn't exist
-        final existingConversation =
-            await firestore
-                .collection('conversations')
-                .where('patientId', isEqualTo: patientId)
-                .where('doctorId', isEqualTo: doctorId)
-                .get();
+        // Create conversation if it doesn't exist (non-blocking)
+        try {
+          final existingConversation =
+              await firestore
+                  .collection('conversations')
+                  .where('patientId', isEqualTo: patientId)
+                  .where('doctorId', isEqualTo: doctorId)
+                  .get();
 
-        if (existingConversation.docs.isEmpty) {
-          await firestore.collection('conversations').add({
-            'patientId': patientId,
-            'doctorId': doctorId,
-            'patientName': patientName,
-            'doctorName': doctorName,
-            'lastMessage': 'Conversation started for rendez-vous',
-            'lastMessageType': 'text',
-            'lastMessageTime': DateTime.now().toIso8601String(),
-            'lastMessageSenderId': doctorId,
-            'lastMessageReadBy': [doctorId],
-          });
+          if (existingConversation.docs.isEmpty) {
+            await firestore.collection('conversations').add({
+              'patientId': patientId,
+              'doctorId': doctorId,
+              'patientName': patientName,
+              'doctorName': doctorName,
+              'lastMessage': 'Conversation started for rendez-vous',
+              'lastMessageType': 'text',
+              'lastMessageTime': DateTime.now().toIso8601String(),
+              'lastMessageSenderId': doctorId,
+              'lastMessageReadBy': [doctorId],
+            });
+          }
+        } catch (e) {
+          print('Error creating conversation: $e');
+          // Don't fail the status update if conversation creation fails
         }
 
-        // Notify patient about acceptance
-        await notificationRemoteDataSource.sendNotification(
-          title: 'Appointment Accepted',
-          body:
-              'Dr. $doctorName has accepted your appointment on ${startTime.toLocal().toString().substring(0, 16)}.',
-          senderId: doctorId,
-          recipientId: patientId,
-          type: NotificationType.appointmentAccepted,
-          appointmentId: rendezVousId,
-          recipientRole: 'patient',
-          data: {
-            'doctorName': doctorName,
-            'startTime': startTime.toIso8601String(),
-          },
-        );
+        // Notify patient about acceptance (non-blocking)
+        try {
+          await notificationRemoteDataSource.sendNotification(
+            title: 'Appointment Accepted',
+            body:
+                'Dr. $doctorName has accepted your appointment on ${startTime.toLocal().toString().substring(0, 16)}.',
+            senderId: doctorId,
+            recipientId: patientId,
+            type: NotificationType.appointmentAccepted,
+            appointmentId: rendezVousId,
+            recipientRole: 'patient',
+            data: {
+              'doctorName': doctorName,
+              'startTime': startTime.toIso8601String(),
+            },
+          );
+        } catch (e) {
+          print('Error sending acceptance notification: $e');
+          // Don't fail the status update if notification fails
+        }
       } else if (status == 'rejected') {
         await firestore.collection('rendez_vous').doc(rendezVousId).update({
           'status': status,
         });
 
-        // Notify patient about rejection
-        await notificationRemoteDataSource.sendNotification(
-          title: 'Appointment Rejected',
-          body:
-              'Dr. $doctorName has rejected your appointment on ${startTime.toLocal().toString().substring(0, 16)}.',
-          senderId: doctorId,
-          recipientId: patientId,
-          type: NotificationType.appointmentRejected,
-          appointmentId: rendezVousId,
-          recipientRole: 'patient',
-          data: {
-            'doctorName': doctorName,
-            'startTime': startTime.toIso8601String(),
-          },
-        );
+        // Notify patient about rejection (non-blocking)
+        try {
+          await notificationRemoteDataSource.sendNotification(
+            title: 'Appointment Rejected',
+            body:
+                'Dr. $doctorName has rejected your appointment on ${startTime.toLocal().toString().substring(0, 16)}.',
+            senderId: doctorId,
+            recipientId: patientId,
+            type: NotificationType.appointmentRejected,
+            appointmentId: rendezVousId,
+            recipientRole: 'patient',
+            data: {
+              'doctorName': doctorName,
+              'startTime': startTime.toIso8601String(),
+            },
+          );
+        } catch (e) {
+          print('Error sending rejection notification: $e');
+          // Don't fail the status update if notification fails
+        }
       } else if (status == 'canceled') {
         // Determine who is canceling (patient or doctor)
         final isPatientCanceling = recipientRole == 'patient';
@@ -208,38 +223,44 @@ class RendezVousRemoteDataSourceImpl implements RendezVousRemoteDataSource {
           'status': status,
         });
 
-        if (isPatientCanceling) {
-          // Notify doctor about patient's cancellation
-          await notificationRemoteDataSource.sendNotification(
-            title: 'Appointment Canceled',
-            body:
-                '$patientName has canceled the appointment on ${startTime.toLocal().toString().substring(0, 16)}.',
-            senderId: patientId,
-            recipientId: doctorId,
-            type: NotificationType.appointmentCanceled,
-            appointmentId: rendezVousId,
-            recipientRole: 'doctor',
-            data: {
-              'patientName': patientName,
-              'startTime': startTime.toIso8601String(),
-            },
-          );
-        } else {
-          // Notify patient about doctor's cancellation
-          await notificationRemoteDataSource.sendNotification(
-            title: 'Appointment Canceled',
-            body:
-                'Dr. $doctorName has canceled your appointment on ${startTime.toLocal().toString().substring(0, 16)}.',
-            senderId: doctorId,
-            recipientId: patientId,
-            type: NotificationType.appointmentCanceled,
-            appointmentId: rendezVousId,
-            recipientRole: 'patient',
-            data: {
-              'doctorName': doctorName,
-              'startTime': startTime.toIso8601String(),
-            },
-          );
+        // Send cancellation notifications (non-blocking)
+        try {
+          if (isPatientCanceling) {
+            // Notify doctor about patient's cancellation
+            await notificationRemoteDataSource.sendNotification(
+              title: 'Appointment Canceled',
+              body:
+                  '$patientName has canceled the appointment on ${startTime.toLocal().toString().substring(0, 16)}.',
+              senderId: patientId,
+              recipientId: doctorId,
+              type: NotificationType.appointmentCanceled,
+              appointmentId: rendezVousId,
+              recipientRole: 'doctor',
+              data: {
+                'patientName': patientName,
+                'startTime': startTime.toIso8601String(),
+              },
+            );
+          } else {
+            // Notify patient about doctor's cancellation
+            await notificationRemoteDataSource.sendNotification(
+              title: 'Appointment Canceled',
+              body:
+                  'Dr. $doctorName has canceled your appointment on ${startTime.toLocal().toString().substring(0, 16)}.',
+              senderId: doctorId,
+              recipientId: patientId,
+              type: NotificationType.appointmentCanceled,
+              appointmentId: rendezVousId,
+              recipientRole: 'patient',
+              data: {
+                'doctorName': doctorName,
+                'startTime': startTime.toIso8601String(),
+              },
+            );
+          }
+        } catch (e) {
+          print('Error sending cancellation notification: $e');
+          // Don't fail the status update if notification fails
         }
       } else {
         // For other status updates

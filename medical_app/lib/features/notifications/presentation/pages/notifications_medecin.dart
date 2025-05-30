@@ -25,8 +25,8 @@ class NotificationsMedecin extends StatefulWidget {
 
 class _NotificationsMedecinState extends State<NotificationsMedecin> {
   String _selectedFilter = 'all';
-  late UserEntity _currentUser;
-  bool _isLoading = true;
+  UserEntity? _currentUser;
+  bool _isInitialized = false;
   final GlobalKey<RefreshIndicatorState> _refreshIndicatorKey =
       GlobalKey<RefreshIndicatorState>();
 
@@ -39,8 +39,8 @@ class _NotificationsMedecinState extends State<NotificationsMedecin> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    // Refresh notifications when page is navigated back to
-    if (!_isLoading && _currentUser.id != null) {
+    // Only refresh if already initialized and user is available
+    if (_isInitialized && _currentUser?.id != null) {
       _refreshNotifications(showLoading: false);
     }
   }
@@ -50,70 +50,55 @@ class _NotificationsMedecinState extends State<NotificationsMedecin> {
       final authLocalDataSource = di.sl<AuthLocalDataSource>();
       final user = await authLocalDataSource.getUser();
 
+      // Validate user data
+      if (user.id == null || user.id!.isEmpty) {
+        setState(() {
+          _isInitialized = true;
+        });
+        if (mounted) {
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text('error_invalid_user_data'.tr)));
+        }
+        return;
+      }
+
       setState(() {
         _currentUser = user;
-        // Don't set _isLoading = false here; let the bloc state drive it
+        _isInitialized = true;
       });
 
       // Load notifications for the current user
       _refreshNotifications();
     } catch (e) {
       setState(() {
-        _isLoading = false;
+        _isInitialized = true;
       });
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('error_loading_user_data'.tr)));
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('error_loading_user_data'.tr)));
+      }
     }
   }
 
   Future<void> _refreshNotifications({bool showLoading = true}) async {
-    if (_currentUser.id == null) return;
-
-    if (showLoading) {
-      setState(() {
-        _isLoading = true;
-      });
-
-      // Set a timeout to ensure we don't get stuck loading
-      Future.delayed(Duration(seconds: 5), () {
-        if (mounted && _isLoading) {
-          setState(() {
-            _isLoading = false;
-          });
-          if (mounted) {
-            ScaffoldMessenger.of(
-              context,
-            ).showSnackBar(SnackBar(content: Text('loading_timeout'.tr)));
-          }
-        }
-      });
+    if (_currentUser?.id == null) {
+      return;
     }
 
     try {
-      // Execute just one event at a time and let the bloc handle the rest
-      // This prevents multiple loading states from being triggered
+      // Load notifications only - don't mark as read automatically
       context.read<NotificationBloc>().add(
-        GetNotificationsEvent(userId: _currentUser.id!),
-      );
-
-      // Automatically mark all notifications as read when the page is opened
-      context.read<NotificationBloc>().add(
-        MarkAllNotificationsAsReadEvent(userId: _currentUser.id!),
+        GetNotificationsEvent(userId: _currentUser!.id!),
       );
     } catch (e) {
-      // Handle any unexpected errors
       if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
         ScaffoldMessenger.of(
           context,
         ).showSnackBar(SnackBar(content: Text('error_refreshing'.tr)));
       }
     }
-
-    return Future.delayed(const Duration(milliseconds: 500));
   }
 
   @override
@@ -138,9 +123,9 @@ class _NotificationsMedecinState extends State<NotificationsMedecin> {
           IconButton(
             icon: const Icon(Icons.done_all, color: Colors.white),
             onPressed: () {
-              if (_currentUser.id != null) {
+              if (_currentUser?.id != null) {
                 context.read<NotificationBloc>().add(
-                  MarkAllNotificationsAsReadEvent(userId: _currentUser.id!),
+                  MarkAllNotificationsAsReadEvent(userId: _currentUser!.id!),
                 );
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
@@ -161,47 +146,42 @@ class _NotificationsMedecinState extends State<NotificationsMedecin> {
       body: BlocConsumer<NotificationBloc, NotificationState>(
         listenWhen: (previous, current) {
           // Listen for these specific state changes
-          return current is NotificationsLoaded ||
-              current is NotificationError ||
-              current is NotificationInitial;
+          return current is NotificationsLoaded || current is NotificationError;
         },
         listener: (context, state) {
           if (state is NotificationError) {
             ScaffoldMessenger.of(
               context,
             ).showSnackBar(SnackBar(content: Text(state.message)));
-
-            if (_isLoading) {
-              setState(() {
-                _isLoading = false;
-              });
-            }
-          } else if (state is NotificationsLoaded) {
-            if (_isLoading) {
-              setState(() {
-                _isLoading = false;
-              });
-            }
-
-            // When notifications are loaded, also setup other notification features
-            if (_currentUser.id != null) {
-              // Set up notifications stream
-              context.read<NotificationBloc>().add(
-                GetNotificationsStreamEvent(userId: _currentUser.id!),
-              );
-
-              // Update unread count
-              context.read<NotificationBloc>().add(
-                GetUnreadNotificationsCountEvent(userId: _currentUser.id!),
-              );
-            }
           }
         },
         buildWhen: (previous, current) {
           // Only rebuild for states that actually affect the UI
-          return current is NotificationsLoaded || current is NotificationError;
+          return current is NotificationsLoaded ||
+              current is NotificationError ||
+              current is NotificationLoading;
         },
         builder: (context, state) {
+          // Handle loading state
+          if (state is NotificationLoading || !_isInitialized) {
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  CircularProgressIndicator(color: AppColors.primaryColor),
+                  SizedBox(height: 16.h),
+                  Text(
+                    'loading_notifications'.tr,
+                    style: GoogleFonts.raleway(
+                      fontSize: 16.sp,
+                      color: theme.textTheme.bodyMedium?.color,
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }
+
           // Show content based on loaded state
           if (state is NotificationsLoaded) {
             final notifications = state.notifications;
@@ -304,7 +284,7 @@ class _NotificationsMedecinState extends State<NotificationsMedecin> {
             );
           }
 
-          // Default loading indicator
+          // Default loading indicator for any other state
           return Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -434,9 +414,9 @@ class _NotificationsMedecinState extends State<NotificationsMedecin> {
 
     return RefreshIndicator(
       onRefresh: () async {
-        if (_currentUser.id != null) {
+        if (_currentUser?.id != null) {
           context.read<NotificationBloc>().add(
-            GetNotificationsEvent(userId: _currentUser.id!),
+            GetNotificationsEvent(userId: _currentUser!.id!),
           );
         }
       },
@@ -782,9 +762,9 @@ class _NotificationsMedecinState extends State<NotificationsMedecin> {
               );
 
               // Refresh notifications
-              if (_currentUser.id != null) {
+              if (_currentUser?.id != null) {
                 context.read<NotificationBloc>().add(
-                  GetNotificationsEvent(userId: _currentUser.id!),
+                  GetNotificationsEvent(userId: _currentUser!.id!),
                 );
               }
             }
@@ -804,9 +784,9 @@ class _NotificationsMedecinState extends State<NotificationsMedecin> {
           rendezVousId: notification.appointmentId!,
           status: 'accepted',
           patientId: patientId,
-          doctorId: _currentUser.id!,
+          doctorId: _currentUser!.id!,
           patientName: patientName,
-          doctorName: '${_currentUser.name} ${_currentUser.lastName}',
+          doctorName: '${_currentUser!.name} ${_currentUser!.lastName}',
           recipientRole: 'patient', // Added for notification
         ),
       );
@@ -881,9 +861,9 @@ class _NotificationsMedecinState extends State<NotificationsMedecin> {
               );
 
               // Refresh notifications
-              if (_currentUser.id != null) {
+              if (_currentUser?.id != null) {
                 context.read<NotificationBloc>().add(
-                  GetNotificationsEvent(userId: _currentUser.id!),
+                  GetNotificationsEvent(userId: _currentUser!.id!),
                 );
               }
             }
@@ -903,9 +883,9 @@ class _NotificationsMedecinState extends State<NotificationsMedecin> {
           rendezVousId: notification.appointmentId!,
           status: 'cancelled',
           patientId: patientId,
-          doctorId: _currentUser.id!,
+          doctorId: _currentUser!.id!,
           patientName: patientName,
-          doctorName: '${_currentUser.name} ${_currentUser.lastName}',
+          doctorName: '${_currentUser!.name} ${_currentUser!.lastName}',
           recipientRole: 'patient', // Added for notification
         ),
       );

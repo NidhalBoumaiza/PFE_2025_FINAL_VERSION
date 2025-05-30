@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -15,8 +16,9 @@ import '../blocs/forget password bloc/forgot_password_bloc.dart';
 
 class PasswordScreen extends StatefulWidget {
   final dynamic entity; // Can be PatientEntity or MedecinEntity
+  final File? profilePicture; // Optional profile picture
 
-  const PasswordScreen({super.key, required this.entity});
+  const PasswordScreen({super.key, required this.entity, this.profilePicture});
 
   @override
   State<PasswordScreen> createState() => _PasswordScreenState();
@@ -334,7 +336,7 @@ class _PasswordScreenState extends State<PasswordScreen> {
                                   ),
                                   onPressed: () {
                                     Navigator.pop(context); // Close dialog
-                                   // Send verification code
+                                    // Send verification code
                                     context.read<ForgotPasswordBloc>().add(
                                       SendVerificationCode(
                                         email: widget.entity.email,
@@ -442,9 +444,11 @@ class _PasswordScreenState extends State<PasswordScreen> {
                                     : () {
                                       if (_formKey.currentState!.validate()) {
                                         context.read<SignupBloc>().add(
-                                          SignupWithUserEntity(
+                                          SignupWithProfilePicture(
                                             user: widget.entity,
                                             password: passwordController.text,
+                                            profilePicture:
+                                                widget.profilePicture,
                                           ),
                                         );
                                       }

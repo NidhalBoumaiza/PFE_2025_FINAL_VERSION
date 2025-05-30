@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
@@ -9,6 +10,7 @@ import '../../../../core/widgets/location_picker_widget.dart';
 import '../../../../core/widgets/office_location_map_widget.dart';
 import '../../domain/entities/medecin_entity.dart';
 import '../../../../core/specialties.dart';
+import '../widgets/profile_picture_widget.dart';
 import 'password_screen.dart';
 
 class SignupMedecinScreen extends StatefulWidget {
@@ -30,6 +32,7 @@ class _SignupMedecinScreenState extends State<SignupMedecinScreen> {
   final TextEditingController educationController = TextEditingController();
   final TextEditingController experienceController = TextEditingController();
   String? selectedSpecialty;
+  File? _selectedProfilePicture;
 
   // Location fields
   LatLng? _selectedLocation;
@@ -112,6 +115,21 @@ class _SignupMedecinScreenState extends State<SignupMedecinScreen> {
                         fontWeight: FontWeight.bold,
                         color: AppColors.primaryColor,
                       ),
+                    ),
+                  ),
+
+                  SizedBox(height: 20.h),
+
+                  // Profile Picture Section
+                  Center(
+                    child: ProfilePictureWidget(
+                      size: 120,
+                      onImageSelected: (File? image) {
+                        setState(() {
+                          _selectedProfilePicture = image;
+                        });
+                      },
+                      placeholderText: 'add_profile_picture'.tr,
                     ),
                   ),
 
@@ -899,7 +917,10 @@ class _SignupMedecinScreenState extends State<SignupMedecinScreen> {
                             address: addressData,
                           );
                           Get.to(
-                            () => PasswordScreen(entity: updatedMedecinEntity),
+                            () => PasswordScreen(
+                              entity: updatedMedecinEntity,
+                              profilePicture: _selectedProfilePicture,
+                            ),
                           );
                         }
                       },

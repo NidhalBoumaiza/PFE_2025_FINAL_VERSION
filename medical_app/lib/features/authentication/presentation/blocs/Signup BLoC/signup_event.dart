@@ -16,3 +16,22 @@ class SignupWithUserEntity extends SignupEvent {
   @override
   List<Object> get props => [user, password];
 }
+
+class SignupWithProfilePicture extends SignupEvent {
+  final UserEntity user;
+  final String password;
+  final File? profilePicture;
+
+  const SignupWithProfilePicture({
+    required this.user,
+    required this.password,
+    this.profilePicture,
+  });
+
+  @override
+  List<Object> get props => [
+    user,
+    password,
+    if (profilePicture != null) profilePicture!,
+  ];
+}

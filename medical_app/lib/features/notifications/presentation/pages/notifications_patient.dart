@@ -3,7 +3,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:intl/intl.dart';
 import 'package:medical_app/core/utils/app_colors.dart';
 import 'package:medical_app/features/authentication/data/data%20sources/auth_local_data_source.dart';
 import 'package:medical_app/features/authentication/domain/entities/user_entity.dart';
@@ -14,7 +13,6 @@ import 'package:medical_app/features/notifications/presentation/bloc/notificatio
 import 'package:medical_app/features/rendez_vous/presentation/pages/appointment_details.dart';
 import 'package:medical_app/features/notifications/utils/notification_utils.dart';
 import 'package:medical_app/injection_container.dart' as di;
-import 'package:firebase_auth/firebase_auth.dart';
 
 class NotificationsPatient extends StatefulWidget {
   const NotificationsPatient({super.key});
@@ -26,7 +24,7 @@ class NotificationsPatient extends StatefulWidget {
 class _NotificationsPatientState extends State<NotificationsPatient>
     with AutomaticKeepAliveClientMixin {
   String _selectedFilter = 'all';
-  late UserEntity _currentUser;
+  UserEntity? _currentUser;
   bool _isLoading = true;
   final GlobalKey<RefreshIndicatorState> _refreshIndicatorKey =
       GlobalKey<RefreshIndicatorState>();
@@ -37,36 +35,76 @@ class _NotificationsPatientState extends State<NotificationsPatient>
   @override
   void initState() {
     super.initState();
-    _initializeNotifications();
+    _loadUserDataAndInitialize();
   }
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     // This ensures notification refresh when page is navigated back to
-    if (!_isLoading && _currentUser.id != null) {
+    if (!_isLoading && _currentUser?.id != null) {
       _refreshNotifications(showLoading: false);
+    }
+  }
+
+  Future<void> _loadUserDataAndInitialize() async {
+    try {
+      final authLocalDataSource = di.sl<AuthLocalDataSource>();
+      final user = await authLocalDataSource.getUser();
+
+      setState(() {
+        _currentUser = user;
+        _isLoading = false;
+      });
+
+      if (user.id != null && user.id!.isNotEmpty) {
+        _initializeNotifications();
+      } else {
+        if (mounted) {
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text('error_invalid_user_data'.tr)));
+        }
+      }
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+      });
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('error_loading_user_data'.tr)));
+      }
     }
   }
 
   void _initializeNotifications() {
     try {
-      final user = FirebaseAuth.instance.currentUser;
-      if (user != null) {
+      if (_currentUser?.id != null) {
         // Load notifications first
         context.read<NotificationBloc>().add(
-          GetNotificationsEvent(userId: user.uid),
+          GetNotificationsEvent(userId: _currentUser!.id!),
         );
 
         // Then setup stream
         context.read<NotificationBloc>().add(
-          GetNotificationsStreamEvent(userId: user.uid),
+          GetNotificationsStreamEvent(userId: _currentUser!.id!),
         );
 
         // Load unread count
         context.read<NotificationBloc>().add(
-          GetUnreadNotificationsCountEvent(userId: user.uid),
+          GetUnreadNotificationsCountEvent(userId: _currentUser!.id!),
         );
+      } else {
+        print('Error: User ID is null, cannot initialize notifications');
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Error: User not found'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
       }
     } catch (e) {
       print('Error initializing notifications: $e');
@@ -84,11 +122,20 @@ class _NotificationsPatientState extends State<NotificationsPatient>
 
   void _markAllAsRead() {
     try {
-      final user = FirebaseAuth.instance.currentUser;
-      if (user != null) {
+      if (_currentUser?.id != null) {
         context.read<NotificationBloc>().add(
-          MarkAllNotificationsAsReadEvent(userId: user.uid),
+          MarkAllNotificationsAsReadEvent(userId: _currentUser!.id!),
         );
+      } else {
+        print('Error: User ID is null, cannot mark notifications as read');
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Error: User not found'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
       }
     } catch (e) {
       print('Error marking all notifications as read: $e');
@@ -105,29 +152,8 @@ class _NotificationsPatientState extends State<NotificationsPatient>
     }
   }
 
-  Future<void> _loadUserData() async {
-    try {
-      final authLocalDataSource = di.sl<AuthLocalDataSource>();
-      final user = await authLocalDataSource.getUser();
-
-      setState(() {
-        _currentUser = user;
-      });
-
-      // Don't set _isLoading = false here, let it be driven by the notification bloc state
-      _refreshNotifications();
-    } catch (e) {
-      setState(() {
-        _isLoading = false;
-      });
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('error_loading_user_data'.tr)));
-    }
-  }
-
   Future<void> _refreshNotifications({bool showLoading = true}) async {
-    if (_currentUser.id == null) return;
+    if (_currentUser?.id == null) return;
 
     if (showLoading) {
       setState(() {
@@ -151,12 +177,12 @@ class _NotificationsPatientState extends State<NotificationsPatient>
       // Execute just one event at a time and let the bloc handle the rest
       // This prevents multiple loading states from being triggered
       context.read<NotificationBloc>().add(
-        GetNotificationsEvent(userId: _currentUser.id!),
+        GetNotificationsEvent(userId: _currentUser!.id!),
       );
 
       // Automatically mark all notifications as read when the page is opened
       context.read<NotificationBloc>().add(
-        MarkAllNotificationsAsReadEvent(userId: _currentUser.id!),
+        MarkAllNotificationsAsReadEvent(userId: _currentUser!.id!),
       );
     } catch (e) {
       // Handle any unexpected errors
@@ -197,9 +223,9 @@ class _NotificationsPatientState extends State<NotificationsPatient>
           IconButton(
             icon: const Icon(Icons.done_all, color: Colors.white),
             onPressed: () {
-              if (!_isLoading && _currentUser.id != null) {
+              if (!_isLoading && _currentUser?.id != null) {
                 context.read<NotificationBloc>().add(
-                  MarkAllNotificationsAsReadEvent(userId: _currentUser.id!),
+                  MarkAllNotificationsAsReadEvent(userId: _currentUser!.id!),
                 );
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
@@ -236,15 +262,15 @@ class _NotificationsPatientState extends State<NotificationsPatient>
             }
 
             // When notifications are loaded, also setup other notification features
-            if (_currentUser.id != null) {
+            if (_currentUser?.id != null) {
               // Set up notifications stream
               context.read<NotificationBloc>().add(
-                GetNotificationsStreamEvent(userId: _currentUser.id!),
+                GetNotificationsStreamEvent(userId: _currentUser!.id!),
               );
 
               // Update unread count
               context.read<NotificationBloc>().add(
-                GetUnreadNotificationsCountEvent(userId: _currentUser.id!),
+                GetUnreadNotificationsCountEvent(userId: _currentUser!.id!),
               );
             }
           } else if (state is NotificationError) {

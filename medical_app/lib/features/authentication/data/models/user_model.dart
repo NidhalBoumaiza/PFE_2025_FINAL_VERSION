@@ -19,6 +19,7 @@ class UserModel extends UserEntity {
     this.fcmToken,
     Map<String, String?>? address,
     Map<String, dynamic>? location,
+    String? profilePictureUrl,
   }) : super(
          id: id,
          name: name,
@@ -33,6 +34,7 @@ class UserModel extends UserEntity {
          validationCodeExpiresAt: validationCodeExpiresAt,
          address: address,
          location: location,
+         profilePictureUrl: profilePictureUrl,
        );
 
   factory UserModel.fromJson(Map<String, dynamic> json) {
@@ -113,6 +115,12 @@ class UserModel extends UserEntity {
       location = Map<String, dynamic>.from(json['location'] as Map);
     }
 
+    // Handle profile picture URL
+    String? profilePictureUrl;
+    if (json['profilePictureUrl'] is String) {
+      profilePictureUrl = json['profilePictureUrl'] as String;
+    }
+
     return UserModel(
       id: id,
       name: name,
@@ -128,6 +136,7 @@ class UserModel extends UserEntity {
       fcmToken: fcmToken,
       address: address,
       location: location,
+      profilePictureUrl: profilePictureUrl,
     );
   }
 
@@ -168,6 +177,11 @@ class UserModel extends UserEntity {
       }
       if (docData['location'] is Map) {
         safeData['location'] = docData['location'];
+      }
+
+      // Handle profile picture URL
+      if (docData['profilePictureUrl'] is String) {
+        safeData['profilePictureUrl'] = docData['profilePictureUrl'];
       }
 
       // Handle dateOfBirth properly
@@ -229,6 +243,9 @@ class UserModel extends UserEntity {
     if (location != null) {
       data['location'] = location;
     }
+    if (profilePictureUrl != null) {
+      data['profilePictureUrl'] = profilePictureUrl;
+    }
     return data;
   }
 
@@ -247,6 +264,7 @@ class UserModel extends UserEntity {
     String? fcmToken,
     Map<String, String?>? address,
     Map<String, dynamic>? location,
+    String? profilePictureUrl,
   }) {
     return UserModel(
       id: id ?? this.id,
@@ -264,6 +282,7 @@ class UserModel extends UserEntity {
       fcmToken: fcmToken ?? this.fcmToken,
       address: address ?? this.address,
       location: location ?? this.location,
+      profilePictureUrl: profilePictureUrl ?? this.profilePictureUrl,
     );
   }
 }

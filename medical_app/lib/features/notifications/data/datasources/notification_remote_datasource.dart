@@ -51,6 +51,9 @@ abstract class NotificationRemoteDataSource {
 
   /// Streams notifications for a user.
   Stream<List<NotificationModel>> notificationsStream(String userId);
+
+  /// Check if a notification exists in the database (for testing purposes)
+  Future<bool> notificationExists(String notificationId);
 }
 
 class NotificationRemoteDataSourceImpl implements NotificationRemoteDataSource {
@@ -100,41 +103,61 @@ wwxt8k2z9k2sCyBaXijtjTDC
   @override
   Future<List<NotificationModel>> getNotifications(String userId) async {
     try {
+      print('DEBUG: getNotifications called with userId: $userId');
+
       if (userId.isEmpty) {
         throw Exception('User ID cannot be empty');
       }
 
-      final querySnapshot =
-          await firestore
-              .collection('notifications')
-              .where('recipientId', isEqualTo: userId)
-              .orderBy('createdAt', descending: true)
-              .get();
+      print('DEBUG: Querying Firestore for notifications...');
+      final querySnapshot = await firestore
+          .collection('notifications')
+          .where('recipientId', isEqualTo: userId)
+          .orderBy('createdAt', descending: true)
+          .get()
+          .timeout(
+            Duration(seconds: 10),
+            onTimeout: () {
+              print('DEBUG: Firestore query timed out after 10 seconds');
+              throw Exception('Query timeout: Failed to load notifications');
+            },
+          );
+
+      print(
+        'DEBUG: Firestore query completed. Found ${querySnapshot.docs.length} documents',
+      );
 
       if (querySnapshot.docs.isEmpty) {
+        print('DEBUG: No notifications found for user $userId');
         return [];
       }
 
-      return querySnapshot.docs
-          .map((doc) {
-            try {
-              final data = doc.data();
-              if (data.isEmpty) {
-                print('Warning: Empty notification document found: ${doc.id}');
-                return null;
-              }
-              final jsonData = {'id': doc.id, ...data};
-              return NotificationModel.fromJson(jsonData);
-            } catch (e) {
-              print('Error parsing notification ${doc.id}: $e');
-              return null;
-            }
-          })
-          .where((notification) => notification != null)
-          .cast<NotificationModel>()
-          .toList();
+      final notifications =
+          querySnapshot.docs
+              .map((doc) {
+                try {
+                  final data = doc.data();
+                  if (data.isEmpty) {
+                    print(
+                      'Warning: Empty notification document found: ${doc.id}',
+                    );
+                    return null;
+                  }
+                  final jsonData = {'id': doc.id, ...data};
+                  return NotificationModel.fromJson(jsonData);
+                } catch (e) {
+                  print('Error parsing notification ${doc.id}: $e');
+                  return null;
+                }
+              })
+              .where((notification) => notification != null)
+              .cast<NotificationModel>()
+              .toList();
+
+      print('DEBUG: Successfully parsed ${notifications.length} notifications');
+      return notifications;
     } catch (e) {
-      print('Error getting notifications: $e');
+      print('DEBUG: Error in getNotifications: $e');
       throw Exception('Failed to load notifications: ${e.toString()}');
     }
   }
@@ -537,9 +560,63 @@ wwxt8k2z9k2sCyBaXijtjTDC
   @override
   Future<void> deleteNotification(String notificationId) async {
     try {
+      print(
+        'DEBUG: Attempting to delete notification with ID: $notificationId',
+      );
+
+      // First check if the notification exists
+      final docSnapshot =
+          await firestore.collection('notifications').doc(notificationId).get();
+
+      if (!docSnapshot.exists) {
+        print(
+          'DEBUG: Notification $notificationId does not exist in Firestore',
+        );
+        throw ServerException('Notification not found');
+      }
+
+      print(
+        'DEBUG: Notification $notificationId found, proceeding with deletion',
+      );
+
+      // Delete the notification
       await firestore.collection('notifications').doc(notificationId).delete();
+
+      print(
+        'DEBUG: Successfully deleted notification $notificationId from Firestore',
+      );
+
+      // Verify deletion
+      final verifySnapshot =
+          await firestore.collection('notifications').doc(notificationId).get();
+
+      if (verifySnapshot.exists) {
+        print(
+          'DEBUG: WARNING - Notification $notificationId still exists after deletion attempt',
+        );
+        throw ServerException(
+          'Failed to delete notification - still exists after deletion',
+        );
+      } else {
+        print(
+          'DEBUG: Confirmed - Notification $notificationId has been successfully deleted',
+        );
+      }
     } catch (e) {
+      print('DEBUG: Error deleting notification $notificationId: $e');
       throw ServerException('Failed to delete notification: $e');
+    }
+  }
+
+  /// Check if a notification exists in the database (for testing purposes)
+  Future<bool> notificationExists(String notificationId) async {
+    try {
+      final docSnapshot =
+          await firestore.collection('notifications').doc(notificationId).get();
+      return docSnapshot.exists;
+    } catch (e) {
+      print('DEBUG: Error checking notification existence: $e');
+      return false;
     }
   }
 

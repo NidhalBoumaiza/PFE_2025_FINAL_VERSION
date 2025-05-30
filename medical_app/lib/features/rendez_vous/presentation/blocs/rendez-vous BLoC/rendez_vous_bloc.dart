@@ -123,31 +123,36 @@ class RendezVousBloc extends Bloc<RendezVousEvent, RendezVousState> {
         recipientRole: event.recipientRole,
       );
 
-      // Send notification based on status change
-      if (event.status == 'accepted') {
-        _sendAppointmentAcceptedNotification(
-          RendezVousEntity(
-            id: event.rendezVousId,
-            patientId: event.patientId,
-            patientName: event.patientName,
-            doctorId: event.doctorId,
-            doctorName: event.doctorName,
-            startTime: DateTime.now(), // Placeholder, ideally fetched
-            status: event.status,
-          ),
-        );
-      } else if (event.status == 'rejected') {
-        _sendAppointmentRejectedNotification(
-          RendezVousEntity(
-            id: event.rendezVousId,
-            patientId: event.patientId,
-            patientName: event.patientName,
-            doctorId: event.doctorId,
-            doctorName: event.doctorName,
-            startTime: DateTime.now(), // Placeholder, ideally fetched
-            status: event.status,
-          ),
-        );
+      // Send notification based on status change (non-blocking)
+      try {
+        if (event.status == 'accepted') {
+          _sendAppointmentAcceptedNotification(
+            RendezVousEntity(
+              id: event.rendezVousId,
+              patientId: event.patientId,
+              patientName: event.patientName,
+              doctorId: event.doctorId,
+              doctorName: event.doctorName,
+              startTime: DateTime.now(), // Placeholder, ideally fetched
+              status: event.status,
+            ),
+          );
+        } else if (event.status == 'rejected') {
+          _sendAppointmentRejectedNotification(
+            RendezVousEntity(
+              id: event.rendezVousId,
+              patientId: event.patientId,
+              patientName: event.patientName,
+              doctorId: event.doctorId,
+              doctorName: event.doctorName,
+              startTime: DateTime.now(), // Placeholder, ideally fetched
+              status: event.status,
+            ),
+          );
+        }
+      } catch (e) {
+        print('Error sending notification in BLoC: $e');
+        // Don't fail the status update if notification fails
       }
 
       emit(
@@ -173,10 +178,16 @@ class RendezVousBloc extends Bloc<RendezVousEvent, RendezVousState> {
       final result = await createRendezVousUseCase(event.rendezVous);
 
       result.fold(
-        (failure) => emit(RendezVousErrorState(message: failure.message)),
+        (failure) =>
+            emit(RendezVousErrorState(message: _mapFailureToMessage(failure))),
         (_) {
-          // Send notification to doctor about new appointment
-          _sendNewAppointmentNotification(event.rendezVous);
+          // Send notification to doctor about new appointment (non-blocking)
+          try {
+            _sendNewAppointmentNotification(event.rendezVous);
+          } catch (e) {
+            print('Error sending new appointment notification: $e');
+            // Don't fail the appointment creation if notification fails
+          }
 
           // Emit RendezVousCreated state for navigation in UI
           emit(RendezVousCreated());

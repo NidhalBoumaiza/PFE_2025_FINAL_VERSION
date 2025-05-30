@@ -11,6 +11,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:medical_app/constants.dart';
 import 'package:medical_app/core/utils/app_themes.dart';
 import 'package:medical_app/features/authentication/data/data%20sources/auth_local_data_source.dart';
+import 'package:medical_app/features/authentication/data/models/user_model.dart';
 import 'package:medical_app/features/authentication/presentation/blocs/Signup%20BLoC/signup_bloc.dart';
 import 'package:medical_app/features/authentication/presentation/blocs/login%20BLoC/login_bloc.dart';
 import 'package:medical_app/features/authentication/presentation/pages/login_screen.dart';
@@ -97,73 +98,97 @@ const AndroidNotificationChannel channel = AndroidNotificationChannel(
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Initialize Firebase
-  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-
-  // Disable Firebase Auth reCAPTCHA for testing (remove in production)
-  // await FirebaseAuth.instance.setSettings(appVerificationDisabledForTesting: true);
-
-  // Initialize Firebase App Check
-  await FirebaseAppCheck.instance.activate(
-    androidProvider: AndroidProvider.debug,
-    appleProvider: AppleProvider.debug,
-  );
-
-  // Set Firestore persistence
-  FirebaseFirestore.instance.settings = const Settings(
-    persistenceEnabled: true,
-  );
-
-  // Set up FCM background handler
-  FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
-
-  // Initialize FCM and local notifications
-  await _initializeFCM();
-
-  // Check and request location permissions
-  await _checkAndRequestLocationPermission();
-
-  // Initialize French locale for date formatting
-  await initializeDateFormatting('fr_FR', null);
-
-  // Initialize dependency injection
-  await di.init();
-
-  // Save FCM token if available
-  final prefs = await SharedPreferences.getInstance();
-  final savedToken = prefs.getString('FCM_TOKEN');
-  if (savedToken != null) {
-    await _saveFcmToken(savedToken);
-  }
-
-  // Get saved language
-  final savedLanguageCode = prefs.getString('app_language') ?? 'fr';
-  final savedLocale = Locale(
-    savedLanguageCode,
-    savedLanguageCode == 'fr'
-        ? 'FR'
-        : savedLanguageCode == 'en'
-        ? 'US'
-        : 'AR',
-  );
-
-  // Determine initial screen
-  final authLocalDataSource = di.sl<AuthLocalDataSource>();
-  Widget initialScreen;
   try {
-    final token = await authLocalDataSource.getToken();
-    final user = await authLocalDataSource.getUser();
-    if (token != null && user.id != null && user.id!.isNotEmpty) {
-      initialScreen =
-          user.role == 'medecin' ? const HomeMedecin() : const HomePatient();
-    } else {
-      initialScreen = const LoginScreen();
-    }
-  } catch (e) {
-    initialScreen = const LoginScreen();
-  }
+    // Initialize Firebase with timeout
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    ).timeout(Duration(seconds: 10));
 
-  runApp(MyApp(initialScreen: initialScreen, savedLocale: savedLocale));
+    // Initialize Firebase App Check with timeout
+    await FirebaseAppCheck.instance
+        .activate(
+          androidProvider: AndroidProvider.debug,
+          appleProvider: AppleProvider.debug,
+        )
+        .timeout(Duration(seconds: 5));
+
+    // Set Firestore persistence
+    FirebaseFirestore.instance.settings = const Settings(
+      persistenceEnabled: true,
+    );
+
+    // Set up FCM background handler
+    FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+
+    // Initialize FCM and local notifications with timeout
+    await _initializeFCM().timeout(Duration(seconds: 10));
+
+    // Check and request location permissions with timeout
+    await _checkAndRequestLocationPermission().timeout(Duration(seconds: 5));
+
+    // Initialize French locale for date formatting
+    await initializeDateFormatting('fr_FR', null);
+
+    // Initialize dependency injection with timeout
+    await di.init().timeout(Duration(seconds: 10));
+
+    // Save FCM token if available
+    final prefs = await SharedPreferences.getInstance();
+    final savedToken = prefs.getString('FCM_TOKEN');
+    if (savedToken != null) {
+      // Don't await this to prevent blocking
+      _saveFcmToken(savedToken).catchError((e) {
+        print('Error saving FCM token: $e');
+      });
+    }
+
+    // Get saved language
+    final savedLanguageCode = prefs.getString('app_language') ?? 'fr';
+    final savedLocale = Locale(
+      savedLanguageCode,
+      savedLanguageCode == 'fr'
+          ? 'FR'
+          : savedLanguageCode == 'en'
+          ? 'US'
+          : 'AR',
+    );
+
+    // Determine initial screen with timeout and fallback
+    Widget initialScreen = const LoginScreen(); // Default fallback
+    try {
+      final authLocalDataSource = di.sl<AuthLocalDataSource>();
+      final tokenFuture = authLocalDataSource.getToken();
+      final userFuture = authLocalDataSource.getUser();
+
+      // Use timeout for user data loading
+      final results = await Future.wait([
+        tokenFuture,
+        userFuture,
+      ]).timeout(Duration(seconds: 5));
+
+      final token = results[0] as String?;
+      final user = results[1] as UserModel;
+
+      if (token != null && user.id != null && user.id!.isNotEmpty) {
+        initialScreen =
+            user.role == 'medecin' ? const HomeMedecin() : const HomePatient();
+      }
+    } catch (e) {
+      print('Error determining initial screen: $e');
+      // Keep default LoginScreen
+    }
+
+    runApp(MyApp(initialScreen: initialScreen, savedLocale: savedLocale));
+  } catch (e) {
+    print('Error during app initialization: $e');
+    // Run app with minimal setup if initialization fails
+    runApp(
+      MyApp(
+        initialScreen: const LoginScreen(),
+        savedLocale: const Locale('fr', 'FR'),
+      ),
+    );
+  }
 }
 
 Future<void> _checkAndRequestLocationPermission() async {
@@ -183,73 +208,105 @@ Future<void> _checkAndRequestLocationPermission() async {
 }
 
 Future<void> _initializeFCM() async {
-  // Request notification permissions
-  final settings = await FirebaseMessaging.instance.requestPermission(
-    alert: true,
-    announcement: false,
-    badge: true,
-    carPlay: false,
-    criticalAlert: false,
-    provisional: false,
-    sound: true,
-  );
-  print('User granted permission: ${settings.authorizationStatus}');
+  try {
+    // Request notification permissions with timeout
+    final settings = await FirebaseMessaging.instance
+        .requestPermission(
+          alert: true,
+          announcement: false,
+          badge: true,
+          carPlay: false,
+          criticalAlert: false,
+          provisional: false,
+          sound: true,
+        )
+        .timeout(Duration(seconds: 5));
+    print('User granted permission: ${settings.authorizationStatus}');
 
-  // Initialize local notifications
-  const androidInitSettings = AndroidInitializationSettings(
-    '@mipmap/ic_launcher',
-  );
-  const iosInitSettings = DarwinInitializationSettings(
-    requestAlertPermission: true,
-    requestBadgePermission: true,
-    requestSoundPermission: true,
-  );
-  const initSettings = InitializationSettings(
-    android: androidInitSettings,
-    iOS: iosInitSettings,
-  );
+    // Initialize local notifications
+    const androidInitSettings = AndroidInitializationSettings(
+      '@mipmap/ic_launcher',
+    );
+    const iosInitSettings = DarwinInitializationSettings(
+      requestAlertPermission: true,
+      requestBadgePermission: true,
+      requestSoundPermission: true,
+    );
+    const initSettings = InitializationSettings(
+      android: androidInitSettings,
+      iOS: iosInitSettings,
+    );
 
-  await flutterLocalNotificationsPlugin.initialize(
-    initSettings,
-    onDidReceiveNotificationResponse: (details) async {
-      if (details.payload != null) {
-        print('Notification payload: ${details.payload}');
-        _handleNotificationPayload(details.payload!);
+    await flutterLocalNotificationsPlugin
+        .initialize(
+          initSettings,
+          onDidReceiveNotificationResponse: (details) async {
+            if (details.payload != null) {
+              print('Notification payload: ${details.payload}');
+              _handleNotificationPayload(details.payload!);
+            }
+          },
+        )
+        .timeout(Duration(seconds: 5));
+
+    // Create Android notification channel
+    final androidPlugin =
+        flutterLocalNotificationsPlugin
+            .resolvePlatformSpecificImplementation<
+              AndroidFlutterLocalNotificationsPlugin
+            >();
+    await androidPlugin?.createNotificationChannel(channel);
+
+    // Set iOS foreground notification options
+    await FirebaseMessaging.instance
+        .setForegroundNotificationPresentationOptions(
+          alert: true,
+          badge: true,
+          sound: true,
+        );
+
+    // Get FCM token (non-blocking)
+    FirebaseMessaging.instance
+        .getToken()
+        .then((fcmToken) async {
+          if (fcmToken != null) {
+            try {
+              final prefs = await SharedPreferences.getInstance();
+              await prefs.setString('FCM_TOKEN', fcmToken);
+              print('FCM Token: $fcmToken');
+
+              // Save to Firestore in background (non-blocking)
+              _saveFcmToken(fcmToken).catchError((e) {
+                print('Error saving FCM token to Firestore: $e');
+              });
+            } catch (e) {
+              print('Error handling FCM token: $e');
+            }
+          }
+        })
+        .catchError((e) {
+          print('Error getting FCM token: $e');
+        });
+
+    // Listen for token refresh (non-blocking)
+    FirebaseMessaging.instance.onTokenRefresh.listen((newToken) async {
+      try {
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString('FCM_TOKEN', newToken);
+        print('FCM Token refreshed: $newToken');
+
+        // Save to Firestore in background (non-blocking)
+        _saveFcmToken(newToken).catchError((e) {
+          print('Error saving refreshed FCM token to Firestore: $e');
+        });
+      } catch (e) {
+        print('Error handling FCM token refresh: $e');
       }
-    },
-  );
-
-  // Create Android notification channel
-  final androidPlugin =
-      flutterLocalNotificationsPlugin
-          .resolvePlatformSpecificImplementation<
-            AndroidFlutterLocalNotificationsPlugin
-          >();
-  await androidPlugin?.createNotificationChannel(channel);
-
-  // Set iOS foreground notification options
-  await FirebaseMessaging.instance.setForegroundNotificationPresentationOptions(
-    alert: true,
-    badge: true,
-    sound: true,
-  );
-
-  // Get and save FCM token
-  String? fcmToken = await FirebaseMessaging.instance.getToken();
-  if (fcmToken != null) {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('FCM_TOKEN', fcmToken);
-    await _saveFcmToken(fcmToken);
-    print('FCM Token: $fcmToken');
+    });
+  } catch (e) {
+    print('Error initializing FCM: $e');
+    // Don't throw, just log the error and continue
   }
-
-  // Listen for token refresh
-  FirebaseMessaging.instance.onTokenRefresh.listen((newToken) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('FCM_TOKEN', newToken);
-    await _saveFcmToken(newToken);
-    print('FCM Token refreshed: $newToken');
-  });
 }
 
 Future<void> _saveFcmToken(String token) async {
@@ -471,7 +528,7 @@ class _MyAppState extends State<MyApp> {
                 themeMode: themeMode,
                 navigatorKey: navigatorKey,
                 home: widget.initialScreen,
-                translations: AppTranslations(),
+                translations: LanguageService(),
                 locale: widget.savedLocale ?? Get.deviceLocale,
                 fallbackLocale: const Locale('fr', 'FR'),
               );

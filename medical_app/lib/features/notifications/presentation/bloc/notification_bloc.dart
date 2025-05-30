@@ -13,7 +13,6 @@ import 'package:medical_app/features/notifications/domain/usecases/send_notifica
 import 'package:medical_app/features/notifications/domain/usecases/setup_fcm_use_case.dart';
 import 'package:medical_app/features/notifications/presentation/bloc/notification_event.dart';
 import 'package:medical_app/features/notifications/presentation/bloc/notification_state.dart';
-import 'package:medical_app/features/notifications/utils/notification_utils.dart';
 
 class NotificationBloc extends Bloc<NotificationEvent, NotificationState> {
   final GetNotificationsUseCase getNotificationsUseCase;
@@ -61,7 +60,12 @@ class NotificationBloc extends Bloc<NotificationEvent, NotificationState> {
     Emitter<NotificationState> emit,
   ) async {
     try {
-      // Prevent multiple simultaneous loading operations
+      // Reset loading flag if it's for a different user
+      if (_currentUserId != event.userId) {
+        _isLoading = false;
+      }
+
+      // Prevent multiple simultaneous loading operations for the same user
       if (_isLoading && _currentUserId == event.userId) {
         return;
       }
@@ -71,7 +75,16 @@ class NotificationBloc extends Bloc<NotificationEvent, NotificationState> {
 
       emit(NotificationLoading());
 
-      final result = await getNotificationsUseCase(userId: event.userId);
+      // Add timeout to prevent hanging
+      final result = await getNotificationsUseCase(
+        userId: event.userId,
+      ).timeout(
+        Duration(seconds: 30),
+        onTimeout: () {
+          _isLoading = false;
+          throw Exception('Request timeout: Failed to load notifications');
+        },
+      );
 
       if (!isClosed) {
         result.fold(
@@ -88,6 +101,8 @@ class NotificationBloc extends Bloc<NotificationEvent, NotificationState> {
             emit(NotificationsLoaded(notifications: notifications));
           },
         );
+      } else {
+        _isLoading = false;
       }
     } catch (e) {
       _isLoading = false;
@@ -257,26 +272,50 @@ class NotificationBloc extends Bloc<NotificationEvent, NotificationState> {
     Emitter<NotificationState> emit,
   ) async {
     try {
+      // Optimistically update local state first
+      final originalNotifications = List<NotificationEntity>.from(
+        _notifications,
+      );
+      _notifications =
+          _notifications.where((n) => n.id != event.notificationId).toList();
+      _unreadCount = _notifications.where((n) => !n.isRead).length;
+
+      // Emit the updated state immediately for better UX
+      if (!isClosed) {
+        emit(NotificationsLoaded(notifications: _notifications));
+        emit(UnreadNotificationsCountLoaded(count: _unreadCount));
+      }
+
+      // Now perform the actual deletion
       final result = await deleteNotificationUseCase(
         notificationId: event.notificationId,
       );
 
       if (!isClosed) {
         result.fold(
-          (failure) => emit(
-            const NotificationError(message: 'Failed to delete notification'),
-          ),
-          (_) {
-            // Update local state
-            _notifications =
-                _notifications
-                    .where((n) => n.id != event.notificationId)
-                    .toList();
+          (failure) {
+            // Revert the optimistic update on failure
+            _notifications = originalNotifications;
             _unreadCount = _notifications.where((n) => !n.isRead).length;
 
-            emit(NotificationDeleted());
+            emit(
+              const NotificationError(message: 'Failed to delete notification'),
+            );
             emit(NotificationsLoaded(notifications: _notifications));
             emit(UnreadNotificationsCountLoaded(count: _unreadCount));
+          },
+          (_) {
+            // Success - emit deletion confirmation
+            emit(NotificationDeleted());
+
+            // Add a small delay to ensure Firestore has processed the deletion
+            // before the stream potentially overwrites our state
+            Future.delayed(Duration(milliseconds: 500), () {
+              if (!isClosed) {
+                emit(NotificationsLoaded(notifications: _notifications));
+                emit(UnreadNotificationsCountLoaded(count: _unreadCount));
+              }
+            });
           },
         );
       }
@@ -392,23 +431,38 @@ class NotificationBloc extends Bloc<NotificationEvent, NotificationState> {
           (notifications) {
             if (!isClosed) {
               // Update notifications and unread count
+              final previousCount = _notifications.length;
               _notifications = notifications;
               _unreadCount = notifications.where((n) => !n.isRead).length;
 
-              // Emit loaded state with current notifications
-              emit(NotificationsLoaded(notifications: _notifications));
-              emit(UnreadNotificationsCountLoaded(count: _unreadCount));
-
-              // If we have new notifications, trigger a received event for the latest one
-              if (notifications.isNotEmpty) {
-                add(
-                  NotificationReceivedEvent(notification: notifications.first),
+              // Only emit if this is a significant change (not just a minor update)
+              // This helps prevent overriding recent local state changes
+              if (notifications.length != previousCount ||
+                  _notifications.isEmpty ||
+                  notifications.isNotEmpty) {
+                print(
+                  'DEBUG: Stream updated notifications - Count: ${notifications.length}, Unread: $_unreadCount',
                 );
+
+                // Emit loaded state with current notifications
+                emit(NotificationsLoaded(notifications: _notifications));
+                emit(UnreadNotificationsCountLoaded(count: _unreadCount));
+
+                // If we have new notifications, trigger a received event for the latest one
+                if (notifications.isNotEmpty &&
+                    notifications.length > previousCount) {
+                  add(
+                    NotificationReceivedEvent(
+                      notification: notifications.first,
+                    ),
+                  );
+                }
               }
             }
           },
           onError: (error) {
             if (!isClosed) {
+              print('DEBUG: Stream error: $error');
               // Use add() to dispatch error event instead of emitting directly
               add(NotificationErrorEvent(message: 'Stream error: $error'));
             }

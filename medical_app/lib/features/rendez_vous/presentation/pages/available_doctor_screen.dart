@@ -491,6 +491,12 @@ class _AvailableDoctorsScreenState extends State<AvailableDoctorsScreen> {
                             setState(() => _isLoading = false);
                           }
                           showErrorSnackBar(context, state.message);
+                        } else if (state is RendezVousErrorState) {
+                          if (_isLoading) {
+                            Navigator.of(context).pop();
+                            setState(() => _isLoading = false);
+                          }
+                          showErrorSnackBar(context, state.message);
                         } else if (state is AddingRendezVousState) {
                           setState(() => _isLoading = true);
                           showDialog(

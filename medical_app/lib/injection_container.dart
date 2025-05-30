@@ -9,9 +9,11 @@ import 'package:medical_app/cubit/theme_cubit/theme_cubit.dart';
 import 'package:medical_app/cubit/toggle%20cubit/toggle_cubit.dart';
 import 'package:medical_app/features/authentication/data/data%20sources/auth_local_data_source.dart';
 import 'package:medical_app/features/authentication/data/data%20sources/auth_remote_data_source.dart';
+import 'package:medical_app/features/authentication/data/data%20sources/profile_picture_service.dart';
 import 'package:medical_app/features/authentication/data/repositories/auth_repository_impl.dart';
 import 'package:medical_app/features/authentication/domain/repositories/auth_repository.dart';
 import 'package:medical_app/features/authentication/domain/usecases/create_account_use_case.dart';
+import 'package:medical_app/features/authentication/domain/usecases/delete_account_use_case.dart';
 import 'package:medical_app/features/authentication/domain/usecases/send_verification_code_use_case.dart';
 import 'package:medical_app/features/authentication/domain/usecases/change_password_use_case.dart';
 import 'package:medical_app/features/authentication/domain/usecases/login_usecase.dart';
@@ -19,6 +21,7 @@ import 'package:medical_app/features/authentication/domain/usecases/update_user_
 import 'package:medical_app/features/authentication/domain/usecases/verify_code_use_case.dart';
 import 'package:medical_app/features/authentication/presentation/blocs/Signup%20BLoC/signup_bloc.dart';
 import 'package:medical_app/features/authentication/presentation/blocs/login%20BLoC/login_bloc.dart';
+import 'package:medical_app/features/authentication/presentation/blocs/delete_account_bloc/delete_account_bloc.dart';
 import 'package:medical_app/features/messagerie/data/data_sources/message_local_datasource.dart';
 import 'package:medical_app/features/messagerie/data/data_sources/message_remote_datasource.dart';
 import 'package:medical_app/features/messagerie/data/repositories/message_repository_impl.dart';
@@ -105,7 +108,9 @@ Future<void> init() async {
   // Blocs and Cubits
   sl.registerFactory(() => ThemeCubit());
   sl.registerFactory(() => LoginBloc(loginUseCase: sl()));
-  sl.registerFactory(() => SignupBloc(createAccountUseCase: sl()));
+  sl.registerFactory(
+    () => SignupBloc(createAccountUseCase: sl(), profilePictureService: sl()),
+  );
   sl.registerFactory(() => UpdateUserBloc(updateUserUseCase: sl()));
   sl.registerFactory(() => ToggleCubit());
   sl.registerFactory(
@@ -116,6 +121,7 @@ Future<void> init() async {
   sl.registerFactory(
     () => UpdatePasswordBloc(updatePasswordDirectUseCase: sl()),
   );
+  sl.registerFactory(() => DeleteAccountBloc(deleteAccountUseCase: sl()));
   sl.registerFactory(
     () => RendezVousBloc(
       fetchRendezVousUseCase: sl(),
@@ -230,6 +236,7 @@ Future<void> init() async {
   sl.registerLazySingleton(() => DeleteFile(sl()));
   sl.registerLazySingleton(() => UpdateFileDescription(sl()));
   sl.registerLazySingleton(() => CheckDoctorAccess(sl()));
+  sl.registerLazySingleton(() => DeleteAccountUseCase(sl()));
 
   // Repositories
   sl.registerLazySingleton<AuthRepository>(
@@ -273,6 +280,9 @@ Future<void> init() async {
   );
   sl.registerLazySingleton<AuthLocalDataSource>(
     () => AuthLocalDataSourceImpl(sharedPreferences: sl()),
+  );
+  sl.registerLazySingleton<ProfilePictureService>(
+    () => ProfilePictureServiceImpl(storage: sl(), firestore: sl()),
   );
   sl.registerLazySingleton<RendezVousRemoteDataSource>(
     () => RendezVousRemoteDataSourceImpl(

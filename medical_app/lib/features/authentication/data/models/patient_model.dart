@@ -29,6 +29,7 @@ class PatientModel extends UserModel {
     String? fcmToken,
     Map<String, String?>? address,
     Map<String, dynamic>? location,
+    String? profilePictureUrl,
     this.bloodType,
     this.height,
     this.weight,
@@ -37,36 +38,37 @@ class PatientModel extends UserModel {
     this.emergencyContact,
     this.dossierFiles,
   }) : super(
-    id: id,
-    name: name,
-    lastName: lastName,
-    email: email,
-    role: role,
-    gender: gender,
-    phoneNumber: phoneNumber,
-    dateOfBirth: dateOfBirth,
-    accountStatus: accountStatus,
-    verificationCode: verificationCode,
-    validationCodeExpiresAt: validationCodeExpiresAt,
-    fcmToken: fcmToken,
-    address: address,
-    location: location,
-  );
+         id: id,
+         name: name,
+         lastName: lastName,
+         email: email,
+         role: role,
+         gender: gender,
+         phoneNumber: phoneNumber,
+         dateOfBirth: dateOfBirth,
+         accountStatus: accountStatus,
+         verificationCode: verificationCode,
+         validationCodeExpiresAt: validationCodeExpiresAt,
+         fcmToken: fcmToken,
+         address: address,
+         location: location,
+         profilePictureUrl: profilePictureUrl,
+       );
 
   factory PatientModel.fromJson(Map<String, dynamic> json) {
     final String id = json['id'] is String ? json['id'] as String : '';
     final String name = json['name'] is String ? json['name'] as String : '';
     final String lastName =
-    json['lastName'] is String ? json['lastName'] as String : '';
+        json['lastName'] is String ? json['lastName'] as String : '';
     final String email = json['email'] is String ? json['email'] as String : '';
     final String role =
-    json['role'] is String ? json['role'] as String : 'patient';
+        json['role'] is String ? json['role'] as String : 'patient';
     final String gender =
-    json['gender'] is String ? json['gender'] as String : 'Homme';
+        json['gender'] is String ? json['gender'] as String : 'Homme';
     final String phoneNumber =
-    json['phoneNumber'] is String ? json['phoneNumber'] as String : '';
+        json['phoneNumber'] is String ? json['phoneNumber'] as String : '';
     final String antecedent =
-    json['antecedent'] is String ? json['antecedent'] as String : '';
+        json['antecedent'] is String ? json['antecedent'] as String : '';
 
     DateTime? dateOfBirth;
     if (json['dateOfBirth'] is String &&
@@ -112,7 +114,8 @@ class PatientModel extends UserModel {
         validationCodeExpiresAt = null;
       }
     } else if (json['validationCodeExpiresAt'] is Timestamp) {
-      validationCodeExpiresAt = (json['validationCodeExpiresAt'] as Timestamp).toDate();
+      validationCodeExpiresAt =
+          (json['validationCodeExpiresAt'] as Timestamp).toDate();
     }
 
     String? fcmToken;
@@ -124,7 +127,7 @@ class PatientModel extends UserModel {
     if (json['address'] is Map) {
       address = Map<String, String?>.from(
         (json['address'] as Map).map(
-              (key, value) => MapEntry(key.toString(), value?.toString()),
+          (key, value) => MapEntry(key.toString(), value?.toString()),
         ),
       );
     }
@@ -132,6 +135,11 @@ class PatientModel extends UserModel {
     Map<String, dynamic>? location;
     if (json['location'] is Map) {
       location = Map<String, dynamic>.from(json['location'] as Map);
+    }
+
+    String? profilePictureUrl;
+    if (json['profilePictureUrl'] is String) {
+      profilePictureUrl = json['profilePictureUrl'] as String;
     }
 
     String? bloodType;
@@ -185,16 +193,20 @@ class PatientModel extends UserModel {
     if (json['emergencyContact'] is Map) {
       emergencyContact = Map<String, String?>.from(
         (json['emergencyContact'] as Map).map(
-              (key, value) => MapEntry(key.toString(), value?.toString()),
+          (key, value) => MapEntry(key.toString(), value?.toString()),
         ),
       );
     }
 
     List<MedicalFileModel>? dossierFiles;
     if (json['dossierFiles'] is List) {
-      dossierFiles = (json['dossierFiles'] as List)
-          .map((file) => MedicalFileModel.fromJson(file as Map<String, dynamic>))
-          .toList();
+      dossierFiles =
+          (json['dossierFiles'] as List)
+              .map(
+                (file) =>
+                    MedicalFileModel.fromJson(file as Map<String, dynamic>),
+              )
+              .toList();
     }
 
     return PatientModel(
@@ -213,6 +225,7 @@ class PatientModel extends UserModel {
       fcmToken: fcmToken,
       address: address,
       location: location,
+      profilePictureUrl: profilePictureUrl,
       bloodType: bloodType,
       height: height,
       weight: weight,
@@ -224,10 +237,10 @@ class PatientModel extends UserModel {
   }
 
   static PatientModel recoverFromCorruptDoc(
-      Map<String, dynamic>? docData,
-      String userId,
-      String userEmail,
-      ) {
+    Map<String, dynamic>? docData,
+    String userId,
+    String userEmail,
+  ) {
     final Map<String, dynamic> safeData = {
       'id': userId,
       'name': '',
@@ -256,6 +269,9 @@ class PatientModel extends UserModel {
       }
       if (docData['location'] is Map) {
         safeData['location'] = docData['location'];
+      }
+      if (docData['profilePictureUrl'] is String) {
+        safeData['profilePictureUrl'] = docData['profilePictureUrl'];
       }
       if (docData['bloodType'] is String) {
         safeData['bloodType'] = docData['bloodType'];
@@ -330,7 +346,8 @@ class PatientModel extends UserModel {
       data['emergencyContact'] = emergencyContact;
     }
     if (dossierFiles != null) {
-      data['dossierFiles'] = dossierFiles!.map((file) => file.toJson()).toList();
+      data['dossierFiles'] =
+          dossierFiles!.map((file) => file.toJson()).toList();
     }
     return data;
   }
@@ -352,6 +369,7 @@ class PatientModel extends UserModel {
       fcmToken: fcmToken,
       address: address,
       location: location,
+      profilePictureUrl: profilePictureUrl,
       bloodType: bloodType,
       height: height,
       weight: weight,
@@ -379,6 +397,7 @@ class PatientModel extends UserModel {
     String? fcmToken,
     Map<String, String?>? address,
     Map<String, dynamic>? location,
+    String? profilePictureUrl,
     String? bloodType,
     double? height,
     double? weight,
@@ -399,11 +418,12 @@ class PatientModel extends UserModel {
       accountStatus: accountStatus ?? this.accountStatus,
       verificationCode: verificationCode ?? this.verificationCode,
       validationCodeExpiresAt:
-      validationCodeExpiresAt ?? this.validationCodeExpiresAt,
+          validationCodeExpiresAt ?? this.validationCodeExpiresAt,
       antecedent: antecedent ?? this.antecedent,
       fcmToken: fcmToken ?? this.fcmToken,
       address: address ?? this.address,
       location: location ?? this.location,
+      profilePictureUrl: profilePictureUrl ?? this.profilePictureUrl,
       bloodType: bloodType ?? this.bloodType,
       height: height ?? this.height,
       weight: weight ?? this.weight,

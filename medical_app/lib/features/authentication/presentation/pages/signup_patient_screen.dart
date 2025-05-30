@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
@@ -5,6 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../../../core/utils/app_colors.dart';
 import '../../../../core/widgets/reusable_text_field_widget.dart';
 import '../../domain/entities/patient_entity.dart';
+import '../widgets/profile_picture_widget.dart';
 import 'password_screen.dart';
 
 class SignupPatientScreen extends StatefulWidget {
@@ -29,6 +31,7 @@ class _SignupPatientScreenState extends State<SignupPatientScreen> {
       TextEditingController();
 
   String? selectedBloodType;
+  File? _selectedProfilePicture;
 
   // List of blood types
   final List<String> bloodTypes = [
@@ -84,6 +87,22 @@ class _SignupPatientScreenState extends State<SignupPatientScreen> {
                   ),
 
                   SizedBox(height: 20.h),
+
+                  // Profile Picture Section
+                  Center(
+                    child: ProfilePictureWidget(
+                      size: 120,
+                      onImageSelected: (File? image) {
+                        setState(() {
+                          _selectedProfilePicture = image;
+                        });
+                      },
+                      placeholderText: 'add_profile_picture'.tr,
+                    ),
+                  ),
+
+                  SizedBox(height: 30.h),
+
                   // Form fields
                   Form(
                     key: _formKey,
@@ -754,7 +773,10 @@ class _SignupPatientScreenState extends State<SignupPatientScreen> {
                             emergencyContact: emergencyContact,
                           );
                           Get.to(
-                            () => PasswordScreen(entity: updatedPatientEntity),
+                            () => PasswordScreen(
+                              entity: updatedPatientEntity,
+                              profilePicture: _selectedProfilePicture,
+                            ),
                           );
                         }
                       },

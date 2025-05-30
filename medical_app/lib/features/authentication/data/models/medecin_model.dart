@@ -28,43 +28,45 @@ class MedecinModel extends UserModel {
     String? fcmToken,
     Map<String, String?>? address,
     Map<String, dynamic>? location,
+    String? profilePictureUrl,
     this.education,
     this.experience,
     this.consultationFee,
   }) : super(
-    id: id,
-    name: name,
-    lastName: lastName,
-    email: email,
-    role: role,
-    gender: gender,
-    phoneNumber: phoneNumber,
-    dateOfBirth: dateOfBirth,
-    accountStatus: accountStatus,
-    verificationCode: verificationCode,
-    validationCodeExpiresAt: validationCodeExpiresAt,
-    fcmToken: fcmToken,
-    address: address,
-    location: location,
-  );
+         id: id,
+         name: name,
+         lastName: lastName,
+         email: email,
+         role: role,
+         gender: gender,
+         phoneNumber: phoneNumber,
+         dateOfBirth: dateOfBirth,
+         accountStatus: accountStatus,
+         verificationCode: verificationCode,
+         validationCodeExpiresAt: validationCodeExpiresAt,
+         fcmToken: fcmToken,
+         address: address,
+         location: location,
+         profilePictureUrl: profilePictureUrl,
+       );
 
   factory MedecinModel.fromJson(Map<String, dynamic> json) {
     // Handle potential null or wrong types for each field
     final String id = json['id'] is String ? json['id'] as String : '';
     final String name = json['name'] is String ? json['name'] as String : '';
     final String lastName =
-    json['lastName'] is String ? json['lastName'] as String : '';
+        json['lastName'] is String ? json['lastName'] as String : '';
     final String email = json['email'] is String ? json['email'] as String : '';
     final String role =
-    json['role'] is String ? json['role'] as String : 'medecin';
+        json['role'] is String ? json['role'] as String : 'medecin';
     final String gender =
-    json['gender'] is String ? json['gender'] as String : 'Homme';
+        json['gender'] is String ? json['gender'] as String : 'Homme';
     final String phoneNumber =
-    json['phoneNumber'] is String ? json['phoneNumber'] as String : '';
+        json['phoneNumber'] is String ? json['phoneNumber'] as String : '';
     final String speciality =
-    json['speciality'] is String ? json['speciality'] as String : '';
+        json['speciality'] is String ? json['speciality'] as String : '';
     final String numLicence =
-    json['numLicence'] is String ? json['numLicence'] as String : '';
+        json['numLicence'] is String ? json['numLicence'] as String : '';
 
     // Handle appointment duration with robust type checking
     int appointmentDuration = 30; // Default value
@@ -115,8 +117,9 @@ class MedecinModel extends UserModel {
     if (json['validationCodeExpiresAt'] is String &&
         (json['validationCodeExpiresAt'] as String).isNotEmpty) {
       try {
-        validationCodeExpiresAt =
-            DateTime.parse(json['validationCodeExpiresAt'] as String);
+        validationCodeExpiresAt = DateTime.parse(
+          json['validationCodeExpiresAt'] as String,
+        );
       } catch (_) {
         validationCodeExpiresAt = null;
       }
@@ -132,7 +135,7 @@ class MedecinModel extends UserModel {
     if (json['address'] is Map) {
       address = Map<String, String?>.from(
         (json['address'] as Map).map(
-              (key, value) => MapEntry(key.toString(), value?.toString()),
+          (key, value) => MapEntry(key.toString(), value?.toString()),
         ),
       );
     }
@@ -142,6 +145,12 @@ class MedecinModel extends UserModel {
       location = Map<String, dynamic>.from(json['location'] as Map);
     }
 
+    // Handle profile picture URL
+    String? profilePictureUrl;
+    if (json['profilePictureUrl'] is String) {
+      profilePictureUrl = json['profilePictureUrl'] as String;
+    }
+
     // Handle education
     List<Map<String, String>>? education;
     if (json['education'] is List) {
@@ -149,7 +158,7 @@ class MedecinModel extends UserModel {
           (json['education'] as List).where((item) => item is Map).map((item) {
             return Map<String, String>.from(
               (item as Map).map(
-                    (key, value) => MapEntry(key.toString(), value.toString()),
+                (key, value) => MapEntry(key.toString(), value.toString()),
               ),
             );
           }).toList();
@@ -162,7 +171,7 @@ class MedecinModel extends UserModel {
           (json['experience'] as List).where((item) => item is Map).map((item) {
             return Map<String, String>.from(
               (item as Map).map(
-                    (key, value) => MapEntry(key.toString(), value.toString()),
+                (key, value) => MapEntry(key.toString(), value.toString()),
               ),
             );
           }).toList();
@@ -201,6 +210,7 @@ class MedecinModel extends UserModel {
       appointmentDuration: appointmentDuration,
       address: address,
       location: location,
+      profilePictureUrl: profilePictureUrl,
       education: education,
       experience: experience,
       consultationFee: consultationFee,
@@ -208,10 +218,10 @@ class MedecinModel extends UserModel {
   }
 
   static MedecinModel recoverFromCorruptDoc(
-      Map<String, dynamic>? docData,
-      String userId,
-      String userEmail,
-      ) {
+    Map<String, dynamic>? docData,
+    String userId,
+    String userEmail,
+  ) {
     // Default values for required fields if missing or corrupted
     final Map<String, dynamic> safeData = {
       'id': userId,
@@ -250,14 +260,20 @@ class MedecinModel extends UserModel {
         safeData['location'] = docData['location'];
       }
 
+      // Handle profile picture URL
+      if (docData['profilePictureUrl'] is String) {
+        safeData['profilePictureUrl'] = docData['profilePictureUrl'];
+      }
+
       // Handle appointment duration safely
       if (docData['appointmentDuration'] is int) {
         safeData['appointmentDuration'] = docData['appointmentDuration'];
       } else if (docData['appointmentDuration'] is String &&
           (docData['appointmentDuration'] as String).isNotEmpty) {
         try {
-          safeData['appointmentDuration'] =
-              int.parse(docData['appointmentDuration'] as String);
+          safeData['appointmentDuration'] = int.parse(
+            docData['appointmentDuration'] as String,
+          );
         } catch (_) {
           // Keep default value if parsing fails
         }
@@ -280,8 +296,9 @@ class MedecinModel extends UserModel {
       } else if (docData['consultationFee'] is String &&
           (docData['consultationFee'] as String).isNotEmpty) {
         try {
-          safeData['consultationFee'] =
-              double.parse(docData['consultationFee'] as String);
+          safeData['consultationFee'] = double.parse(
+            docData['consultationFee'] as String,
+          );
         } catch (_) {
           // Invalid format, don't add to safeData
         }
@@ -291,8 +308,9 @@ class MedecinModel extends UserModel {
       if (docData['dateOfBirth'] is String &&
           (docData['dateOfBirth'] as String).isNotEmpty) {
         try {
-          DateTime dateOfBirth =
-          DateTime.parse(docData['dateOfBirth'] as String);
+          DateTime dateOfBirth = DateTime.parse(
+            docData['dateOfBirth'] as String,
+          );
           safeData['dateOfBirth'] = dateOfBirth.toIso8601String();
         } catch (_) {
           // Invalid date format, don't add to safeData
@@ -339,6 +357,7 @@ class MedecinModel extends UserModel {
       if (fcmToken != null) 'fcmToken': fcmToken,
       if (address != null) 'address': address,
       if (location != null) 'location': location,
+      if (profilePictureUrl != null) 'profilePictureUrl': profilePictureUrl,
       'speciality': speciality,
       'numLicence': numLicence,
       'appointmentDuration': appointmentDuration,
@@ -366,6 +385,7 @@ class MedecinModel extends UserModel {
       validationCodeExpiresAt: validationCodeExpiresAt,
       address: address,
       location: location,
+      profilePictureUrl: profilePictureUrl,
       education: education,
       experience: experience,
       consultationFee: consultationFee,
@@ -391,6 +411,7 @@ class MedecinModel extends UserModel {
     String? fcmToken,
     Map<String, String?>? address,
     Map<String, dynamic>? location,
+    String? profilePictureUrl,
     List<Map<String, String>>? education,
     List<Map<String, String>>? experience,
     double? consultationFee,
@@ -407,13 +428,14 @@ class MedecinModel extends UserModel {
       accountStatus: accountStatus ?? this.accountStatus,
       verificationCode: verificationCode ?? this.verificationCode,
       validationCodeExpiresAt:
-      validationCodeExpiresAt ?? this.validationCodeExpiresAt,
+          validationCodeExpiresAt ?? this.validationCodeExpiresAt,
       speciality: speciality ?? this.speciality,
       numLicence: numLicence ?? this.numLicence,
       appointmentDuration: appointmentDuration ?? this.appointmentDuration,
       fcmToken: fcmToken ?? this.fcmToken,
       address: address ?? this.address,
       location: location ?? this.location,
+      profilePictureUrl: profilePictureUrl ?? this.profilePictureUrl,
       education: education ?? this.education,
       experience: experience ?? this.experience,
       consultationFee: consultationFee ?? this.consultationFee,
