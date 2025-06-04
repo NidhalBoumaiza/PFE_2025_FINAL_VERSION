@@ -204,7 +204,12 @@ class _SettingsPageState extends State<SettingsPage> {
             ),
             subtitle: Text(
               "manage_notification_preferences".tr,
-              style: GoogleFonts.raleway(fontSize: 12, color: Colors.grey[600]),
+              style: GoogleFonts.raleway(
+                fontSize: 12, 
+                color: Theme.of(context).brightness == Brightness.dark 
+                    ? Colors.grey[300] 
+                    : Colors.grey[600]
+              ),
             ),
             trailing: const Icon(Icons.chevron_right, size: 20),
             contentPadding: const EdgeInsets.symmetric(
@@ -292,7 +297,9 @@ class _SettingsPageState extends State<SettingsPage> {
                             : "update_your_personal_information".tr,
                         style: GoogleFonts.raleway(
                           fontSize: 12,
-                          color: Colors.grey[600],
+                          color: Theme.of(context).brightness == Brightness.dark 
+                              ? Colors.grey[300] 
+                              : Colors.grey[600],
                         ),
                       ),
                       trailing: const Icon(Icons.chevron_right, size: 20),
@@ -371,7 +378,12 @@ class _SettingsPageState extends State<SettingsPage> {
             ),
             subtitle: Text(
               "update_your_password".tr,
-              style: GoogleFonts.raleway(fontSize: 12, color: Colors.grey[600]),
+              style: GoogleFonts.raleway(
+                fontSize: 12, 
+                color: Theme.of(context).brightness == Brightness.dark 
+                    ? Colors.grey[300] 
+                    : Colors.grey[600]
+              ),
             ),
             trailing: const Icon(Icons.chevron_right, size: 20),
             contentPadding: const EdgeInsets.symmetric(
@@ -396,7 +408,12 @@ class _SettingsPageState extends State<SettingsPage> {
             ),
             subtitle: Text(
               "sign_out_of_your_account".tr,
-              style: GoogleFonts.raleway(fontSize: 12, color: Colors.grey[600]),
+              style: GoogleFonts.raleway(
+                fontSize: 12, 
+                color: Theme.of(context).brightness == Brightness.dark 
+                    ? Colors.grey[300] 
+                    : Colors.grey[600]
+              ),
             ),
             trailing: const Icon(Icons.chevron_right, size: 20),
             contentPadding: const EdgeInsets.symmetric(
@@ -416,7 +433,12 @@ class _SettingsPageState extends State<SettingsPage> {
             ),
             subtitle: Text(
               "delete_account_warning".tr,
-              style: GoogleFonts.raleway(fontSize: 12, color: Colors.grey[600]),
+              style: GoogleFonts.raleway(
+                fontSize: 12, 
+                color: Theme.of(context).brightness == Brightness.dark 
+                    ? Colors.grey[300] 
+                    : Colors.grey[600]
+              ),
             ),
             trailing: const Icon(Icons.chevron_right, size: 20),
             contentPadding: const EdgeInsets.symmetric(
@@ -573,7 +595,12 @@ class _SettingsPageState extends State<SettingsPage> {
             const SizedBox(height: 8),
             Text(
               "copyright".tr,
-              style: GoogleFonts.raleway(fontSize: 12, color: Colors.grey[600]),
+              style: GoogleFonts.raleway(
+                fontSize: 12, 
+                color: Theme.of(context).brightness == Brightness.dark 
+                    ? Colors.grey[300] 
+                    : Colors.grey[600]
+              ),
             ),
             const SizedBox(height: 16),
           ],
@@ -674,7 +701,12 @@ class _SettingsPageState extends State<SettingsPage> {
                       children: [
                         Text(
                           "delete_account_description".tr,
-                          style: GoogleFonts.raleway(fontSize: 14),
+                          style: GoogleFonts.raleway(
+                            fontSize: 14,
+                            color: Theme.of(context).brightness == Brightness.dark 
+                                ? Colors.white 
+                                : Colors.black87,
+                          ),
                         ),
                         const SizedBox(height: 16),
                         Text(
@@ -682,6 +714,9 @@ class _SettingsPageState extends State<SettingsPage> {
                           style: GoogleFonts.raleway(
                             fontWeight: FontWeight.w600,
                             fontSize: 14,
+                            color: Theme.of(context).brightness == Brightness.dark 
+                                ? Colors.white 
+                                : Colors.black87,
                           ),
                         ),
                         const SizedBox(height: 8),
@@ -729,6 +764,11 @@ class _SettingsPageState extends State<SettingsPage> {
                                           ),
                                           content: Text(
                                             "delete_account_warning".tr,
+                                            style: TextStyle(
+                                              color: Theme.of(context).brightness == Brightness.dark 
+                                                  ? Colors.white 
+                                                  : Colors.black87,
+                                            ),
                                           ),
                                           actions: [
                                             TextButton(

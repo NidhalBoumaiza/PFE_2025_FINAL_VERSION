@@ -411,11 +411,11 @@ class _MyAppState extends State<MyApp> {
 
         if (!body.contains(senderName) && senderName != 'Unknown') {
           if (data['type'] == 'appointmentAccepted') {
-            body = 'Dr. $senderName has accepted your appointment';
+            body = 'appointment_accepted_message'.trParams({'0': senderName, '1': ''});
           } else if (data['type'] == 'appointmentRejected') {
-            body = 'Dr. $senderName has rejected your appointment';
+            body = 'appointment_rejected_message'.trParams({'0': senderName, '1': ''});
           } else if (data['type'] == 'newMessage') {
-            body = 'New message from $senderName: $body';
+            body = 'new_message_from'.trParams({'sender': senderName, 'message': body});
           }
         }
 

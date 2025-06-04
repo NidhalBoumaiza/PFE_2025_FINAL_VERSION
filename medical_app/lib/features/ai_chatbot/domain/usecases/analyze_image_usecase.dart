@@ -6,7 +6,7 @@ class AnalyzeImageUseCase {
 
   AnalyzeImageUseCase({required this.repository});
 
-  Future<String> call(File imageFile, String taskPrompt) async {
-    return await repository.analyzeImage(imageFile, taskPrompt);
+  Future<String> call(File imageFile, String prompt) async {
+    return await repository.analyzeImage(imageFile, prompt);
   }
 } 

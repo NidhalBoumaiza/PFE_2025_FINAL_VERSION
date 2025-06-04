@@ -3,16 +3,19 @@ import 'package:get/get.dart';
 import '../../data/models/chat_message_model.dart';
 import '../../domain/usecases/analyze_image_usecase.dart';
 import '../../domain/usecases/analyze_pdf_usecase.dart';
+import '../../domain/usecases/send_text_message_usecase.dart';
 import 'ai_chatbot_event.dart';
 import 'ai_chatbot_state.dart';
 
 class AiChatbotBloc extends Bloc<AiChatbotEvent, AiChatbotState> {
   final AnalyzeImageUseCase analyzeImageUseCase;
   final AnalyzePdfUseCase analyzePdfUseCase;
+  final SendTextMessageUseCase sendTextMessageUseCase;
 
   AiChatbotBloc({
     required this.analyzeImageUseCase,
     required this.analyzePdfUseCase,
+    required this.sendTextMessageUseCase,
   }) : super(const AiChatbotInitial()) {
     on<SendTextMessageEvent>(_onSendTextMessage);
     on<SendImageMessageEvent>(_onSendImageMessage);
@@ -40,21 +43,28 @@ class AiChatbotBloc extends Bloc<AiChatbotEvent, AiChatbotState> {
     );
 
     final updatedMessages = [...currentMessages, userMessage];
+    emit(AiChatbotLoaded(messages: updatedMessages, isLoading: true));
 
-    emit(AiChatbotLoaded(messages: updatedMessages, isLoading: false));
+    try {
+      // Get AI response from service
+      final response = await sendTextMessageUseCase.call(event.message);
 
-    // Add a simple AI response for text messages
-    await Future.delayed(const Duration(milliseconds: 1000));
+      // Add AI response
+      final aiResponse = ChatMessageModel(
+        id: DateTime.now().millisecondsSinceEpoch.toString(),
+        content: response,
+        isUser: false,
+        timestamp: DateTime.now(),
+      );
 
-    final aiResponse = ChatMessageModel(
-      id: DateTime.now().millisecondsSinceEpoch.toString(),
-      content: 'ai_text_response'.tr,
-      isUser: false,
-      timestamp: DateTime.now(),
-    );
-
-    final finalMessages = [...updatedMessages, aiResponse];
-    emit(AiChatbotLoaded(messages: finalMessages, isLoading: false));
+      final finalMessages = [...updatedMessages, aiResponse];
+      emit(AiChatbotLoaded(messages: finalMessages, isLoading: false));
+    } catch (e) {
+      emit(AiChatbotError(
+        message: 'Error: $e',
+        messages: updatedMessages,
+      ));
+    }
   }
 
   void _onSendImageMessage(

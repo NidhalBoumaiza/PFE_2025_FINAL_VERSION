@@ -158,6 +158,15 @@ class LanguageService extends Translations {
       'current_password_incorrect': 'Le mot de passe actuel est incorrect',
       'password_update_error': 'Erreur lors de la mise à jour du mot de passe',
       'user_not_found': 'Utilisateur non trouvé',
+      'delete_account': 'Supprimer le compte',
+      'delete_account_warning': 'Cela supprimera définitivement votre compte et toutes vos données',
+      'delete_account_description': 'Cette action est irréversible. Toutes vos données seront définitivement supprimées.',
+      'confirm_password_to_delete': 'Entrez votre mot de passe pour confirmer',
+      'enter_password': 'Entrez votre mot de passe',
+      'confirm_delete_account': 'Confirmer la suppression du compte',
+      'delete': 'Supprimer',
+      'account_deleted_successfully': 'Compte supprimé avec succès',
+      'delete_account_error': 'Erreur lors de la suppression du compte',
 
       // Additional missing keys
       'enabled': 'activées',
@@ -406,8 +415,8 @@ class LanguageService extends Translations {
       'date': 'Date',
       'time': 'Heure',
       'unable_to_submit_rating_missing_info':
-          'غير قادر على إرسال التقييم، معلومات مفقودة',
-      'appointment_cancelled_successfully': 'تم إلغاء الموعد بنجاح!',
+          'Impossible d\'envoyer l\'évaluation, informations manquantes',
+      'appointment_cancelled_successfully': 'Rendez-vous annulé avec succès !',
       'rating_submitted_successfully': 'Évaluation soumise avec succès !',
       'prescription_created_successfully': 'Ordonnance créée avec succès !',
       'no_prescription_created_for_appointment':
@@ -456,6 +465,10 @@ class LanguageService extends Translations {
       'modify_consultation_duration': 'Modifier la durée de consultation',
       'education': 'Formation',
       'experience': 'Expérience',
+      'doctor_prefix': 'Dr.',
+      'consultation_duration_value': '{duration} minutes',
+      'consultation_fee_value': '{fee} DT',
+      'duration_minutes': '{minutes} minutes',
 
       // Specialty translations
       'cardiologist': 'Cardiologue',
@@ -731,10 +744,10 @@ class LanguageService extends Translations {
       'pending_appointments_will_appear_here':
           'Les rendez-vous en attente apparaîtront ici',
       'loading_dashboard': 'Chargement du tableau de bord...',
-      'error_loading_user_data': 'Error loading user data',
-      'error_loading_appointments': 'Error loading appointments',
-      'error_loading_stats': 'Error loading statistics',
-      'consultation_duration': 'Consultation Duration',
+      'error_loading_user_data': 'Erreur lors du chargement des données utilisateur',
+      'error_loading_appointments': 'Erreur lors du chargement des rendez-vous',
+      'error_loading_stats': 'Erreur lors du chargement des statistiques',
+      'consultation_duration': 'Durée de consultation',
 
       // Verification screen translations
       'verify_account': 'Vérifier le compte',
@@ -768,34 +781,34 @@ class LanguageService extends Translations {
       'experience_hint': 'Poste:Chirurgien,Années:5;Poste:Consultant,Années:3',
 
       // AI Chatbot translations
-      'ai_assistant': 'Assistant IA',
-      'ai_clear_chat': 'Effacer la conversation',
-      'ai_welcome_title': 'Bienvenue dans l\'Assistant IA Médical',
+      'ai_assistant': 'AI Assistant',
+      'ai_clear_chat': 'Clear Chat',
+      'ai_welcome_title': 'Welcome to the Medical AI Assistant',
       'ai_welcome_description':
-          'Je peux vous aider à analyser des images médicales, des documents PDF et répondre à vos questions de santé.',
-      'ai_image_analysis': 'Analyse d\'images',
+          'I can help you analyze medical images, PDF documents, and answer your health questions.',
+      'ai_image_analysis': 'Image Analysis',
       'ai_image_analysis_desc':
-          'Analysez vos radiographies, IRM et autres images médicales',
-      'ai_pdf_analysis': 'Analyse de PDF',
-      'ai_pdf_analysis_desc': 'Analysez vos rapports médicaux et documents PDF',
-      'ai_thinking': 'Réflexion en cours...',
-      'ai_type_message': 'Tapez votre message...',
-      'ai_image_prompt_title': 'Analyser l\'image médicale',
+          'Analyze your X-rays, MRIs, and other medical images',
+      'ai_pdf_analysis': 'PDF Analysis',
+      'ai_pdf_analysis_desc': 'Analyze your medical reports and PDF documents',
+      'ai_thinking': 'Thinking...',
+      'ai_type_message': 'Type your message...',
+      'ai_image_prompt_title': 'Analyze Medical Image',
       'ai_image_prompt_description':
-          'Décrivez ce que vous souhaitez analyser dans cette image médicale.',
+          'Describe what you want to analyze in this medical image.',
       'ai_image_prompt_hint':
-          'Ex: Analysez cette radiographie pour détecter des fractures...',
-      'ai_analyze': 'Analyser',
-      'ai_select_attachment': 'Sélectionner une pièce jointe',
-      'ai_select_image': 'Sélectionner une image',
+          'E.g., Analyze this X-ray for fractures...',
+      'ai_analyze': 'Analyze',
+      'ai_select_attachment': 'Select Attachment',
+      'ai_select_image': 'Select Image',
       'ai_analyze_medical_images':
-          'Analyser des images médicales (radiographies, IRM, etc.)',
-      'ai_select_pdf': 'Sélectionner un PDF',
-      'ai_analyze_medical_docs': 'Analyser des documents médicaux PDF',
-      'ai_text_response': 'Réponse de l\'IA',
-      'ai_image_analysis_error': 'Erreur lors de l\'analyse de l\'image',
-      'ai_pdf_uploaded': 'PDF téléchargé avec succès',
-      'ai_pdf_analysis_error': 'Erreur lors de l\'analyse du PDF',
+          'Analyze medical images (X-rays, MRIs, etc.)',
+      'ai_select_pdf': 'Select PDF',
+      'ai_analyze_medical_docs': 'Analyze medical PDF documents',
+      'ai_text_response': 'AI Response',
+      'ai_image_analysis_error': 'Error analyzing image',
+      'ai_pdf_uploaded': 'PDF uploaded successfully',
+      'ai_pdf_analysis_error': 'Error analyzing PDF',
 
       // Patient profile translations
       'medical_information': 'Informations médicales',
@@ -828,6 +841,47 @@ class LanguageService extends Translations {
 
       // AI Chatbot translations
       'ai_assistant': 'المساعد الذكي',
+      'ai_clear_chat': 'مسح المحادثة',
+      'ai_welcome_title': 'مرحبًا بك في المساعد الطبي الذكي',
+      'ai_welcome_description': 'يمكنني مساعدتك في تحليل الصور الطبية والمستندات PDF والإجابة على أسئلتك الصحية.',
+      'ai_image_analysis': 'تحليل الصور',
+      'ai_image_analysis_desc': 'تحليل الأشعة السينية والرنين المغناطيسي والصور الطبية الأخرى',
+      'ai_pdf_analysis': 'تحليل PDF',
+      'ai_pdf_analysis_desc': 'تحليل التقارير الطبية ومستندات PDF',
+      'ai_thinking': 'جاري التفكير...',
+      'ai_type_message': 'اكتب رسالتك...',
+      'ai_image_prompt_title': 'تحليل الصورة الطبية',
+      'ai_image_prompt_description': 'صف ما تريد تحليله في هذه الصورة الطبية.',
+      'ai_image_prompt_hint': 'مثال: حلل هذه الأشعة للكشف عن الكسور...',
+      'ai_analyze': 'تحليل',
+      'ai_select_attachment': 'اختر مرفقًا',
+      'ai_select_image': 'اختر صورة',
+      'ai_analyze_medical_images': 'تحليل الصور الطبية (أشعة، رنين مغناطيسي، إلخ)',
+      'ai_select_pdf': 'اختر PDF',
+      'ai_analyze_medical_docs': 'تحليل مستندات PDF الطبية',
+      'ai_text_response': 'رد الذكاء الاصطناعي',
+      'ai_image_analysis_error': 'خطأ في تحليل الصورة',
+      'ai_pdf_uploaded': 'تم تحميل PDF بنجاح',
+      'ai_pdf_analysis_error': 'خطأ في تحليل PDF',
+      'ai_error_connecting': 'خطأ في الاتصال بخدمة الذكاء الاصطناعي',
+      'ai_service_unavailable': 'خدمة الذكاء الاصطناعي غير متاحة حاليًا',
+
+      // Other missing translations
+      'default_doctor_name': 'د. غير معروف',
+      'hello_doctor': 'مرحبا د. {0}',
+      
+      // Fix appointment notification translations
+      'appointment_accepted_message': 'قبل د. {0} موعدك في {1}',
+      'appointment_rejected_message': 'رفض د. {0} موعدك في {1}',
+      'appointment_cancelled_message': 'ألغى د. {0} موعدك في {1}',
+      'prescription_created_message': 'أنشأ د. {0} وصفة طبية جديدة لك',
+      'prescription_updated_message': 'قام د. {0} بتحديث وصفتك الطبية: {1}',
+      
+      // Text for doctor in various parts of the app
+      'doctor_with_name': 'د. {0}',
+
+      // Notification translations
+      'new_message_from': 'رسالة جديدة من {sender}: {message}',
     },
     'en_US': {
       'title': 'Medical App',
@@ -967,6 +1021,15 @@ class LanguageService extends Translations {
       'current_password_incorrect': 'Current password is incorrect',
       'password_update_error': 'Error updating password',
       'user_not_found': 'User not found',
+      'delete_account': 'Delete Account',
+      'delete_account_warning': 'This will permanently delete your account and all your data',
+      'delete_account_description': 'This action is irreversible. All your data will be permanently deleted.',
+      'confirm_password_to_delete': 'Enter your password to confirm',
+      'enter_password': 'Enter your password',
+      'confirm_delete_account': 'Confirm account deletion',
+      'delete': 'Delete',
+      'account_deleted_successfully': 'Account deleted successfully',
+      'delete_account_error': 'Error deleting account',
 
       // Additional missing keys
       'enabled': 'enabled',
@@ -1234,8 +1297,7 @@ class LanguageService extends Translations {
       'cm': 'cm',
       'kg': 'kg',
       'info': 'Information',
-      'change_profile_picture_message':
-          'Profile picture change feature coming soon',
+      'change_profile_picture_message': 'Profile picture change feature coming soon',
       'profile_saved_successfully': 'Profile saved successfully',
       'confirm_logout': 'Are you sure you want to logout?',
       'logout_error': 'Error during logout: {0}',
@@ -1255,6 +1317,10 @@ class LanguageService extends Translations {
       'modify_consultation_duration': 'Modify consultation duration',
       'education': 'Education',
       'experience': 'Experience',
+      'doctor_prefix': 'Dr.',
+      'consultation_duration_value': '{duration} minutes',
+      'consultation_fee_value': '{fee} DT',
+      'duration_minutes': '{minutes} minutes',
 
       // Specialty translations
       'cardiologist': 'Cardiologist',
@@ -1561,12 +1627,12 @@ class LanguageService extends Translations {
       // AI Chatbot translations
       'ai_assistant': 'AI Assistant',
       'ai_clear_chat': 'Clear Chat',
-      'ai_welcome_title': 'Welcome to Medical AI Assistant',
+      'ai_welcome_title': 'Welcome to the Medical AI Assistant',
       'ai_welcome_description':
-          'I can help you analyze medical images, PDF documents and answer your health questions.',
+          'I can help you analyze medical images, PDF documents, and answer your health questions.',
       'ai_image_analysis': 'Image Analysis',
       'ai_image_analysis_desc':
-          'Analyze your X-rays, MRI and other medical images',
+          'Analyze your X-rays, MRIs, and other medical images',
       'ai_pdf_analysis': 'PDF Analysis',
       'ai_pdf_analysis_desc': 'Analyze your medical reports and PDF documents',
       'ai_thinking': 'Thinking...',
@@ -1574,11 +1640,12 @@ class LanguageService extends Translations {
       'ai_image_prompt_title': 'Analyze Medical Image',
       'ai_image_prompt_description':
           'Describe what you want to analyze in this medical image.',
-      'ai_image_prompt_hint': 'Ex: Analyze this X-ray for fractures...',
+      'ai_image_prompt_hint':
+          'E.g., Analyze this X-ray for fractures...',
       'ai_analyze': 'Analyze',
       'ai_select_attachment': 'Select Attachment',
       'ai_select_image': 'Select Image',
-      'ai_analyze_medical_images': 'Analyze medical images (X-rays, MRI, etc.)',
+      'ai_analyze_medical_images': 'Analyze medical images (X-rays, MRIs, etc.)',
       'ai_select_pdf': 'Select PDF',
       'ai_analyze_medical_docs': 'Analyze medical PDF documents',
       'ai_text_response': 'AI Response',
@@ -1617,6 +1684,9 @@ class LanguageService extends Translations {
 
       // AI Chatbot translations
       'ai_assistant': 'AI Assistant',
+
+      // Notification translations
+      'new_message_from': 'New message from {sender}: {message}',
     },
     'ar_AR': {
       'title': 'التطبيق الطبي',
@@ -2022,7 +2092,7 @@ class LanguageService extends Translations {
       'medical_record_access_error': 'خطأ في الوصول إلى السجل الطبي',
 
       // Doctor profile page translations
-      'professional_information': 'معلومات المهنية',
+      'professional_information': 'المعلومات المهنية',
       'consultation_duration_label': 'مدة الاستشارة',
       'consultation_fee_label': 'رسوم الاستشارة',
       'choose_consultation_duration': 'اختر مدة الاستشارة',
@@ -2032,6 +2102,10 @@ class LanguageService extends Translations {
       'modify_consultation_duration': 'تعديل مدة الاستشارة',
       'education': 'التعليم',
       'experience': 'الخبرة',
+      'doctor_prefix': 'د.',
+      'consultation_duration_value': '{duration} دقيقة',
+      'consultation_fee_value': '{fee} د.ت',
+      'duration_minutes': '{minutes} دقيقة',
 
       // Specialty translations
       'cardiologist': 'طبيب قلبي',
@@ -2124,61 +2198,53 @@ class LanguageService extends Translations {
       // AI Chatbot translations
       'ai_assistant': 'المساعد الذكي',
       'ai_clear_chat': 'مسح المحادثة',
-      'ai_welcome_title': 'مرحباً بك في المساعد الذكي الطبي',
-      'ai_welcome_description':
-          'يمكنني مساعدتك في تحليل الصور الطبية ووثائق PDF والإجابة على أسئلتك الصحية.',
+      'ai_welcome_title': 'مرحبًا بك في المساعد الطبي الذكي',
+      'ai_welcome_description': 'يمكنني مساعدتك في تحليل الصور الطبية والمستندات والإجابة على أسئلتك الصحية.',
       'ai_image_analysis': 'تحليل الصور',
-      'ai_image_analysis_desc':
-          'حلل الأشعة السينية والرنين المغناطيسي والصور الطبية الأخرى',
+      'ai_image_analysis_desc': 'تحليل الأشعة السينية والرنين المغناطيسي والصور الطبية الأخرى',
       'ai_pdf_analysis': 'تحليل PDF',
-      'ai_pdf_analysis_desc': 'حلل تقاريرك الطبية ووثائق PDF',
+      'ai_pdf_analysis_desc': 'تحليل التقارير الطبية ومستندات PDF',
       'ai_thinking': 'جاري التفكير...',
       'ai_type_message': 'اكتب رسالتك...',
       'ai_image_prompt_title': 'تحليل الصورة الطبية',
       'ai_image_prompt_description': 'صف ما تريد تحليله في هذه الصورة الطبية.',
-      'ai_image_prompt_hint': 'مثال: حلل هذه الأشعة السينية للكشف عن الكسور...',
+      'ai_image_prompt_hint': 'مثال: حلل هذه الأشعة للكشف عن الكسور...',
       'ai_analyze': 'تحليل',
-      'ai_select_attachment': 'اختر مرفق',
+      'ai_select_attachment': 'اختر مرفقًا',
       'ai_select_image': 'اختر صورة',
-      'ai_analyze_medical_images':
-          'تحليل الصور الطبية (الأشعة السينية، الرنين المغناطيسي، إلخ)',
+      'ai_analyze_medical_images': 'تحليل الصور الطبية (أشعة، رنين مغناطيسي، إلخ)',
       'ai_select_pdf': 'اختر PDF',
-      'ai_analyze_medical_docs': 'تحليل الوثائق الطبية PDF',
-      'ai_text_response': 'رد المساعد الذكي',
+      'ai_analyze_medical_docs': 'تحليل مستندات PDF الطبية',
+      'ai_text_response': 'رد الذكاء الاصطناعي',
       'ai_image_analysis_error': 'خطأ في تحليل الصورة',
-      'ai_pdf_uploaded': 'تم رفع PDF بنجاح',
+      'ai_pdf_uploaded': 'تم تحميل PDF بنجاح',
       'ai_pdf_analysis_error': 'خطأ في تحليل PDF',
+      'delete_account': 'حذف الحساب',
+      'delete_account_warning': 'سيؤدي هذا إلى حذف حسابك وجميع بياناتك بشكل دائم',
+      'delete_account_description': 'هذا الإجراء لا رجعة فيه. سيتم حذف جميع بياناتك بشكل دائم.',
+      'confirm_password_to_delete': 'أدخل كلمة المرور للتأكيد',
+      'enter_password': 'أدخل كلمة المرور',
+      'confirm_delete_account': 'تأكيد حذف الحساب',
+      'delete': 'حذف',
+      'account_deleted_successfully': 'تم حذف الحساب بنجاح',
+      'delete_account_error': 'خطأ في حذف الحساب',
 
-      // Patient profile translations
-      'medical_information': 'المعلومات الطبية',
-      'previous_consultations': 'الاستشارات السابقة',
-      'date_of_birth_not_specified': 'تاريخ الميلاد غير محدد',
-      'medical_history': 'التاريخ الطبي',
-      'medical_file': 'الملف الطبي',
-      'access_denied': 'تم رفض الوصول',
-      'access_denied_message':
-          'يجب أن يكون لديك موعد مؤكد مع هذا المريض للوصول إلى ملفه الطبي.',
-      'no_medical_files': 'لا توجد ملفات طبية',
-      'no_medical_files_message':
-          'هذا المريض لا يحتوي على أي ملفات في سجله الطبي بعد.',
-      'medical_files': 'الملفات الطبية',
-      'view_all': 'مشاهدة الكل',
-      'modify_time_feature_coming_soon': 'ميزة تعديل الوقت ستكون متاحة قريباً',
-      'verification': 'التحقق',
+      // Other missing translations
+      'default_doctor_name': 'د. غير معروف',
+      'hello_doctor': 'مرحبا د. {0}',
+      
+      // Fix appointment notification translations
+      'appointment_accepted_message': 'قبل د. {0} موعدك في {1}',
+      'appointment_rejected_message': 'رفض د. {0} موعدك في {1}',
+      'appointment_cancelled_message': 'ألغى د. {0} موعدك في {1}',
+      'prescription_created_message': 'أنشأ د. {0} وصفة طبية جديدة لك',
+      'prescription_updated_message': 'قام د. {0} بتحديث وصفتك الطبية: {1}',
+      
+      // Text for doctor in various parts of the app
+      'doctor_with_name': 'د. {0}',
 
       // Notification translations
-      'new_appointment': 'موعد جديد',
-      'appointment_accepted': 'تم قبول الموعد',
-      'appointment_rejected': 'تم رفض الموعد',
-      'patient_name_unknown': 'مريض',
-      'doctor_name_unknown': 'طبيب غير معروف',
-      'requested_appointment_for': 'طلب موعداً في',
-      'has_accepted_your_appointment_for': 'قبل موعدك في',
-      'has_rejected_your_appointment_for': 'رفض موعدك في',
-      'at': 'في',
-
-      // AI Chatbot translations
-      'ai_assistant': 'المساعد الذكي',
+      'new_message_from': 'رسالة جديدة من {sender}: {message}',
     },
   };
 }

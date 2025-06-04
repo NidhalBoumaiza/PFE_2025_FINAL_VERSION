@@ -16,7 +16,7 @@ class AppThemes {
   static const darkBackgroundColor = Color(0xFF121212);
   static const darkCardColor = Color(0xFF1E1E1E);
   static const darkTextColor = Colors.white;
-  static const darkSecondaryTextColor = Color(0xFFBDBDBD);
+  static const darkSecondaryTextColor = Color(0xFFD0D0D0);
   static const darkDividerColor = Color(0xFF424242);
 
   // Light Theme
@@ -233,13 +233,15 @@ class AppThemes {
         displaySmall: GoogleFonts.raleway(color: darkTextColor),
         headlineMedium: GoogleFonts.raleway(color: darkTextColor),
         headlineSmall: GoogleFonts.raleway(color: darkTextColor),
-        titleLarge: GoogleFonts.raleway(color: darkTextColor),
-        titleMedium: GoogleFonts.raleway(color: darkTextColor),
+        titleLarge: GoogleFonts.raleway(color: darkTextColor, fontWeight: FontWeight.bold),
+        titleMedium: GoogleFonts.raleway(color: darkTextColor, fontWeight: FontWeight.w600),
         titleSmall: GoogleFonts.raleway(color: darkTextColor),
         bodyLarge: GoogleFonts.raleway(color: darkTextColor),
         bodyMedium: GoogleFonts.raleway(color: darkTextColor),
         bodySmall: GoogleFonts.raleway(color: darkSecondaryTextColor),
-        labelLarge: GoogleFonts.raleway(color: darkTextColor),
+        labelLarge: GoogleFonts.raleway(color: darkTextColor, fontWeight: FontWeight.w500),
+        labelMedium: GoogleFonts.raleway(color: darkTextColor),
+        labelSmall: GoogleFonts.raleway(color: darkSecondaryTextColor),
       ),
     ),
     dividerTheme: const DividerThemeData(
@@ -295,11 +297,11 @@ class AppThemes {
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: BorderSide.none,
+        borderSide: BorderSide(color: Colors.grey[700]!),
       ),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: BorderSide.none,
+        borderSide: BorderSide(color: Colors.grey[600]!),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
@@ -315,6 +317,8 @@ class AppThemes {
       ),
       labelStyle: GoogleFonts.raleway(color: darkSecondaryTextColor),
       hintStyle: GoogleFonts.raleway(color: darkSecondaryTextColor),
+      prefixIconColor: darkSecondaryTextColor,
+      suffixIconColor: darkSecondaryTextColor,
     ),
     switchTheme: SwitchThemeData(
       thumbColor: MaterialStateProperty.resolveWith<Color>(

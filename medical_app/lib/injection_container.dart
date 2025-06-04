@@ -101,13 +101,14 @@ import 'package:medical_app/features/dossier_medical/domain/usecases/has_dossier
 import 'package:medical_app/features/dossier_medical/domain/usecases/update_file_description.dart';
 import 'package:medical_app/features/dossier_medical/domain/usecases/check_doctor_access.dart';
 import 'package:medical_app/features/dossier_medical/presentation/bloc/dossier_medical_bloc.dart';
-import 'package:medical_app/features/ai_chatbot/data/datasources/ai_chatbot_remote_datasource.dart';
 import 'package:medical_app/features/ai_chatbot/data/repositories/ai_chatbot_repository_impl.dart';
 import 'package:medical_app/features/ai_chatbot/domain/repositories/ai_chatbot_repository.dart';
 import 'package:medical_app/features/ai_chatbot/domain/usecases/analyze_image_usecase.dart';
 import 'package:medical_app/features/ai_chatbot/domain/usecases/analyze_pdf_usecase.dart';
+import 'package:medical_app/features/ai_chatbot/domain/usecases/send_text_message_usecase.dart';
 import 'package:medical_app/features/ai_chatbot/presentation/bloc/ai_chatbot_bloc.dart';
 import 'package:dio/dio.dart';
+import 'package:medical_app/features/ai_service/ai_service_client.dart';
 
 final sl = GetIt.instance;
 
@@ -198,6 +199,7 @@ Future<void> init() async {
   );
   sl.registerFactory(
     () => AiChatbotBloc(
+      sendTextMessageUseCase: sl(),
       analyzeImageUseCase: sl(),
       analyzePdfUseCase: sl(),
     ),
@@ -250,6 +252,7 @@ Future<void> init() async {
   sl.registerLazySingleton(() => UpdateFileDescription(sl()));
   sl.registerLazySingleton(() => CheckDoctorAccess(sl()));
   sl.registerLazySingleton(() => DeleteAccountUseCase(sl()));
+  sl.registerLazySingleton(() => SendTextMessageUseCase(repository: sl()));
   sl.registerLazySingleton(() => AnalyzeImageUseCase(repository: sl()));
   sl.registerLazySingleton(() => AnalyzePdfUseCase(repository: sl()));
 
@@ -284,7 +287,7 @@ Future<void> init() async {
         DossierMedicalRepositoryImpl(remoteDataSource: sl(), networkInfo: sl()),
   );
   sl.registerLazySingleton<AiChatbotRepository>(
-    () => AiChatbotRepositoryImpl(remoteDataSource: sl()),
+    () => AiChatbotRepositoryImpl(aiServiceClient: sl()),
   );
 
   // Data Sources
@@ -352,9 +355,6 @@ Future<void> init() async {
       notificationRemoteDataSource: sl(),
     ),
   );
-  sl.registerLazySingleton<AiChatbotRemoteDataSource>(
-    () => AiChatbotRemoteDataSourceImpl(dio: sl()),
-  );
 
   // Core
   sl.registerLazySingleton<NetworkInfo>(() => NetworkInfoImpl(sl()));
@@ -373,4 +373,9 @@ Future<void> init() async {
   sl.registerLazySingleton(() => FlutterLocalNotificationsPlugin());
   sl.registerLazySingleton(() => http.Client());
   sl.registerLazySingleton(() => Dio());
+
+  // AI Service
+  sl.registerLazySingleton(() => AiServiceClient(
+        baseUrl: 'http://192.168.36.221:5000', // Updated IP address for physical device
+      ));
 }

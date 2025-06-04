@@ -23,11 +23,123 @@ class ProfilMedecin extends StatefulWidget {
 
 class _ProfilMedecinState extends State<ProfilMedecin> {
   MedecinEntity? _medecin;
+  bool _isEditMode = false;
+  
+  // Controllers for editable fields
+  final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _lastNameController = TextEditingController();
+  final TextEditingController _phoneController = TextEditingController();
+  final TextEditingController _specialityController = TextEditingController();
+  final TextEditingController _licenseController = TextEditingController();
+  final TextEditingController _consultationFeeController = TextEditingController();
+  
+  // Selected gender and date
+  String? _selectedGender;
+  DateTime? _selectedDate;
 
   @override
   void initState() {
     super.initState();
     _loadUserData();
+  }
+  
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _lastNameController.dispose();
+    _phoneController.dispose();
+    _specialityController.dispose();
+    _licenseController.dispose();
+    _consultationFeeController.dispose();
+    super.dispose();
+  }
+  
+  void _toggleEditMode() {
+    setState(() {
+      if (_isEditMode) {
+        // Leaving edit mode, save changes
+        _saveChanges();
+      } else {
+        // Entering edit mode, initialize controllers
+        _initializeControllers();
+      }
+      _isEditMode = !_isEditMode;
+    });
+  }
+  
+  void _initializeControllers() {
+    if (_medecin != null) {
+      _nameController.text = _medecin!.name;
+      _lastNameController.text = _medecin!.lastName;
+      _phoneController.text = _medecin!.phoneNumber;
+      _specialityController.text = _medecin!.speciality ?? '';
+      _licenseController.text = _medecin!.numLicence ?? '';
+      _consultationFeeController.text = _medecin!.consultationFee?.toString() ?? '';
+      _selectedGender = _medecin!.gender;
+      _selectedDate = _medecin!.dateOfBirth;
+    }
+  }
+  
+  void _saveChanges() {
+    if (_medecin != null) {
+      double? consultationFee;
+      if (_consultationFeeController.text.isNotEmpty) {
+        consultationFee = double.tryParse(_consultationFeeController.text);
+      }
+      
+      final updatedMedecin = MedecinEntity(
+        id: _medecin!.id,
+        name: _nameController.text,
+        lastName: _lastNameController.text,
+        email: _medecin!.email,
+        role: _medecin!.role,
+        gender: _selectedGender ?? _medecin!.gender,
+        phoneNumber: _phoneController.text,
+        dateOfBirth: _selectedDate ?? _medecin!.dateOfBirth,
+        speciality: _specialityController.text.isEmpty ? null : _specialityController.text,
+        numLicence: _licenseController.text.isEmpty ? null : _licenseController.text,
+        appointmentDuration: _medecin!.appointmentDuration,
+        consultationFee: consultationFee,
+        education: _medecin!.education,
+        experience: _medecin!.experience,
+        address: _medecin!.address,
+        location: _medecin!.location,
+        accountStatus: _medecin!.accountStatus,
+        verificationCode: _medecin!.verificationCode,
+        validationCodeExpiresAt: _medecin!.validationCodeExpiresAt,
+        fcmToken: _medecin!.fcmToken,
+      );
+      
+      // Dispatch update event
+      context.read<UpdateUserBloc>().add(UpdateUserEvent(updatedMedecin));
+    }
+  }
+
+  Future<void> _selectDate(BuildContext context) async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: _selectedDate ?? DateTime.now(),
+      firstDate: DateTime(1900),
+      lastDate: DateTime.now(),
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: ColorScheme.light(
+              primary: AppColors.primaryColor,
+              onPrimary: Colors.white,
+              onSurface: Theme.of(context).textTheme.bodyLarge!.color!,
+            ),
+          ),
+          child: child!,
+        );
+      },
+    );
+    
+    if (picked != null && picked != _selectedDate) {
+      setState(() {
+        _selectedDate = picked;
+      });
+    }
   }
 
   Future<void> _loadUserData() async {
@@ -252,14 +364,17 @@ class _ProfilMedecinState extends State<ProfilMedecin> {
                 children: [
                   Text(
                     'choose_consultation_duration'.tr,
-                    style: GoogleFonts.raleway(fontSize: 16.sp),
+                    style: GoogleFonts.raleway(
+                      fontSize: 16.sp,
+                      color: Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black87,
+                    ),
                   ),
                   SizedBox(height: 24.h),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Text(
-                        'duration_label'.tr + ': ',
+                        '${'duration_label'.tr}: ',
                         style: GoogleFonts.raleway(
                           fontSize: 16.sp,
                           fontWeight: FontWeight.w600,
@@ -272,8 +387,11 @@ class _ProfilMedecinState extends State<ProfilMedecin> {
                               return DropdownMenuItem<int>(
                                 value: value,
                                 child: Text(
-                                  '$value ' + 'minutes'.tr,
-                                  style: GoogleFonts.raleway(fontSize: 16.sp),
+                                  'duration_minutes'.trParams({'minutes': value.toString()}),
+                                  style: GoogleFonts.raleway(
+                                    fontSize: 16.sp,
+                                    color: Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black87,
+                                  ),
                                 ),
                               );
                             }).toList(),
@@ -284,6 +402,7 @@ class _ProfilMedecinState extends State<ProfilMedecin> {
                             });
                           }
                         },
+                        dropdownColor: Theme.of(context).cardColor,
                       ),
                     ],
                   ),
@@ -370,6 +489,33 @@ class _ProfilMedecinState extends State<ProfilMedecin> {
   Widget build(BuildContext context) {
     return SafeArea(
       child: Scaffold(
+        appBar: AppBar(
+          title: Text(
+            'profile'.tr,
+            style: GoogleFonts.raleway(
+              fontSize: 18.sp,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+            ),
+          ),
+          backgroundColor: AppColors.primaryColor,
+          actions: [
+            IconButton(
+              icon: Icon(_isEditMode ? Icons.save : Icons.edit, color: Colors.white),
+              onPressed: _toggleEditMode,
+            ),
+            IconButton(
+              icon: Icon(Icons.settings, color: Colors.white),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const SettingsPage()),
+                );
+              },
+            ),
+          ],
+          elevation: 0,
+        ),
         body: BlocConsumer<UpdateUserBloc, UpdateUserState>(
           listener: (context, state) {
             if (state is UpdateUserSuccess) {
@@ -470,12 +616,50 @@ class _ProfilMedecinState extends State<ProfilMedecin> {
                               ],
                             ),
                             SizedBox(height: 16.h),
+                            _isEditMode ? 
+                            Column(
+                              children: [
+                                SizedBox(
+                                  width: double.infinity,
+                                  child: TextField(
+                                    controller: _nameController,
+                                    decoration: InputDecoration(
+                                      labelText: 'name_label'.tr,
+                                      border: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                    ),
+                                    style: GoogleFonts.raleway(
+                                      fontSize: 16.sp,
+                                      color: Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black87,
+                                    ),
+                                  ),
+                                ),
+                                SizedBox(height: 8.h),
+                                SizedBox(
+                                  width: double.infinity,
+                                  child: TextField(
+                                    controller: _lastNameController,
+                                    decoration: InputDecoration(
+                                      labelText: 'first_name_label'.tr,
+                                      border: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                    ),
+                                    style: GoogleFonts.raleway(
+                                      fontSize: 16.sp,
+                                      color: Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black87,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ) :
                             Text(
-                              'Dr. ${_medecin!.name} ${_medecin!.lastName}',
+                              '${'doctor_prefix'.tr} ${_medecin!.name} ${_medecin!.lastName}',
                               style: GoogleFonts.raleway(
                                 fontSize: 20.sp,
                                 fontWeight: FontWeight.bold,
-                                color: Colors.black87,
+                                color: Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black87,
                               ),
                               textAlign: TextAlign.center,
                             ),
@@ -494,7 +678,7 @@ class _ProfilMedecinState extends State<ProfilMedecin> {
                               _medecin!.email,
                               style: GoogleFonts.raleway(
                                 fontSize: 14.sp,
-                                color: Colors.black54,
+                                color: Theme.of(context).brightness == Brightness.dark ? Colors.grey[300] : Colors.black54,
                               ),
                               textAlign: TextAlign.center,
                             ),
@@ -507,7 +691,7 @@ class _ProfilMedecinState extends State<ProfilMedecin> {
                         style: GoogleFonts.raleway(
                           fontSize: 16.sp,
                           fontWeight: FontWeight.bold,
-                          color: Colors.black87,
+                          color: Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black87,
                         ),
                       ),
                       SizedBox(height: 12.h),
@@ -530,7 +714,7 @@ class _ProfilMedecinState extends State<ProfilMedecin> {
                         style: GoogleFonts.raleway(
                           fontSize: 16.sp,
                           fontWeight: FontWeight.bold,
-                          color: Colors.black87,
+                          color: Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black87,
                         ),
                       ),
                       SizedBox(height: 12.h),
@@ -544,12 +728,12 @@ class _ProfilMedecinState extends State<ProfilMedecin> {
                       ),
                       _buildInfoTile(
                         'consultation_duration_label'.tr,
-                        '${_medecin!.appointmentDuration} ' + 'minutes'.tr,
+                        'consultation_duration_value'.trParams({'duration': _medecin!.appointmentDuration.toString()}),
                       ),
                       if (_medecin?.consultationFee != null)
                         _buildInfoTile(
                           'consultation_fee_label'.tr,
-                          '${_medecin!.consultationFee} ' + 'currency'.tr,
+                          'consultation_fee_value'.trParams({'fee': _medecin!.consultationFee.toString()}),
                         ),
                       if (_medecin?.address != null &&
                           _medecin!.address!.isNotEmpty)
@@ -569,7 +753,7 @@ class _ProfilMedecinState extends State<ProfilMedecin> {
                           style: GoogleFonts.raleway(
                             fontSize: 16.sp,
                             fontWeight: FontWeight.bold,
-                            color: Colors.black87,
+                            color: Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black87,
                           ),
                         ),
                         SizedBox(height: 12.h),
@@ -596,7 +780,7 @@ class _ProfilMedecinState extends State<ProfilMedecin> {
                                           style: GoogleFonts.raleway(
                                             fontSize: 14.sp,
                                             fontWeight: FontWeight.bold,
-                                            color: Colors.black87,
+                                            color: Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black87,
                                           ),
                                         ),
                                       if (edu['degree'] != null)
@@ -604,7 +788,7 @@ class _ProfilMedecinState extends State<ProfilMedecin> {
                                           edu['degree']!,
                                           style: GoogleFonts.raleway(
                                             fontSize: 14.sp,
-                                            color: Colors.black87,
+                                            color: Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black87,
                                           ),
                                         ),
                                       if (edu['year'] != null)
@@ -630,7 +814,7 @@ class _ProfilMedecinState extends State<ProfilMedecin> {
                           style: GoogleFonts.raleway(
                             fontSize: 16.sp,
                             fontWeight: FontWeight.bold,
-                            color: Colors.black87,
+                            color: Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black87,
                           ),
                         ),
                         SizedBox(height: 12.h),
@@ -657,7 +841,7 @@ class _ProfilMedecinState extends State<ProfilMedecin> {
                                           style: GoogleFonts.raleway(
                                             fontSize: 14.sp,
                                             fontWeight: FontWeight.bold,
-                                            color: Colors.black87,
+                                            color: Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black87,
                                           ),
                                         ),
                                       if (exp['organization'] != null)
@@ -665,7 +849,7 @@ class _ProfilMedecinState extends State<ProfilMedecin> {
                                           exp['organization']!,
                                           style: GoogleFonts.raleway(
                                             fontSize: 14.sp,
-                                            color: Colors.black87,
+                                            color: Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black87,
                                           ),
                                         ),
                                       if (exp['period'] != null)
@@ -684,6 +868,29 @@ class _ProfilMedecinState extends State<ProfilMedecin> {
                             .toList(),
                       ],
                       SizedBox(height: 8.h),
+                      _isEditMode ? 
+                      Container(
+                        width: double.infinity,
+                        margin: EdgeInsets.symmetric(vertical: 16.h),
+                        child: ElevatedButton(
+                          onPressed: _saveChanges,
+                          style: ElevatedButton.styleFrom(
+                            padding: EdgeInsets.symmetric(vertical: 12.h),
+                            backgroundColor: AppColors.primaryColor,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                          child: Text(
+                            'save'.tr,
+                            style: GoogleFonts.raleway(
+                              fontSize: 16.sp,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                      ) :
                       Card(
                         elevation: 2,
                         margin: EdgeInsets.only(bottom: 10.h),
@@ -729,33 +936,142 @@ class _ProfilMedecinState extends State<ProfilMedecin> {
   }
 
   Widget _buildInfoTile(String label, String value) {
-    return Card(
-      margin: EdgeInsets.only(bottom: 10.h),
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: Padding(
-        padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              label,
+    if (_isEditMode) {
+      // Return an editable widget based on the label
+      TextEditingController? controller;
+      Widget? customWidget;
+      
+      switch (label) {
+        case String l when l == 'phone_number_label'.tr:
+          controller = _phoneController;
+          break;
+        case String l when l == 'gender'.tr:
+          customWidget = DropdownButton<String>(
+            value: _selectedGender,
+            items: ['male'.tr, 'female'.tr].map((String value) {
+              return DropdownMenuItem<String>(
+                value: value,
+                child: Text(value),
+              );
+            }).toList(),
+            onChanged: (newValue) {
+              setState(() {
+                _selectedGender = newValue;
+              });
+            },
+            style: GoogleFonts.raleway(
+              fontSize: 14.sp,
+              color: Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black87,
+            ),
+            dropdownColor: Theme.of(context).cardColor,
+          );
+          break;
+        case String l when l == 'date_of_birth_label'.tr:
+          customWidget = InkWell(
+            onTap: () => _selectDate(context),
+            child: Text(
+              _selectedDate?.toIso8601String().split('T').first ?? 'not_specified'.tr,
               style: GoogleFonts.raleway(
                 fontSize: 14.sp,
-                fontWeight: FontWeight.bold,
-                color: Colors.black87,
+                color: Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black87,
               ),
             ),
-            Text(
-              value,
-              style: GoogleFonts.raleway(
-                fontSize: 14.sp,
-                color: Colors.black54,
+          );
+          break;
+        case String l when l == 'specialty_label'.tr:
+          controller = _specialityController;
+          break;
+        case String l when l == 'license_number_label'.tr:
+          controller = _licenseController;
+          break;
+        case String l when l == 'consultation_fee_label'.tr:
+          controller = _consultationFeeController;
+          break;
+      }
+      
+      return Card(
+        margin: EdgeInsets.only(bottom: 10.h),
+        elevation: 2,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        child: Padding(
+          padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                label,
+                style: GoogleFonts.raleway(
+                  fontSize: 14.sp,
+                  fontWeight: FontWeight.bold,
+                  color: Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black87,
+                ),
               ),
-            ),
-          ],
+              customWidget != null 
+                ? customWidget 
+                : controller != null 
+                  ? SizedBox(
+                      width: 150.w,
+                      child: TextField(
+                        controller: controller,
+                        style: GoogleFonts.raleway(
+                          fontSize: 14.sp,
+                          color: Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black87,
+                        ),
+                        decoration: InputDecoration(
+                          isDense: true,
+                          contentPadding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 8.h),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                            borderSide: BorderSide(
+                              color: Theme.of(context).brightness == Brightness.dark 
+                                ? Colors.grey[600]! 
+                                : Colors.grey[300]!,
+                            ),
+                          ),
+                        ),
+                      ),
+                    )
+                  : Text(
+                      value,
+                      style: GoogleFonts.raleway(
+                        fontSize: 14.sp,
+                        color: Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black54,
+                      ),
+                    ),
+            ],
+          ),
         ),
-      ),
-    );
+      );
+    } else {
+      // Return the regular non-editable tile
+      return Card(
+        margin: EdgeInsets.only(bottom: 10.h),
+        elevation: 2,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        child: Padding(
+          padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                label,
+                style: GoogleFonts.raleway(
+                  fontSize: 14.sp,
+                  fontWeight: FontWeight.bold,
+                  color: Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black87,
+                ),
+              ),
+              Text(
+                value,
+                style: GoogleFonts.raleway(
+                  fontSize: 14.sp,
+                  color: Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black54,
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
   }
 }
