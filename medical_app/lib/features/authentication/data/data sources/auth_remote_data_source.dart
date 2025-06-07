@@ -43,6 +43,12 @@ abstract class AuthRemoteDataSource {
     required String userId,
     required String password,
   });
+  Future<void> updateUserTokenAndLocation({
+    required String userId,
+    String? fcmToken,
+    Map<String, dynamic>? location,
+    Map<String, dynamic>? address,
+  });
 }
 
 class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
@@ -666,29 +672,53 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
                 'updateUser: Detected change in appointmentDuration from $existingDuration to ${user.appointmentDuration}',
               );
 
-              // First update the doctor record
-              final updatedUser = MedecinModel(
-                id: user.id,
-                name: user.name,
-                lastName: user.lastName,
-                email: normalizedEmail,
-                role: user.role,
-                gender: user.gender,
-                phoneNumber: user.phoneNumber,
-                dateOfBirth: user.dateOfBirth,
-                speciality: user.speciality,
-                numLicence: user.numLicence,
-                appointmentDuration: user.appointmentDuration,
-                accountStatus: user.accountStatus,
-                verificationCode: user.verificationCode,
-                validationCodeExpiresAt: user.validationCodeExpiresAt,
-              );
+              // Update only the changed fields using .update() to preserve existing data
+              Map<String, dynamic> updateData = {
+                'name': user.name,
+                'lastName': user.lastName,
+                'email': normalizedEmail,
+                'gender': user.gender,
+                'phoneNumber': user.phoneNumber,
+                'appointmentDuration': user.appointmentDuration,
+                'updatedAt': FieldValue.serverTimestamp(),
+              };
 
-              print('updateUser: Updating doctor record with new duration');
+              // Add optional fields only if they exist in the user object
+              if (user.dateOfBirth != null) {
+                updateData['dateOfBirth'] = user.dateOfBirth;
+              }
+              if (user.speciality != null) {
+                updateData['speciality'] = user.speciality;
+              }
+              if (user.numLicence != null) {
+                updateData['numLicence'] = user.numLicence;
+              }
+              if (user is MedecinModel) {
+                final medecinUser = user as MedecinModel;
+                if (medecinUser.education != null) {
+                  updateData['education'] = medecinUser.education;
+                }
+                if (medecinUser.experience != null) {
+                  updateData['experience'] = medecinUser.experience;
+                }
+                if (medecinUser.consultationFee != null) {
+                  updateData['consultationFee'] = medecinUser.consultationFee;
+                }
+                if (medecinUser.address != null) {
+                  updateData['address'] = medecinUser.address;
+                }
+                if (medecinUser.location != null) {
+                  updateData['location'] = medecinUser.location;
+                }
+              }
+
+              print(
+                'updateUser: Updating doctor record with new duration using .update()',
+              );
               await firestore
                   .collection(collection)
                   .doc(user.id)
-                  .set(updatedUser.toJson());
+                  .update(updateData);
 
               // Then update future appointments
               print('updateUser: Updating future appointments');
@@ -697,9 +727,13 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
                 user.appointmentDuration,
               );
 
-              // Cache updated user
-              print('updateUser: Caching updated user locally');
-              await localDataSource.cacheUser(updatedUser);
+              // Get the updated document to cache locally
+              final updatedDoc =
+                  await firestore.collection(collection).doc(user.id).get();
+              if (updatedDoc.exists) {
+                final updatedUser = MedecinModel.fromJson(updatedDoc.data()!);
+                await localDataSource.cacheUser(updatedUser);
+              }
 
               print('updateUser: Completed with appointment updates');
               return unit;
@@ -711,61 +745,117 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
         }
       }
 
-      // Normal update flow
-      final updatedUser =
-          user is PatientModel
-              ? PatientModel(
-                id: user.id,
-                name: user.name,
-                lastName: user.lastName,
-                email: normalizedEmail,
-                role: user.role,
-                gender: user.gender,
-                phoneNumber: user.phoneNumber,
-                dateOfBirth: user.dateOfBirth,
-                antecedent: user.antecedent,
-                accountStatus: user.accountStatus,
-                verificationCode: user.verificationCode,
-                validationCodeExpiresAt: user.validationCodeExpiresAt,
-              )
-              : user is MedecinModel
-              ? MedecinModel(
-                id: user.id,
-                name: user.name,
-                lastName: user.lastName,
-                email: normalizedEmail,
-                role: user.role,
-                gender: user.gender,
-                phoneNumber: user.phoneNumber,
-                dateOfBirth: user.dateOfBirth,
-                speciality: user.speciality,
-                numLicence: user.numLicence,
-                appointmentDuration: user.appointmentDuration,
-                accountStatus: user.accountStatus,
-                verificationCode: user.verificationCode,
-                validationCodeExpiresAt: user.validationCodeExpiresAt,
-              )
-              : UserModel(
-                id: user.id,
-                name: user.name,
-                lastName: user.lastName,
-                email: normalizedEmail,
-                role: user.role,
-                gender: user.gender,
-                phoneNumber: user.phoneNumber,
-                dateOfBirth: user.dateOfBirth,
-                verificationCode: user.verificationCode,
-                validationCodeExpiresAt: user.validationCodeExpiresAt,
-              );
+      // Normal update flow - Use .update() instead of .set() to preserve existing data
+      Map<String, dynamic> updateData = {
+        'name': user.name,
+        'lastName': user.lastName,
+        'email': normalizedEmail,
+        'gender': user.gender,
+        'phoneNumber': user.phoneNumber,
+        'updatedAt': FieldValue.serverTimestamp(),
+      };
+
+      // Add optional fields only if they exist in the user object
+      if (user.dateOfBirth != null) {
+        updateData['dateOfBirth'] = user.dateOfBirth;
+      }
+
+      // Add patient-specific fields
+      if (user is PatientModel) {
+        final patientUser = user as PatientModel;
+        if (patientUser.antecedent != null) {
+          updateData['antecedent'] = patientUser.antecedent;
+        }
+        if (patientUser.bloodType != null) {
+          updateData['bloodType'] = patientUser.bloodType;
+        }
+        if (patientUser.height != null) {
+          updateData['height'] = patientUser.height;
+        }
+        if (patientUser.weight != null) {
+          updateData['weight'] = patientUser.weight;
+        }
+        if (patientUser.allergies != null) {
+          updateData['allergies'] = patientUser.allergies;
+        }
+        if (patientUser.chronicDiseases != null) {
+          updateData['chronicDiseases'] = patientUser.chronicDiseases;
+        }
+        if (patientUser.emergencyContact != null) {
+          updateData['emergencyContact'] = patientUser.emergencyContact;
+        }
+        if (patientUser.address != null) {
+          updateData['address'] = patientUser.address;
+        }
+        if (patientUser.location != null) {
+          updateData['location'] = patientUser.location;
+        }
+      }
+
+      // Add doctor-specific fields
+      if (user is MedecinModel) {
+        final medecinUser = user as MedecinModel;
+        if (medecinUser.speciality != null) {
+          updateData['speciality'] = medecinUser.speciality;
+        }
+        if (medecinUser.numLicence != null) {
+          updateData['numLicence'] = medecinUser.numLicence;
+        }
+        if (medecinUser.appointmentDuration != null) {
+          updateData['appointmentDuration'] = medecinUser.appointmentDuration;
+        }
+        if (medecinUser.education != null) {
+          updateData['education'] = medecinUser.education;
+        }
+        if (medecinUser.experience != null) {
+          updateData['experience'] = medecinUser.experience;
+        }
+        if (medecinUser.consultationFee != null) {
+          updateData['consultationFee'] = medecinUser.consultationFee;
+        }
+        if (medecinUser.address != null) {
+          updateData['address'] = medecinUser.address;
+        }
+        if (medecinUser.location != null) {
+          updateData['location'] = medecinUser.location;
+        }
+      }
+
+      // Only update verification-related fields if they are provided
+      if (user.verificationCode != null) {
+        updateData['verificationCode'] = user.verificationCode;
+      }
+      if (user.validationCodeExpiresAt != null) {
+        updateData['validationCodeExpiresAt'] = user.validationCodeExpiresAt;
+      }
+      if (user.accountStatus != null) {
+        updateData['accountStatus'] = user.accountStatus;
+      }
+
       print(
-        'updateUser: Updating Firestore in collection=$collection, doc=${user.id}',
+        'updateUser: Updating Firestore in collection=$collection, doc=${user.id} using .update()',
       );
-      await firestore
-          .collection(collection)
-          .doc(user.id)
-          .set(updatedUser.toJson());
-      print('updateUser: Caching user locally');
-      await localDataSource.cacheUser(updatedUser);
+      print('updateUser: Update data keys: ${updateData.keys.toList()}');
+
+      await firestore.collection(collection).doc(user.id).update(updateData);
+
+      // Get the updated document to cache locally with all preserved data
+      final updatedDoc =
+          await firestore.collection(collection).doc(user.id).get();
+      if (updatedDoc.exists) {
+        UserModel updatedUser;
+        if (collection == 'patients') {
+          updatedUser = PatientModel.fromJson(updatedDoc.data()!);
+        } else if (collection == 'medecins') {
+          updatedUser = MedecinModel.fromJson(updatedDoc.data()!);
+        } else {
+          updatedUser = UserModel.fromJson(updatedDoc.data()!);
+        }
+
+        print('updateUser: Caching updated user locally');
+        await localDataSource.cacheUser(updatedUser);
+      }
+
       print('updateUser: Completed successfully');
       return unit;
     } on FirebaseException catch (e) {
@@ -1120,6 +1210,75 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     } catch (e) {
       print('_updateFutureAppointmentsEndTime: Error: $e');
       // Don't throw exception, as this is an enhancement, not a critical operation
+    }
+  }
+
+  // Helper method to safely update FCM token and location without overwriting documents
+  Future<void> updateUserTokenAndLocation({
+    required String userId,
+    String? fcmToken,
+    Map<String, dynamic>? location,
+    Map<String, dynamic>? address,
+  }) async {
+    try {
+      print('updateUserTokenAndLocation: Starting for userId=$userId');
+
+      // Find which collection the user is in
+      String? collection;
+      final collections = ['patients', 'medecins'];
+
+      for (var coll in collections) {
+        final doc = await firestore.collection(coll).doc(userId).get();
+        if (doc.exists) {
+          collection = coll;
+          break;
+        }
+      }
+
+      if (collection == null) {
+        print('updateUserTokenAndLocation: User not found in any collection');
+        return;
+      }
+
+      // Prepare update data
+      Map<String, dynamic> updateData = {
+        'updatedAt': FieldValue.serverTimestamp(),
+      };
+
+      if (fcmToken != null && fcmToken.isNotEmpty) {
+        updateData['fcmToken'] = fcmToken;
+        print('updateUserTokenAndLocation: Adding FCM token to update');
+      }
+
+      if (location != null) {
+        updateData['location'] = location;
+        print('updateUserTokenAndLocation: Adding location to update');
+      }
+
+      if (address != null) {
+        updateData['address'] = address;
+        print('updateUserTokenAndLocation: Adding address to update');
+      }
+
+      // Update the main collection
+      await firestore.collection(collection).doc(userId).update(updateData);
+      print('updateUserTokenAndLocation: Updated $collection collection');
+
+      // Also update the users collection for notifications if FCM token is provided
+      if (fcmToken != null && fcmToken.isNotEmpty) {
+        await firestore.collection('users').doc(userId).update({
+          'fcmToken': fcmToken,
+          'updatedAt': FieldValue.serverTimestamp(),
+        });
+        print(
+          'updateUserTokenAndLocation: Updated users collection for notifications',
+        );
+      }
+
+      print('updateUserTokenAndLocation: Completed successfully');
+    } catch (e) {
+      print('updateUserTokenAndLocation: Error: $e');
+      // Don't throw exception as this is often a background operation
     }
   }
 

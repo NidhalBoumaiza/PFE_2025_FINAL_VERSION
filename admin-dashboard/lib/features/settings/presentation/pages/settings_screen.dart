@@ -5,6 +5,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../../../../widgets/main_layout.dart';
 import '../../../../config/theme.dart';
+import '../../../../core/widgets/theme_toggle_widget.dart';
 import '../../../auth/presentation/bloc/auth_bloc.dart';
 
 class SettingsScreen extends StatelessWidget {
@@ -34,6 +35,16 @@ class SettingsScreen extends StatelessWidget {
                 ),
               ),
 
+              // Theme Settings Section
+              _buildSection(
+                context: context,
+                title: 'Appearance',
+                icon: Icons.palette,
+                children: [const ThemeToggleWidget()],
+              ),
+
+              SizedBox(height: 24.h),
+
               // Settings explanation
               Card(
                 elevation: 4,
@@ -57,29 +68,11 @@ class SettingsScreen extends StatelessWidget {
                       ),
                       SizedBox(height: 16.h),
                       Text(
-                        'This screen would allow administrators to configure application settings such as theme preferences, notifications, and other system-wide settings. You would implement a BLoC for settings similar to the auth and dashboard BLoCs.',
+                        'Configure your admin dashboard preferences and account settings. The theme mode can be toggled above to switch between light and dark modes.',
                         textAlign: TextAlign.center,
                         style: TextStyle(fontSize: 14.sp),
                       ),
                       SizedBox(height: 24.h),
-
-                      // Dark mode toggle example
-                      ListTile(
-                        title: Text(
-                          'Dark Mode',
-                          style: TextStyle(fontSize: 16.sp),
-                        ),
-                        subtitle: Text(
-                          'Toggle between light and dark themes',
-                          style: TextStyle(fontSize: 14.sp),
-                        ),
-                        trailing: Switch(
-                          value: isDarkMode,
-                          onChanged: (value) {
-                            // Would be implemented with a SettingsBloc
-                          },
-                        ),
-                      ),
 
                       // Account section
                       BlocBuilder<AuthBloc, AuthState>(
@@ -125,6 +118,48 @@ class SettingsScreen extends StatelessWidget {
               ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSection({
+    required BuildContext context,
+    required String title,
+    required IconData icon,
+    required List<Widget> children,
+  }) {
+    return Card(
+      elevation: 2,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
+      child: Padding(
+        padding: EdgeInsets.all(16.w),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Container(
+                  padding: EdgeInsets.all(8.w),
+                  decoration: BoxDecoration(
+                    color: AppTheme.primaryColor.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(8.r),
+                  ),
+                  child: Icon(icon, color: AppTheme.primaryColor, size: 20.sp),
+                ),
+                SizedBox(width: 12.w),
+                Text(
+                  title,
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16.sp,
+                  ),
+                ),
+              ],
+            ),
+            SizedBox(height: 16.h),
+            ...children,
+          ],
         ),
       ),
     );

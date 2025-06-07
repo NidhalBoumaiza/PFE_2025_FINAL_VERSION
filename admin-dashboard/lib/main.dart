@@ -9,8 +9,11 @@ import 'config/theme.dart';
 import 'constants/routes.dart';
 import 'core/util/auth_guard.dart';
 import 'core/util/route_guard.dart';
+import 'core/theme/theme_cubit.dart';
 import 'features/auth/presentation/bloc/auth_bloc.dart';
 import 'features/dashboard/presentation/bloc/dashboard_bloc.dart';
+import 'features/users/presentation/bloc/users_bloc.dart';
+import 'features/users/presentation/bloc/medical_dossier_bloc.dart';
 
 // Import screens from new locations
 import 'features/auth/presentation/pages/login_screen.dart';
@@ -52,6 +55,9 @@ class MyApp extends StatelessWidget {
       providers: [
         BlocProvider(create: (_) => di.sl<AuthBloc>()..add(CheckAuthStatus())),
         BlocProvider(create: (_) => di.sl<DashboardBloc>()),
+        BlocProvider(create: (_) => di.sl<UsersBloc>()),
+        BlocProvider(create: (_) => di.sl<MedicalDossierBloc>()),
+        BlocProvider(create: (_) => ThemeCubit()),
         // Add other blocs as needed
       ],
       child: const AppWithTheme(),
@@ -70,63 +76,72 @@ class AppWithTheme extends StatelessWidget {
       minTextAdapt: true,
       splitScreenMode: true,
       builder: (context, child) {
-        return BlocBuilder<AuthBloc, AuthState>(
-          builder: (context, state) {
-            return MaterialApp(
-              title: 'Admin Dashboard',
-              debugShowCheckedModeBanner: false,
-              theme: AppTheme.lightTheme,
-              darkTheme: AppTheme.darkTheme,
-              themeMode: ThemeMode.light, // You can make this dynamic if needed
-              initialRoute:
-                  state is Authenticated
-                      ? AppRoutes.dashboard
-                      : AppRoutes.login,
-              routes: {
-                // Public routes
-                AppRoutes.login: (context) => const LoginScreen(),
+        return BlocBuilder<ThemeCubit, ThemeState>(
+          builder: (context, themeState) {
+            final themeMode =
+                themeState is ThemeLoaded
+                    ? themeState.themeMode
+                    : ThemeMode.light;
 
-                // Admin only routes - restrict all access to just admin
-                AppRoutes.dashboard:
-                    (context) => const RouteGuard(
-                      allowedRoles: AuthGuard.adminOnlyRoles,
-                      child: DashboardScreen(),
-                    ),
-                AppRoutes.users:
-                    (context) => const RouteGuard(
-                      allowedRoles: AuthGuard.adminOnlyRoles,
-                      child: UsersScreen(),
-                    ),
-                AppRoutes.userDetails:
-                    (context) => const RouteGuard(
-                      allowedRoles: AuthGuard.adminOnlyRoles,
-                      child: UserDetailsScreen(),
-                    ),
-                AppRoutes.addUser:
-                    (context) => const RouteGuard(
-                      allowedRoles: AuthGuard.adminOnlyRoles,
-                      child: AddUserScreen(),
-                    ),
-                AppRoutes.editUser:
-                    (context) => const RouteGuard(
-                      allowedRoles: AuthGuard.adminOnlyRoles,
-                      child: EditUserScreen(),
-                    ),
-                AppRoutes.statistics:
-                    (context) => const RouteGuard(
-                      allowedRoles: AuthGuard.adminOnlyRoles,
-                      child: StatisticsScreen(),
-                    ),
-                AppRoutes.advancedStatistics:
-                    (context) => const RouteGuard(
-                      allowedRoles: AuthGuard.adminOnlyRoles,
-                      child: AdvancedStatisticsScreen(),
-                    ),
-                AppRoutes.settings:
-                    (context) => const RouteGuard(
-                      allowedRoles: AuthGuard.adminOnlyRoles,
-                      child: SettingsScreen(),
-                    ),
+            return BlocBuilder<AuthBloc, AuthState>(
+              builder: (context, state) {
+                return MaterialApp(
+                  title: 'Admin Dashboard',
+                  debugShowCheckedModeBanner: false,
+                  theme: AppTheme.lightTheme,
+                  darkTheme: AppTheme.darkTheme,
+                  themeMode: themeMode,
+                  initialRoute:
+                      state is Authenticated
+                          ? AppRoutes.dashboard
+                          : AppRoutes.login,
+                  routes: {
+                    // Public routes
+                    AppRoutes.login: (context) => const LoginScreen(),
+
+                    // Admin only routes - restrict all access to just admin
+                    AppRoutes.dashboard:
+                        (context) => const RouteGuard(
+                          allowedRoles: AuthGuard.adminOnlyRoles,
+                          child: DashboardScreen(),
+                        ),
+                    AppRoutes.users:
+                        (context) => const RouteGuard(
+                          allowedRoles: AuthGuard.adminOnlyRoles,
+                          child: UsersScreen(),
+                        ),
+                    AppRoutes.userDetails:
+                        (context) => const RouteGuard(
+                          allowedRoles: AuthGuard.adminOnlyRoles,
+                          child: UserDetailsScreen(),
+                        ),
+                    AppRoutes.addUser:
+                        (context) => const RouteGuard(
+                          allowedRoles: AuthGuard.adminOnlyRoles,
+                          child: AddUserScreen(),
+                        ),
+                    AppRoutes.editUser:
+                        (context) => const RouteGuard(
+                          allowedRoles: AuthGuard.adminOnlyRoles,
+                          child: EditUserScreen(),
+                        ),
+                    AppRoutes.statistics:
+                        (context) => const RouteGuard(
+                          allowedRoles: AuthGuard.adminOnlyRoles,
+                          child: StatisticsScreen(),
+                        ),
+                    AppRoutes.advancedStatistics:
+                        (context) => const RouteGuard(
+                          allowedRoles: AuthGuard.adminOnlyRoles,
+                          child: AdvancedStatisticsScreen(),
+                        ),
+                    AppRoutes.settings:
+                        (context) => const RouteGuard(
+                          allowedRoles: AuthGuard.adminOnlyRoles,
+                          child: SettingsScreen(),
+                        ),
+                  },
+                );
               },
             );
           },

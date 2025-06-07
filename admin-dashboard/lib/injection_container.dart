@@ -29,6 +29,25 @@ import 'features/dashboard/domain/usecases/get_top_doctors_by_cancelled_appointm
 import 'features/dashboard/domain/usecases/get_top_patients_by_cancelled_appointments_usecase.dart';
 import 'features/dashboard/presentation/bloc/dashboard_bloc.dart';
 
+// Users
+import 'features/users/data/datasources/users_remote_data_source.dart';
+import 'features/users/data/datasources/medical_dossier_remote_datasource.dart';
+import 'features/users/data/repositories/users_repository_impl.dart';
+import 'features/users/data/repositories/medical_dossier_repository_impl.dart';
+import 'features/users/domain/repositories/users_repository.dart';
+import 'features/users/domain/repositories/medical_dossier_repository.dart';
+import 'features/users/domain/usecases/get_all_patients_usecase.dart';
+import 'features/users/domain/usecases/get_all_doctors_usecase.dart';
+import 'features/users/domain/usecases/create_patient_usecase.dart';
+import 'features/users/domain/usecases/create_doctor_usecase.dart';
+import 'features/users/domain/usecases/update_patient_usecase.dart';
+import 'features/users/domain/usecases/update_doctor_usecase.dart';
+import 'features/users/domain/usecases/delete_user_usecase.dart';
+import 'features/users/domain/usecases/get_user_statistics.dart';
+import 'features/users/domain/usecases/get_medical_dossier.dart';
+import 'features/users/presentation/bloc/users_bloc.dart';
+import 'features/users/presentation/bloc/medical_dossier_bloc.dart';
+
 final sl = GetIt.instance;
 
 Future<void> init() async {
@@ -103,6 +122,56 @@ Future<void> init() async {
   // Data sources
   sl.registerLazySingleton<StatsRemoteDataSource>(
     () => StatsRemoteDataSourceImpl(firestore: sl()),
+  );
+
+  //! Features - Users
+  // Bloc
+  sl.registerFactory(
+    () => UsersBloc(
+      getAllPatientsUseCase: sl(),
+      getAllDoctorsUseCase: sl(),
+      createPatientUseCase: sl(),
+      createDoctorUseCase: sl(),
+      updatePatientUseCase: sl(),
+      updateDoctorUseCase: sl(),
+      deleteUserUseCase: sl(),
+      getUserStatistics: sl(),
+      remoteDataSource: sl(),
+    ),
+  );
+
+  // Medical Dossier Bloc
+  sl.registerFactory(() => MedicalDossierBloc(getMedicalDossier: sl()));
+
+  // Use cases
+  sl.registerLazySingleton(() => GetAllPatientsUseCase(sl()));
+  sl.registerLazySingleton(() => GetAllDoctorsUseCase(sl()));
+  sl.registerLazySingleton(() => CreatePatientUseCase(sl()));
+  sl.registerLazySingleton(() => CreateDoctorUseCase(sl()));
+  sl.registerLazySingleton(() => UpdatePatientUseCase(sl()));
+  sl.registerLazySingleton(() => UpdateDoctorUseCase(sl()));
+  sl.registerLazySingleton(() => DeleteUserUseCase(sl()));
+  sl.registerLazySingleton(() => GetUserStatistics(sl()));
+  sl.registerLazySingleton(() => GetMedicalDossier(sl()));
+
+  // Repository
+  sl.registerLazySingleton<UsersRepository>(
+    () => UsersRepositoryImpl(remoteDataSource: sl()),
+  );
+
+  // Medical Dossier Repository
+  sl.registerLazySingleton<MedicalDossierRepository>(
+    () => MedicalDossierRepositoryImpl(remoteDataSource: sl()),
+  );
+
+  // Data sources
+  sl.registerLazySingleton<UsersRemoteDataSource>(
+    () => UsersRemoteDataSourceImpl(firestore: sl(), firebaseAuth: sl()),
+  );
+
+  // Medical Dossier Data Source
+  sl.registerLazySingleton<MedicalDossierRemoteDataSource>(
+    () => MedicalDossierRemoteDataSourceImpl(firestore: sl()),
   );
 
   //! Core

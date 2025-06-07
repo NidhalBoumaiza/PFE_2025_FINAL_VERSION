@@ -5,15 +5,13 @@ import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../../../../constants/routes.dart';
-import '../../../../config/theme.dart';
-import '../../../auth/presentation/bloc/auth_bloc.dart';
+import '../../../users/presentation/bloc/users_bloc.dart';
+import '../../../users/presentation/bloc/users_event.dart';
+import '../../../users/presentation/bloc/users_state.dart';
 import '../../domain/entities/stats_entity.dart';
-import '../../domain/entities/dashboard_stats.dart';
 import '../bloc/dashboard_bloc.dart';
 import '../../../../widgets/main_layout.dart';
 import '../../../../widgets/dashboard/stat_card.dart';
-import '../../../../widgets/dashboard/login_chart.dart';
-import '../../../../widgets/dashboard/activity_chart.dart';
 import '../../../../widgets/responsive_layout.dart';
 
 class DashboardScreen extends StatefulWidget {
@@ -35,6 +33,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   void _fetchData() {
     context.read<DashboardBloc>().add(LoadStats());
+    // Load user statistics for enhanced stats
+    context.read<UsersBloc>().add(LoadUserStatistics());
   }
 
   @override
@@ -96,7 +96,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 ),
               ),
 
-              // Stats Cards
+              // Enhanced Stats Cards (Active/Inactive Users)
+              _buildEnhancedStatsSection(),
+
+              SizedBox(height: 24.h),
+
+              // Basic Stats Cards
               BlocBuilder<DashboardBloc, DashboardState>(
                 builder: (context, state) {
                   final isLoading = state is DashboardLoading;
@@ -113,18 +118,463 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
                       SizedBox(height: 24.h),
 
-                      // Charts
-                      ResponsiveLayout(
-                        mobile: _buildChartsForMobile(isLoading, stats),
-                        tablet: _buildChartsForTablet(isLoading, stats),
-                        desktop: _buildChartsForDesktop(isLoading, stats),
-                      ),
+                      // Additional Info Section
+                      _buildAdditionalInfoSection(isLoading, stats),
                     ],
                   );
                 },
               ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildEnhancedStatsSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'User Activity Statistics',
+          style: Theme.of(
+            context,
+          ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+        ),
+        SizedBox(height: 16.h),
+        _buildEnhancedStatsCards(),
+      ],
+    );
+  }
+
+  Widget _buildEnhancedStatsCards() {
+    return BlocBuilder<UsersBloc, UsersState>(
+      builder: (context, state) {
+        int activePatients = 0;
+        int inactivePatients = 0;
+        int activeDoctors = 0;
+        int inactiveDoctors = 0;
+
+        // Get activity statistics from UserStatisticsLoaded state
+        if (state is UserStatisticsLoaded) {
+          activePatients = state.statistics['activePatients'] ?? 0;
+          inactivePatients = state.statistics['inactivePatients'] ?? 0;
+          activeDoctors = state.statistics['activeDoctors'] ?? 0;
+          inactiveDoctors = state.statistics['inactiveDoctors'] ?? 0;
+        }
+
+        // Show loading state for statistics
+        if (state is UserStatisticsLoading) {
+          return ResponsiveLayout(
+            mobile: _buildLoadingStatsForMobile(),
+            tablet: _buildLoadingStatsForTablet(),
+            desktop: _buildLoadingStatsForDesktop(),
+          );
+        }
+
+        return ResponsiveLayout(
+          mobile: _buildEnhancedStatsForMobile(
+            activePatients,
+            inactivePatients,
+            activeDoctors,
+            inactiveDoctors,
+          ),
+          tablet: _buildEnhancedStatsForTablet(
+            activePatients,
+            inactivePatients,
+            activeDoctors,
+            inactiveDoctors,
+          ),
+          desktop: _buildEnhancedStatsForDesktop(
+            activePatients,
+            inactivePatients,
+            activeDoctors,
+            inactiveDoctors,
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildLoadingStatsForMobile() {
+    return Column(
+      children: [
+        _buildLoadingStatCard('Active Patients', Colors.green),
+        SizedBox(height: 16.h),
+        _buildLoadingStatCard('Inactive Patients', Colors.orange),
+        SizedBox(height: 16.h),
+        _buildLoadingStatCard('Active Doctors', Colors.blue),
+        SizedBox(height: 16.h),
+        _buildLoadingStatCard('Inactive Doctors', Colors.red),
+      ],
+    );
+  }
+
+  Widget _buildLoadingStatsForTablet() {
+    return StaggeredGrid.count(
+      crossAxisCount: 2,
+      mainAxisSpacing: 16.h,
+      crossAxisSpacing: 16.w,
+      children: [
+        StaggeredGridTile.fit(
+          crossAxisCellCount: 1,
+          child: _buildLoadingStatCard('Active Patients', Colors.green),
+        ),
+        StaggeredGridTile.fit(
+          crossAxisCellCount: 1,
+          child: _buildLoadingStatCard('Inactive Patients', Colors.orange),
+        ),
+        StaggeredGridTile.fit(
+          crossAxisCellCount: 1,
+          child: _buildLoadingStatCard('Active Doctors', Colors.blue),
+        ),
+        StaggeredGridTile.fit(
+          crossAxisCellCount: 1,
+          child: _buildLoadingStatCard('Inactive Doctors', Colors.red),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildLoadingStatsForDesktop() {
+    return StaggeredGrid.count(
+      crossAxisCount: 4,
+      mainAxisSpacing: 16.h,
+      crossAxisSpacing: 16.w,
+      children: [
+        StaggeredGridTile.fit(
+          crossAxisCellCount: 1,
+          child: _buildLoadingStatCard('Active Patients', Colors.green),
+        ),
+        StaggeredGridTile.fit(
+          crossAxisCellCount: 1,
+          child: _buildLoadingStatCard('Inactive Patients', Colors.orange),
+        ),
+        StaggeredGridTile.fit(
+          crossAxisCellCount: 1,
+          child: _buildLoadingStatCard('Active Doctors', Colors.blue),
+        ),
+        StaggeredGridTile.fit(
+          crossAxisCellCount: 1,
+          child: _buildLoadingStatCard('Inactive Doctors', Colors.red),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildEnhancedStatsForMobile(
+    int activePatients,
+    int inactivePatients,
+    int activeDoctors,
+    int inactiveDoctors,
+  ) {
+    return Column(
+      children: [
+        _buildEnhancedStatCard(
+          'Active Patients',
+          activePatients.toString(),
+          Icons.trending_up,
+          Colors.green,
+          '5+ appointments',
+          Colors.green.withValues(alpha: 0.1),
+        ),
+        SizedBox(height: 16.h),
+        _buildEnhancedStatCard(
+          'Inactive Patients',
+          inactivePatients.toString(),
+          Icons.trending_down,
+          Colors.orange,
+          'Less than 5 appointments',
+          Colors.orange.withValues(alpha: 0.1),
+        ),
+        SizedBox(height: 16.h),
+        _buildEnhancedStatCard(
+          'Active Doctors',
+          activeDoctors.toString(),
+          Icons.medical_services,
+          Colors.blue,
+          '5+ appointments',
+          Colors.blue.withValues(alpha: 0.1),
+        ),
+        SizedBox(height: 16.h),
+        _buildEnhancedStatCard(
+          'Inactive Doctors',
+          inactiveDoctors.toString(),
+          Icons.medical_services_outlined,
+          Colors.red,
+          'Less than 5 appointments',
+          Colors.red.withValues(alpha: 0.1),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildEnhancedStatsForTablet(
+    int activePatients,
+    int inactivePatients,
+    int activeDoctors,
+    int inactiveDoctors,
+  ) {
+    return StaggeredGrid.count(
+      crossAxisCount: 2,
+      mainAxisSpacing: 16.h,
+      crossAxisSpacing: 16.w,
+      children: [
+        StaggeredGridTile.fit(
+          crossAxisCellCount: 1,
+          child: _buildEnhancedStatCard(
+            'Active Patients',
+            activePatients.toString(),
+            Icons.trending_up,
+            Colors.green,
+            '5+ appointments',
+            Colors.green.withValues(alpha: 0.1),
+          ),
+        ),
+        StaggeredGridTile.fit(
+          crossAxisCellCount: 1,
+          child: _buildEnhancedStatCard(
+            'Inactive Patients',
+            inactivePatients.toString(),
+            Icons.trending_down,
+            Colors.orange,
+            'Less than 5 appointments',
+            Colors.orange.withValues(alpha: 0.1),
+          ),
+        ),
+        StaggeredGridTile.fit(
+          crossAxisCellCount: 1,
+          child: _buildEnhancedStatCard(
+            'Active Doctors',
+            activeDoctors.toString(),
+            Icons.medical_services,
+            Colors.blue,
+            '5+ appointments',
+            Colors.blue.withValues(alpha: 0.1),
+          ),
+        ),
+        StaggeredGridTile.fit(
+          crossAxisCellCount: 1,
+          child: _buildEnhancedStatCard(
+            'Inactive Doctors',
+            inactiveDoctors.toString(),
+            Icons.medical_services_outlined,
+            Colors.red,
+            'Less than 5 appointments',
+            Colors.red.withValues(alpha: 0.1),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildEnhancedStatsForDesktop(
+    int activePatients,
+    int inactivePatients,
+    int activeDoctors,
+    int inactiveDoctors,
+  ) {
+    return StaggeredGrid.count(
+      crossAxisCount: 4,
+      mainAxisSpacing: 16.h,
+      crossAxisSpacing: 16.w,
+      children: [
+        StaggeredGridTile.fit(
+          crossAxisCellCount: 1,
+          child: _buildEnhancedStatCard(
+            'Active Patients',
+            activePatients.toString(),
+            Icons.trending_up,
+            Colors.green,
+            '5+ appointments',
+            Colors.green.withValues(alpha: 0.1),
+          ),
+        ),
+        StaggeredGridTile.fit(
+          crossAxisCellCount: 1,
+          child: _buildEnhancedStatCard(
+            'Inactive Patients',
+            inactivePatients.toString(),
+            Icons.trending_down,
+            Colors.orange,
+            'Less than 5 appointments',
+            Colors.orange.withValues(alpha: 0.1),
+          ),
+        ),
+        StaggeredGridTile.fit(
+          crossAxisCellCount: 1,
+          child: _buildEnhancedStatCard(
+            'Active Doctors',
+            activeDoctors.toString(),
+            Icons.medical_services,
+            Colors.blue,
+            '5+ appointments',
+            Colors.blue.withValues(alpha: 0.1),
+          ),
+        ),
+        StaggeredGridTile.fit(
+          crossAxisCellCount: 1,
+          child: _buildEnhancedStatCard(
+            'Inactive Doctors',
+            inactiveDoctors.toString(),
+            Icons.medical_services_outlined,
+            Colors.red,
+            'Less than 5 appointments',
+            Colors.red.withValues(alpha: 0.1),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildLoadingStatCard(String title, Color color) {
+    return Card(
+      elevation: 4,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
+      child: Container(
+        padding: EdgeInsets.all(20.w),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(16.r),
+          gradient: LinearGradient(
+            colors: [
+              color.withValues(alpha: 0.1),
+              color.withValues(alpha: 0.05),
+            ],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Container(
+                  padding: EdgeInsets.all(12.w),
+                  decoration: BoxDecoration(
+                    color: color.withValues(alpha: 0.2),
+                    borderRadius: BorderRadius.circular(12.r),
+                  ),
+                  child: Icon(Icons.hourglass_empty, color: color, size: 24.sp),
+                ),
+              ],
+            ),
+            SizedBox(height: 16.h),
+            Container(
+              width: 60.w,
+              height: 32.h,
+              decoration: BoxDecoration(
+                color: Colors.grey[300],
+                borderRadius: BorderRadius.circular(8.r),
+              ),
+            ),
+            SizedBox(height: 4.h),
+            Text(
+              title,
+              style: TextStyle(
+                fontSize: 14.sp,
+                fontWeight: FontWeight.w600,
+                color: Colors.grey[600],
+              ),
+            ),
+            SizedBox(height: 4.h),
+            Container(
+              width: 100.w,
+              height: 12.h,
+              decoration: BoxDecoration(
+                color: Colors.grey[300],
+                borderRadius: BorderRadius.circular(6.r),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildEnhancedStatCard(
+    String title,
+    String value,
+    IconData icon,
+    Color color,
+    String subtitle,
+    Color backgroundColor, {
+    bool showPulse = false,
+  }) {
+    return Card(
+      elevation: 4,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
+      child: Container(
+        padding: EdgeInsets.all(20.w),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(16.r),
+          gradient: LinearGradient(
+            colors: [backgroundColor, backgroundColor.withValues(alpha: 0.3)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Container(
+                  padding: EdgeInsets.all(12.w),
+                  decoration: BoxDecoration(
+                    color: color.withValues(alpha: 0.2),
+                    borderRadius: BorderRadius.circular(12.r),
+                  ),
+                  child: Icon(icon, color: color, size: 24.sp),
+                ),
+                if (showPulse)
+                  Container(
+                    width: 12.w,
+                    height: 12.h,
+                    decoration: BoxDecoration(
+                      color: Colors.green.withValues(alpha: 0.5),
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.green.withValues(alpha: 0.5),
+                          blurRadius: 4,
+                          spreadRadius: 2,
+                        ),
+                      ],
+                    ),
+                  ),
+              ],
+            ),
+            SizedBox(height: 16.h),
+            Text(
+              value,
+              style: TextStyle(
+                fontSize: 32.sp,
+                fontWeight: FontWeight.bold,
+                color: color,
+              ),
+            ),
+            SizedBox(height: 4.h),
+            Text(
+              title,
+              style: TextStyle(
+                fontSize: 14.sp,
+                fontWeight: FontWeight.w600,
+                color: Colors.grey[700],
+              ),
+            ),
+            SizedBox(height: 4.h),
+            Text(
+              subtitle,
+              style: TextStyle(
+                fontSize: 12.sp,
+                color: Colors.grey[600],
+                fontStyle: FontStyle.italic,
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -299,221 +749,114 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  Widget _buildChartsForMobile(bool isLoading, StatsEntity? stats) {
-    // Convert real data to chart format
-    final activityStats = _getActivityStatsFromAppointments(stats);
-    final loginStats = _getLoginStatsFromAppointments(stats);
-
-    return Column(
-      children: [
-        // User activity chart
-        Container(
-          width: double.infinity,
-          height: 300.h,
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(16.r),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.05),
-                blurRadius: 10.r,
-                offset: Offset(0, 4.h),
+  Widget _buildAdditionalInfoSection(bool isLoading, StatsEntity? stats) {
+    return Card(
+      elevation: 2,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
+      child: Padding(
+        padding: EdgeInsets.all(20.w),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'System Overview',
+              style: Theme.of(
+                context,
+              ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+            ),
+            SizedBox(height: 16.h),
+            if (isLoading)
+              Center(child: CircularProgressIndicator())
+            else if (stats != null) ...[
+              _buildInfoRow(
+                'Active Users',
+                '${stats.totalUsers}',
+                Icons.people,
+                Colors.green,
               ),
-            ],
-          ),
-          child: ActivityChart(
-            activityStats: activityStats,
-            isLoading: isLoading,
-          ),
-        ),
-        SizedBox(height: 16.h),
-        // User login chart
-        Container(
-          width: double.infinity,
-          height: 300.h,
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(16.r),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.05),
-                blurRadius: 10.r,
-                offset: Offset(0, 4.h),
+              SizedBox(height: 12.h),
+              _buildInfoRow(
+                'Medical Professionals',
+                '${stats.totalDoctors}',
+                Icons.medical_services,
+                Colors.blue,
               ),
-            ],
-          ),
-          child: LoginChart(loginStats: loginStats, isLoading: isLoading),
+              SizedBox(height: 12.h),
+              _buildInfoRow(
+                'Registered Patients',
+                '${stats.totalPatients}',
+                Icons.personal_injury,
+                Colors.orange,
+              ),
+              SizedBox(height: 12.h),
+              _buildInfoRow(
+                'Total Appointments',
+                '${stats.totalAppointments}',
+                Icons.calendar_today,
+                Colors.purple,
+              ),
+              SizedBox(height: 16.h),
+              Container(
+                padding: EdgeInsets.all(16.w),
+                decoration: BoxDecoration(
+                  color: Colors.blue.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(12.r),
+                ),
+                child: Row(
+                  children: [
+                    Icon(Icons.info, color: Colors.blue, size: 24.sp),
+                    SizedBox(width: 12.w),
+                    Expanded(
+                      child: Text(
+                        'The activity statistics above show users based on their appointment history. For detailed analytics and charts, visit the Advanced Statistics section.',
+                        style: TextStyle(
+                          color: Colors.blue[700],
+                          fontSize: 14.sp,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ] else
+              Text(
+                'No data available',
+                style: TextStyle(fontSize: 16.sp, color: Colors.grey[600]),
+              ),
+          ],
         ),
-      ],
+      ),
     );
   }
 
-  Widget _buildChartsForTablet(bool isLoading, StatsEntity? stats) {
-    // Convert real data to chart format
-    final activityStats = _getActivityStatsFromAppointments(stats);
-    final loginStats = _getLoginStatsFromAppointments(stats);
-
-    return Column(
-      children: [
-        // User activity chart
-        Container(
-          width: double.infinity,
-          height: 300.h,
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(16.r),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.05),
-                blurRadius: 10.r,
-                offset: Offset(0, 4.h),
-              ),
-            ],
-          ),
-          child: ActivityChart(
-            activityStats: activityStats,
-            isLoading: isLoading,
-          ),
-        ),
-        SizedBox(height: 16.h),
-        // User login chart
-        Container(
-          width: double.infinity,
-          height: 300.h,
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(16.r),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.05),
-                blurRadius: 10.r,
-                offset: Offset(0, 4.h),
-              ),
-            ],
-          ),
-          child: LoginChart(loginStats: loginStats, isLoading: isLoading),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildChartsForDesktop(bool isLoading, StatsEntity? stats) {
-    // Convert real data to chart format
-    final activityStats = _getActivityStatsFromAppointments(stats);
-    final loginStats = _getLoginStatsFromAppointments(stats);
-
+  Widget _buildInfoRow(String label, String value, IconData icon, Color color) {
     return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // User activity chart
+        Container(
+          padding: EdgeInsets.all(8.w),
+          decoration: BoxDecoration(
+            color: color.withValues(alpha: 0.1),
+            borderRadius: BorderRadius.circular(8.r),
+          ),
+          child: Icon(icon, color: color, size: 20.sp),
+        ),
+        SizedBox(width: 12.w),
         Expanded(
-          child: Container(
-            height: 400.h,
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(16.r),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.05),
-                  blurRadius: 10.r,
-                  offset: Offset(0, 4.h),
-                ),
-              ],
-            ),
-            child: ActivityChart(
-              activityStats: activityStats,
-              isLoading: isLoading,
-            ),
+          child: Text(
+            label,
+            style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.w500),
           ),
         ),
-        SizedBox(width: 16.w),
-        // User login chart
-        Expanded(
-          child: Container(
-            height: 400.h,
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(16.r),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.05),
-                  blurRadius: 10.r,
-                  offset: Offset(0, 4.h),
-                ),
-              ],
-            ),
-            child: LoginChart(loginStats: loginStats, isLoading: isLoading),
+        Text(
+          value,
+          style: TextStyle(
+            fontSize: 16.sp,
+            fontWeight: FontWeight.bold,
+            color: color,
           ),
         ),
       ],
     );
-  }
-
-  // Helper methods to convert real data to chart format
-  List<ActivityStats> _getActivityStatsFromAppointments(StatsEntity? stats) {
-    if (stats == null) {
-      return _getEmptyActivityStats();
-    }
-
-    final appointmentsPerDay = stats.appointmentsPerDay;
-    final now = DateTime.now();
-
-    return List.generate(7, (index) {
-      final date = now.subtract(Duration(days: 6 - index));
-      final dayKey =
-          '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
-      final appointmentCount = appointmentsPerDay[dayKey] ?? 0;
-
-      // Convert appointments to activity (active users = appointments, inactive = total users - appointments)
-      final activeUsers = appointmentCount;
-      final inactiveUsers = (stats.totalUsers - appointmentCount).clamp(
-        0,
-        stats.totalUsers,
-      );
-
-      return ActivityStats(
-        date: date,
-        activeUsers: activeUsers,
-        inactiveUsers: inactiveUsers,
-      );
-    });
-  }
-
-  List<LoginStats> _getLoginStatsFromAppointments(StatsEntity? stats) {
-    if (stats == null) {
-      return _getEmptyLoginStats();
-    }
-
-    final appointmentsPerDay = stats.appointmentsPerDay;
-    final now = DateTime.now();
-
-    return List.generate(7, (index) {
-      final date = now.subtract(Duration(days: 6 - index));
-      final dayKey =
-          '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
-      final appointmentCount = appointmentsPerDay[dayKey] ?? 0;
-
-      // Estimate logins based on appointments (assuming each appointment involves 2 users logging in)
-      final logins = appointmentCount * 2;
-      final logouts = (appointmentCount * 1.5).round(); // Slightly less logouts
-
-      return LoginStats(date: date, logins: logins, logouts: logouts);
-    });
-  }
-
-  List<ActivityStats> _getEmptyActivityStats() {
-    final now = DateTime.now();
-    return List.generate(7, (index) {
-      final date = now.subtract(Duration(days: 6 - index));
-      return ActivityStats(date: date, activeUsers: 0, inactiveUsers: 0);
-    });
-  }
-
-  List<LoginStats> _getEmptyLoginStats() {
-    final now = DateTime.now();
-    return List.generate(7, (index) {
-      final date = now.subtract(Duration(days: 6 - index));
-      return LoginStats(date: date, logins: 0, logouts: 0);
-    });
   }
 }
