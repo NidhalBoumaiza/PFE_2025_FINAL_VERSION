@@ -18,7 +18,7 @@ class UsersRepositoryImpl implements UsersRepository {
       final patients = await remoteDataSource.getPatients();
       return Right(patients);
     } catch (e) {
-      return Left(ServerFailure(message: 'Failed to fetch patients: $e'));
+      return Left(ServerFailure(message: 'Failed to get patients: $e'));
     }
   }
 
@@ -28,7 +28,7 @@ class UsersRepositoryImpl implements UsersRepository {
       final doctors = await remoteDataSource.getDoctors();
       return Right(doctors);
     } catch (e) {
-      return Left(ServerFailure(message: 'Failed to fetch doctors: $e'));
+      return Left(ServerFailure(message: 'Failed to get doctors: $e'));
     }
   }
 
@@ -69,136 +69,6 @@ class UsersRepositoryImpl implements UsersRepository {
   }
 
   @override
-  Future<Either<Failure, Unit>> createPatient(
-    PatientEntity patient,
-    String password,
-  ) async {
-    try {
-      final patientModel = PatientModel(
-        id: patient.id,
-        fullName: patient.fullName,
-        email: patient.email,
-        gender: patient.gender,
-        phoneNumber: patient.phoneNumber,
-        dateOfBirth: patient.dateOfBirth,
-        age: patient.age,
-        address: patient.address,
-        accountStatus: patient.accountStatus,
-        antecedent: patient.antecedent,
-        bloodType: patient.bloodType,
-        height: patient.height,
-        weight: patient.weight,
-        allergies: patient.allergies,
-        chronicDiseases: patient.chronicDiseases,
-        emergencyContactName: patient.emergencyContactName,
-        emergencyContactPhone: patient.emergencyContactPhone,
-        createdAt: patient.createdAt,
-        lastLogin: patient.lastLogin,
-      );
-
-      await remoteDataSource.createPatient(patientModel, password);
-      return const Right(unit);
-    } catch (e) {
-      return Left(ServerFailure(message: 'Failed to create patient: $e'));
-    }
-  }
-
-  @override
-  Future<Either<Failure, Unit>> createDoctor(
-    DoctorEntity doctor,
-    String password,
-  ) async {
-    try {
-      final doctorModel = DoctorModel(
-        id: doctor.id,
-        fullName: doctor.fullName,
-        email: doctor.email,
-        gender: doctor.gender,
-        phoneNumber: doctor.phoneNumber,
-        dateOfBirth: doctor.dateOfBirth,
-        age: doctor.age,
-        address: doctor.address,
-        accountStatus: doctor.accountStatus,
-        speciality: doctor.speciality,
-        numLicence: doctor.numLicence,
-        appointmentDuration: doctor.appointmentDuration,
-        experienceYears: doctor.experienceYears,
-        educationSummary: doctor.educationSummary,
-        consultationFee: doctor.consultationFee,
-        createdAt: doctor.createdAt,
-        lastLogin: doctor.lastLogin,
-      );
-
-      await remoteDataSource.createDoctor(doctorModel, password);
-      return const Right(unit);
-    } catch (e) {
-      return Left(ServerFailure(message: 'Failed to create doctor: $e'));
-    }
-  }
-
-  @override
-  Future<Either<Failure, Unit>> updatePatient(PatientEntity patient) async {
-    try {
-      final patientModel = PatientModel(
-        id: patient.id,
-        fullName: patient.fullName,
-        email: patient.email,
-        gender: patient.gender,
-        phoneNumber: patient.phoneNumber,
-        dateOfBirth: patient.dateOfBirth,
-        age: patient.age,
-        address: patient.address,
-        accountStatus: patient.accountStatus,
-        antecedent: patient.antecedent,
-        bloodType: patient.bloodType,
-        height: patient.height,
-        weight: patient.weight,
-        allergies: patient.allergies,
-        chronicDiseases: patient.chronicDiseases,
-        emergencyContactName: patient.emergencyContactName,
-        emergencyContactPhone: patient.emergencyContactPhone,
-        createdAt: patient.createdAt,
-        lastLogin: patient.lastLogin,
-      );
-
-      await remoteDataSource.updatePatient(patientModel);
-      return const Right(unit);
-    } catch (e) {
-      return Left(ServerFailure(message: 'Failed to update patient: $e'));
-    }
-  }
-
-  @override
-  Future<Either<Failure, Unit>> updateDoctor(DoctorEntity doctor) async {
-    try {
-      final doctorModel = DoctorModel(
-        id: doctor.id,
-        fullName: doctor.fullName,
-        email: doctor.email,
-        gender: doctor.gender,
-        phoneNumber: doctor.phoneNumber,
-        dateOfBirth: doctor.dateOfBirth,
-        age: doctor.age,
-        address: doctor.address,
-        accountStatus: doctor.accountStatus,
-        speciality: doctor.speciality,
-        numLicence: doctor.numLicence,
-        appointmentDuration: doctor.appointmentDuration,
-        experienceYears: doctor.experienceYears,
-        educationSummary: doctor.educationSummary,
-        consultationFee: doctor.consultationFee,
-        createdAt: doctor.createdAt,
-        lastLogin: doctor.lastLogin,
-      );
-
-      await remoteDataSource.updateDoctor(doctorModel);
-      return const Right(unit);
-    } catch (e) {
-      return Left(ServerFailure(message: 'Failed to update doctor: $e'));
-    }
-  }
-
-  @override
   Future<Either<Failure, Unit>> deleteUser(
     String userId,
     String userType,
@@ -234,7 +104,7 @@ class UsersRepositoryImpl implements UsersRepository {
       return Right(count);
     } catch (e) {
       return Left(
-        ServerFailure(message: 'Failed to get appointment count: $e'),
+        ServerFailure(message: 'Failed to get user appointment count: $e'),
       );
     }
   }

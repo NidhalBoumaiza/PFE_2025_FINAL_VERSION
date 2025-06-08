@@ -38,10 +38,6 @@ import 'features/users/domain/repositories/users_repository.dart';
 import 'features/users/domain/repositories/medical_dossier_repository.dart';
 import 'features/users/domain/usecases/get_all_patients_usecase.dart';
 import 'features/users/domain/usecases/get_all_doctors_usecase.dart';
-import 'features/users/domain/usecases/create_patient_usecase.dart';
-import 'features/users/domain/usecases/create_doctor_usecase.dart';
-import 'features/users/domain/usecases/update_patient_usecase.dart';
-import 'features/users/domain/usecases/update_doctor_usecase.dart';
 import 'features/users/domain/usecases/delete_user_usecase.dart';
 import 'features/users/domain/usecases/get_user_statistics.dart';
 import 'features/users/domain/usecases/get_medical_dossier.dart';
@@ -130,10 +126,6 @@ Future<void> init() async {
     () => UsersBloc(
       getAllPatientsUseCase: sl(),
       getAllDoctorsUseCase: sl(),
-      createPatientUseCase: sl(),
-      createDoctorUseCase: sl(),
-      updatePatientUseCase: sl(),
-      updateDoctorUseCase: sl(),
       deleteUserUseCase: sl(),
       getUserStatistics: sl(),
       remoteDataSource: sl(),
@@ -146,10 +138,6 @@ Future<void> init() async {
   // Use cases
   sl.registerLazySingleton(() => GetAllPatientsUseCase(sl()));
   sl.registerLazySingleton(() => GetAllDoctorsUseCase(sl()));
-  sl.registerLazySingleton(() => CreatePatientUseCase(sl()));
-  sl.registerLazySingleton(() => CreateDoctorUseCase(sl()));
-  sl.registerLazySingleton(() => UpdatePatientUseCase(sl()));
-  sl.registerLazySingleton(() => UpdateDoctorUseCase(sl()));
   sl.registerLazySingleton(() => DeleteUserUseCase(sl()));
   sl.registerLazySingleton(() => GetUserStatistics(sl()));
   sl.registerLazySingleton(() => GetMedicalDossier(sl()));

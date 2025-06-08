@@ -23,45 +23,6 @@ class StartListeningToUsers extends UsersEvent {}
 
 class StopListeningToUsers extends UsersEvent {}
 
-// CRUD Events
-class CreatePatientEvent extends UsersEvent {
-  final PatientEntity patient;
-  final String password;
-
-  const CreatePatientEvent({required this.patient, required this.password});
-
-  @override
-  List<Object?> get props => [patient, password];
-}
-
-class CreateDoctorEvent extends UsersEvent {
-  final DoctorEntity doctor;
-  final String password;
-
-  const CreateDoctorEvent({required this.doctor, required this.password});
-
-  @override
-  List<Object?> get props => [doctor, password];
-}
-
-class UpdatePatientEvent extends UsersEvent {
-  final PatientEntity patient;
-
-  const UpdatePatientEvent({required this.patient});
-
-  @override
-  List<Object?> get props => [patient];
-}
-
-class UpdateDoctorEvent extends UsersEvent {
-  final DoctorEntity doctor;
-
-  const UpdateDoctorEvent({required this.doctor});
-
-  @override
-  List<Object?> get props => [doctor];
-}
-
 class DeleteUserEvent extends UsersEvent {
   final String userId;
   final String userType;

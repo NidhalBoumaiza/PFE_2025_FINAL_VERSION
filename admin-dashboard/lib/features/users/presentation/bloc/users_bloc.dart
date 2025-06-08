@@ -7,10 +7,6 @@ import '../../domain/entities/patient_entity.dart';
 import '../../domain/entities/doctor_entity.dart';
 import '../../domain/usecases/get_all_patients_usecase.dart';
 import '../../domain/usecases/get_all_doctors_usecase.dart';
-import '../../domain/usecases/create_patient_usecase.dart';
-import '../../domain/usecases/create_doctor_usecase.dart';
-import '../../domain/usecases/update_patient_usecase.dart';
-import '../../domain/usecases/update_doctor_usecase.dart';
 import '../../domain/usecases/delete_user_usecase.dart';
 import '../../domain/usecases/get_user_statistics.dart';
 import '../../data/datasources/users_remote_data_source.dart';
@@ -20,10 +16,6 @@ import 'users_state.dart';
 class UsersBloc extends Bloc<UsersEvent, UsersState> {
   final GetAllPatientsUseCase getAllPatientsUseCase;
   final GetAllDoctorsUseCase getAllDoctorsUseCase;
-  final CreatePatientUseCase createPatientUseCase;
-  final CreateDoctorUseCase createDoctorUseCase;
-  final UpdatePatientUseCase updatePatientUseCase;
-  final UpdateDoctorUseCase updateDoctorUseCase;
   final DeleteUserUseCase deleteUserUseCase;
   final GetUserStatistics getUserStatistics;
   final UsersRemoteDataSource remoteDataSource;
@@ -43,10 +35,6 @@ class UsersBloc extends Bloc<UsersEvent, UsersState> {
   UsersBloc({
     required this.getAllPatientsUseCase,
     required this.getAllDoctorsUseCase,
-    required this.createPatientUseCase,
-    required this.createDoctorUseCase,
-    required this.updatePatientUseCase,
-    required this.updateDoctorUseCase,
     required this.deleteUserUseCase,
     required this.getUserStatistics,
     required this.remoteDataSource,
@@ -62,11 +50,7 @@ class UsersBloc extends Bloc<UsersEvent, UsersState> {
     on<PatientsUpdated>(_onPatientsUpdated);
     on<DoctorsUpdated>(_onDoctorsUpdated);
 
-    // CRUD event handlers
-    on<CreatePatientEvent>(_onCreatePatient);
-    on<CreateDoctorEvent>(_onCreateDoctor);
-    on<UpdatePatientEvent>(_onUpdatePatient);
-    on<UpdateDoctorEvent>(_onUpdateDoctor);
+    // Only delete functionality remains
     on<DeleteUserEvent>(_onDeleteUser);
 
     print('✅ UsersBloc: Constructor completed - all event handlers registered');
@@ -373,143 +357,6 @@ class UsersBloc extends Bloc<UsersEvent, UsersState> {
 
     print('✅ UsersBloc: Emitting AllUsersLoaded with updated doctors');
     emit(AllUsersLoaded(patients: _currentPatients, doctors: _currentDoctors));
-  }
-
-  // CRUD Event Handlers
-  Future<void> _onCreatePatient(
-    CreatePatientEvent event,
-    Emitter<UsersState> emit,
-  ) async {
-    print(
-      '➕👤 UsersBloc: CreatePatientEvent received - ${event.patient.email}',
-    );
-    print('⏳ UsersBloc: Emitting UserOperationLoading state');
-    emit(UserOperationLoading());
-
-    print('🔍 UsersBloc: Calling createPatientUseCase...');
-    final result = await createPatientUseCase(event.patient, event.password);
-
-    result.fold(
-      (failure) {
-        print(
-          '❌ UsersBloc: Failed to create patient - Type: ${failure.runtimeType}',
-        );
-        print(
-          '❌ UsersBloc: Create patient failure: ${_getFailureMessage(failure)}',
-        );
-        emit(UserOperationError(_getFailureMessage(failure)));
-      },
-      (_) {
-        print(
-          '✅ UsersBloc: Patient created successfully - ${event.patient.email}',
-        );
-        emit(UserCreated('Patient created successfully'));
-        print('🔄 UsersBloc: Triggering data reload after patient creation');
-        add(LoadAllUsers());
-      },
-    );
-  }
-
-  Future<void> _onCreateDoctor(
-    CreateDoctorEvent event,
-    Emitter<UsersState> emit,
-  ) async {
-    print(
-      '➕👨‍⚕️ UsersBloc: CreateDoctorEvent received - ${event.doctor.email}',
-    );
-    print('⏳ UsersBloc: Emitting UserOperationLoading state');
-    emit(UserOperationLoading());
-
-    print('🔍 UsersBloc: Calling createDoctorUseCase...');
-    final result = await createDoctorUseCase(event.doctor, event.password);
-
-    result.fold(
-      (failure) {
-        print(
-          '❌ UsersBloc: Failed to create doctor - Type: ${failure.runtimeType}',
-        );
-        print(
-          '❌ UsersBloc: Create doctor failure: ${_getFailureMessage(failure)}',
-        );
-        emit(UserOperationError(_getFailureMessage(failure)));
-      },
-      (_) {
-        print(
-          '✅ UsersBloc: Doctor created successfully - ${event.doctor.email}',
-        );
-        emit(UserCreated('Doctor created successfully'));
-        print('🔄 UsersBloc: Triggering data reload after doctor creation');
-        add(LoadAllUsers());
-      },
-    );
-  }
-
-  Future<void> _onUpdatePatient(
-    UpdatePatientEvent event,
-    Emitter<UsersState> emit,
-  ) async {
-    print(
-      '✏️👤 UsersBloc: UpdatePatientEvent received - ${event.patient.fullName}',
-    );
-    print('⏳ UsersBloc: Emitting UserOperationLoading state');
-    emit(UserOperationLoading());
-
-    print('🔍 UsersBloc: Calling updatePatientUseCase...');
-    final result = await updatePatientUseCase(event.patient);
-
-    result.fold(
-      (failure) {
-        print(
-          '❌ UsersBloc: Failed to update patient - Type: ${failure.runtimeType}',
-        );
-        print(
-          '❌ UsersBloc: Update patient failure: ${_getFailureMessage(failure)}',
-        );
-        emit(UserOperationError(_getFailureMessage(failure)));
-      },
-      (_) {
-        print(
-          '✅ UsersBloc: Patient updated successfully - ${event.patient.fullName}',
-        );
-        emit(UserUpdated('Patient updated successfully'));
-        print('🔄 UsersBloc: Triggering data reload after patient update');
-        add(LoadAllUsers());
-      },
-    );
-  }
-
-  Future<void> _onUpdateDoctor(
-    UpdateDoctorEvent event,
-    Emitter<UsersState> emit,
-  ) async {
-    print(
-      '✏️👨‍⚕️ UsersBloc: UpdateDoctorEvent received - ${event.doctor.fullName}',
-    );
-    print('⏳ UsersBloc: Emitting UserOperationLoading state');
-    emit(UserOperationLoading());
-
-    print('🔍 UsersBloc: Calling updateDoctorUseCase...');
-    final result = await updateDoctorUseCase(event.doctor);
-
-    result.fold(
-      (failure) {
-        print(
-          '❌ UsersBloc: Failed to update doctor - Type: ${failure.runtimeType}',
-        );
-        print(
-          '❌ UsersBloc: Update doctor failure: ${_getFailureMessage(failure)}',
-        );
-        emit(UserOperationError(_getFailureMessage(failure)));
-      },
-      (_) {
-        print(
-          '✅ UsersBloc: Doctor updated successfully - ${event.doctor.fullName}',
-        );
-        emit(UserUpdated('Doctor updated successfully'));
-        print('🔄 UsersBloc: Triggering data reload after doctor update');
-        add(LoadAllUsers());
-      },
-    );
   }
 
   Future<void> _onDeleteUser(

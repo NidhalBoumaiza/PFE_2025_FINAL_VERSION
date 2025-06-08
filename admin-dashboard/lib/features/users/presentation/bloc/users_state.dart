@@ -65,26 +65,8 @@ class UsersError extends UsersState {
   List<Object?> get props => [message];
 }
 
-// CRUD States
+// CRUD States - only keeping delete functionality
 class UserOperationLoading extends UsersState {}
-
-class UserCreated extends UsersState {
-  final String message;
-
-  const UserCreated(this.message);
-
-  @override
-  List<Object?> get props => [message];
-}
-
-class UserUpdated extends UsersState {
-  final String message;
-
-  const UserUpdated(this.message);
-
-  @override
-  List<Object?> get props => [message];
-}
 
 class UserDeleted extends UsersState {
   final String message;

@@ -20,8 +20,6 @@ import 'features/auth/presentation/pages/login_screen.dart';
 import 'features/dashboard/presentation/pages/dashboard_screen.dart';
 import 'features/users/presentation/pages/users_screen.dart';
 import 'features/users/presentation/pages/user_details_screen.dart';
-import 'features/users/presentation/pages/add_user_screen.dart';
-import 'features/users/presentation/pages/edit_user_screen.dart';
 import 'features/statistics/presentation/pages/statistics_screen.dart';
 import 'features/statistics/presentation/pages/advanced_statistics_screen.dart';
 import 'features/settings/presentation/pages/settings_screen.dart';
@@ -115,26 +113,12 @@ class AppWithTheme extends StatelessWidget {
                           allowedRoles: AuthGuard.adminOnlyRoles,
                           child: UserDetailsScreen(),
                         ),
-                    AppRoutes.addUser:
-                        (context) => const RouteGuard(
-                          allowedRoles: AuthGuard.adminOnlyRoles,
-                          child: AddUserScreen(),
-                        ),
-                    AppRoutes.editUser:
-                        (context) => const RouteGuard(
-                          allowedRoles: AuthGuard.adminOnlyRoles,
-                          child: EditUserScreen(),
-                        ),
                     AppRoutes.statistics:
                         (context) => const RouteGuard(
                           allowedRoles: AuthGuard.adminOnlyRoles,
                           child: StatisticsScreen(),
                         ),
-                    AppRoutes.advancedStatistics:
-                        (context) => const RouteGuard(
-                          allowedRoles: AuthGuard.adminOnlyRoles,
-                          child: AdvancedStatisticsScreen(),
-                        ),
+
                     AppRoutes.settings:
                         (context) => const RouteGuard(
                           allowedRoles: AuthGuard.adminOnlyRoles,

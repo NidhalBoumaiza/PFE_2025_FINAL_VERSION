@@ -64,20 +64,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     Row(
                       children: [
                         ElevatedButton.icon(
-                          icon: Icon(Icons.analytics, size: 20.sp),
-                          label: Text(
-                            'Advanced Stats',
-                            style: TextStyle(fontSize: 14.sp),
-                          ),
-                          onPressed: () {
-                            Navigator.pushNamed(
-                              context,
-                              AppRoutes.advancedStatistics,
-                            );
-                          },
-                        ),
-                        SizedBox(width: 8.w),
-                        ElevatedButton.icon(
                           icon: Icon(Icons.people, size: 20.sp),
                           label: Text(
                             'Manage Users',

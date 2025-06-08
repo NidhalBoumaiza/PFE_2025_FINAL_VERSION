@@ -62,17 +62,6 @@ class UserDetailsScreen extends StatelessWidget {
                             Navigator.pop(context);
                           },
                         ),
-                        SizedBox(width: 16.w),
-                        ElevatedButton.icon(
-                          icon: Icon(Icons.edit, size: 20.sp),
-                          label: Text(
-                            'Edit User',
-                            style: TextStyle(fontSize: 14.sp),
-                          ),
-                          onPressed: () {
-                            Navigator.pushNamed(context, AppRoutes.editUser);
-                          },
-                        ),
                       ],
                     ),
                   ],

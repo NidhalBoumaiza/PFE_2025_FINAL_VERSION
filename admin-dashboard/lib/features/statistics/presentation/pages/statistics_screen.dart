@@ -57,18 +57,6 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
                       style: Theme.of(context).textTheme.headlineSmall
                           ?.copyWith(fontWeight: FontWeight.bold),
                     ),
-                    ElevatedButton.icon(
-                      icon: Icon(Icons.analytics_outlined, size: 20.sp),
-                      label: Text(
-                        'Advanced Analytics',
-                        style: TextStyle(fontSize: 14.sp),
-                      ),
-                      onPressed:
-                          () => Navigator.pushNamed(
-                            context,
-                            AppRoutes.advancedStatistics,
-                          ),
-                    ),
                   ],
                 ),
               ),

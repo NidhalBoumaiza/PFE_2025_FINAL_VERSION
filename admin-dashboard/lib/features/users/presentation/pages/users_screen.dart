@@ -5,13 +5,13 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:data_table_2/data_table_2.dart';
 
 import '../../../../widgets/main_layout.dart';
+import '../../../../config/theme.dart';
 import '../../domain/entities/patient_entity.dart';
 import '../../domain/entities/doctor_entity.dart';
 import '../bloc/users_bloc.dart';
 import '../widgets/user_info_modal.dart';
 import '../bloc/users_event.dart';
 import '../bloc/users_state.dart';
-import '../widgets/user_form_dialog.dart';
 import 'patient_details_page.dart';
 import 'doctor_details_page.dart';
 
@@ -58,49 +58,32 @@ class _UsersScreenState extends State<UsersScreen>
 
   @override
   Widget build(BuildContext context) {
-    super.build(context);
-    print('🏗️ UsersScreen: build called');
-
+    print('🏗️ UsersScreen: Building widget');
     return BlocListener<UsersBloc, UsersState>(
       listener: (context, state) {
-        print(
-          '👂 UsersScreen: BlocListener triggered with state: ${state.runtimeType}',
-        );
-        if (!mounted) {
-          print('❌ UsersScreen: Widget not mounted, ignoring state change');
-          return;
-        }
-
-        if (state is UserCreated) {
-          print('✅ UsersScreen: User created - ${state.message}');
-          _showSuccessSnackBar(state.message, Colors.green);
-          // Refresh statistics after creating a user
-          print('🔄 UsersScreen: Refreshing statistics after user creation');
-          context.read<UsersBloc>().add(LoadUserStatistics());
-        } else if (state is UserUpdated) {
-          print('✅ UsersScreen: User updated - ${state.message}');
-          _showSuccessSnackBar(state.message, Colors.blue);
-          // Refresh statistics after updating a user
-          print('🔄 UsersScreen: Refreshing statistics after user update');
-          context.read<UsersBloc>().add(LoadUserStatistics());
-        } else if (state is UserDeleted) {
-          print('✅ UsersScreen: User deleted - ${state.message}');
-          _showSuccessSnackBar(state.message, Colors.orange);
-          // Refresh statistics after deleting a user
-          print('🔄 UsersScreen: Refreshing statistics after user deletion');
-          context.read<UsersBloc>().add(LoadUserStatistics());
+        print('👂 UsersScreen: BlocListener state: ${state.runtimeType}');
+        if (state is UserDeleted) {
+          print('✅ UsersScreen: User deleted successfully');
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(state.message),
+              backgroundColor: Colors.green,
+            ),
+          );
         } else if (state is UserOperationError) {
-          print('❌ UsersScreen: User operation error - ${state.message}');
-          _showErrorSnackBar(state.message);
+          print('❌ UsersScreen: User operation error: ${state.message}');
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(state.message), backgroundColor: Colors.red),
+          );
         }
       },
       child: MainLayout(
         selectedIndex: 1,
-        title: 'Users Management',
+        title: 'Users',
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildEnhancedHeader(),
+            // _buildHeader(),
             _buildEnhancedStatsCards(),
             _buildEnhancedTabBar(),
             Expanded(
@@ -119,251 +102,104 @@ class _UsersScreenState extends State<UsersScreen>
     );
   }
 
-  void _showSuccessSnackBar(String message, Color color) {
-    print('🎉 UsersScreen: Showing success snackbar - $message');
-    if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Row(
-          children: [
-            Icon(Icons.check_circle, color: Colors.white, size: 20.sp),
-            SizedBox(width: 12.w),
-            Expanded(child: Text(message)),
-          ],
-        ),
-        backgroundColor: color,
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
-        margin: EdgeInsets.all(16.w),
-      ),
-    );
-  }
-
-  void _showErrorSnackBar(String message) {
-    print('💥 UsersScreen: Showing error snackbar - $message');
-    if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Row(
-          children: [
-            Icon(Icons.error, color: Colors.white, size: 20.sp),
-            SizedBox(width: 12.w),
-            Expanded(child: Text(message)),
-          ],
-        ),
-        backgroundColor: Colors.red,
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
-        margin: EdgeInsets.all(16.w),
-        duration: Duration(seconds: 4),
-      ),
-    );
-  }
-
-  Widget _buildEnhancedHeader() {
-    print('🏷️ UsersScreen: Building enhanced header');
-    return Container(
-      padding: EdgeInsets.all(24.w),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            Theme.of(context).colorScheme.primary.withOpacity(0.1),
-            Theme.of(context).colorScheme.secondary.withOpacity(0.05),
-          ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.only(
-          bottomLeft: Radius.circular(20.r),
-          bottomRight: Radius.circular(20.r),
-        ),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Users Management',
-                style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                  color: Theme.of(context).colorScheme.primary,
-                ),
-              ),
-              SizedBox(height: 8.h),
-              BlocBuilder<UsersBloc, UsersState>(
-                buildWhen: (previous, current) {
-                  return current is AllUsersLoaded ||
-                      current is AllUsersLoading ||
-                      current is UserStatisticsLoaded ||
-                      current is UserStatisticsLoading;
-                },
-                builder: (context, state) {
-                  print(
-                    '📊 UsersScreen: Header BlocBuilder state: ${state.runtimeType}',
-                  );
-
-                  // Check if we have users data from any previous AllUsersLoaded state
-                  // by looking at the cached data in the bloc
-                  int totalUsers = 0;
-                  final bloc = context.read<UsersBloc>();
-
-                  if (state is AllUsersLoaded) {
-                    totalUsers = state.patients.length + state.doctors.length;
-                    print(
-                      '📊 UsersScreen: Using state data - ${state.patients.length} patients, ${state.doctors.length} doctors',
-                    );
-                  } else if (bloc.currentPatients.isNotEmpty ||
-                      bloc.currentDoctors.isNotEmpty) {
-                    totalUsers =
-                        bloc.currentPatients.length +
-                        bloc.currentDoctors.length;
-                    print(
-                      '💾 UsersScreen: Using cached data - ${bloc.currentPatients.length} patients, ${bloc.currentDoctors.length} doctors',
-                    );
-                  }
-
-                  if (totalUsers > 0) {
-                    print('📈 UsersScreen: Total users in header: $totalUsers');
-                    return Row(
-                      children: [
-                        Icon(
-                          Icons.people,
-                          size: 16.sp,
-                          color: Colors.grey[600],
-                        ),
-                        SizedBox(width: 8.w),
-                        Text(
-                          'Total: $totalUsers users',
-                          style: TextStyle(
-                            fontSize: 14.sp,
-                            color: Colors.grey[600],
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                        SizedBox(width: 16.w),
-                        Container(
-                          width: 8.w,
-                          height: 8.h,
-                          decoration: BoxDecoration(
-                            color: Colors.green,
-                            shape: BoxShape.circle,
-                          ),
-                        ),
-                        SizedBox(width: 8.w),
-                        Text(
-                          'Live Data',
-                          style: TextStyle(
-                            fontSize: 12.sp,
-                            color: Colors.green,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ],
-                    );
-                  }
-                  print('⏳ UsersScreen: Header showing loading state');
-                  return Row(
-                    children: [
-                      SizedBox(
-                        width: 16.w,
-                        height: 16.h,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      ),
-                      SizedBox(width: 12.w),
-                      Text(
-                        'Loading user data...',
-                        style: TextStyle(
-                          fontSize: 14.sp,
-                          color: Colors.grey[600],
-                        ),
-                      ),
-                    ],
-                  );
-                },
-              ),
-            ],
-          ),
-          ElevatedButton.icon(
-            onPressed: () {
-              print('➕ UsersScreen: Add user button pressed');
-              _showAddUserDialog();
-            },
-            icon: Icon(Icons.add, size: 18.sp),
-            label: Text('Add User'),
-            style: ElevatedButton.styleFrom(
-              padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12.r),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _showAddUserDialog() {
-    print('🪟 UsersScreen: Showing add user dialog');
-    showDialog(
-      context: context,
-      builder:
-          (context) => AlertDialog(
-            title: Text('Add New User'),
-            content: Text('What type of user would you like to add?'),
-            actions: [
-              TextButton(
-                onPressed: () {
-                  print('👤 UsersScreen: Selected to add patient');
-                  Navigator.of(context).pop();
-                  _showUserForm('patient');
-                },
-                child: Text('Patient'),
-              ),
-              TextButton(
-                onPressed: () {
-                  print('👨‍⚕️ UsersScreen: Selected to add doctor');
-                  Navigator.of(context).pop();
-                  _showUserForm('doctor');
-                },
-                child: Text('Doctor'),
-              ),
-              TextButton(
-                onPressed: () {
-                  print('❌ UsersScreen: Cancelled add user dialog');
-                  Navigator.of(context).pop();
-                },
-                child: Text('Cancel'),
-              ),
-            ],
-          ),
-    );
-  }
-
-  void _showUserForm(
-    String userType, {
-    PatientEntity? patient,
-    DoctorEntity? doctor,
-    bool isEditing = false,
-  }) {
-    print(
-      '📝 UsersScreen: Showing user form - Type: $userType, Editing: $isEditing',
-    );
-    showDialog(
-      context: context,
-      builder:
-          (context) => BlocProvider.value(
-            value: context.read<UsersBloc>(),
-            child: UserFormDialog(
-              userType: userType,
-              patient: patient,
-              doctor: doctor,
-              isEditing: isEditing,
-            ),
-          ),
-    );
-  }
+  // Widget _buildHeader() {
+  //   print('🎯 UsersScreen: Building header');
+  //   return Container(
+  //     padding: EdgeInsets.all(16.w),
+  //     decoration: BoxDecoration(
+  //       color: Colors.white,
+  //       boxShadow: [
+  //         BoxShadow(
+  //           color: Colors.grey.withOpacity(0.1),
+  //           spreadRadius: 1,
+  //           blurRadius: 3,
+  //           offset: const Offset(0, 1),
+  //         ),
+  //       ],
+  //     ),
+  //     child: Row(
+  //       mainAxisAlignment: MainAxisAlignment.spaceBetween,
+  //       children: [
+  //         Column(
+  //           crossAxisAlignment: CrossAxisAlignment.start,
+  //           children: [
+  //             Text(
+  //               'User Management',
+  //               style: TextStyle(fontSize: 24.sp, fontWeight: FontWeight.bold),
+  //             ),
+  //             SizedBox(height: 4.h),
+  //             Text(
+  //               'View and manage your users',
+  //               style: TextStyle(fontSize: 14.sp, color: Colors.grey[600]),
+  //             ),
+  //           ],
+  //         ),
+  //         Row(
+  //           children: [
+  //             BlocBuilder<UsersBloc, UsersState>(
+  //               buildWhen: (previous, current) {
+  //                 print(
+  //                   '🔄 UsersScreen: Header BlocBuilder buildWhen - Previous: ${previous.runtimeType}, Current: ${current.runtimeType}',
+  //                 );
+  //                 return current is AllUsersLoaded ||
+  //                     current is AllUsersLoading ||
+  //                     current is UsersError;
+  //               },
+  //               builder: (context, state) {
+  //                 print(
+  //                   '📊 UsersScreen: Header BlocBuilder state: ${state.runtimeType}',
+  //                 );
+  //                 if (state is AllUsersLoaded) {
+  //                   final totalUsers =
+  //                       state.patients.length + state.doctors.length;
+  //                   print(
+  //                     '📊 UsersScreen: Header showing total users: $totalUsers',
+  //                   );
+  //                   return Row(
+  //                     children: [
+  //                       Icon(
+  //                         Icons.people,
+  //                         size: 20.sp,
+  //                         color: Colors.grey[600],
+  //                       ),
+  //                       SizedBox(width: 8.w),
+  //                       Text(
+  //                         '$totalUsers Total Users',
+  //                         style: TextStyle(
+  //                           fontSize: 14.sp,
+  //                           color: Colors.grey[600],
+  //                           fontWeight: FontWeight.w500,
+  //                         ),
+  //                       ),
+  //                     ],
+  //                   );
+  //                 }
+  //                 print('⏳ UsersScreen: Header showing loading state');
+  //                 return Row(
+  //                   children: [
+  //                     SizedBox(
+  //                       width: 16.w,
+  //                       height: 16.h,
+  //                       child: CircularProgressIndicator(strokeWidth: 2),
+  //                     ),
+  //                     SizedBox(width: 12.w),
+  //                     Text(
+  //                       'Loading user data...',
+  //                       style: TextStyle(
+  //                         fontSize: 14.sp,
+  //                         color: Colors.grey[600],
+  //                       ),
+  //                     ),
+  //                   ],
+  //                 );
+  //               },
+  //             ),
+  //           ],
+  //         ),
+  //       ],
+  //     ),
+  //   );
+  // }
 
   Widget _buildEnhancedStatsCards() {
     print('📊 UsersScreen: Building enhanced stats cards');
@@ -914,20 +750,6 @@ class _UsersScreenState extends State<UsersScreen>
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  ElevatedButton.icon(
-                    onPressed: () => _showAddUserDialog(),
-                    icon: Icon(Icons.add, size: 16.sp),
-                    label: Text('Add User'),
-                    style: ElevatedButton.styleFrom(
-                      padding: EdgeInsets.symmetric(
-                        horizontal: 16.w,
-                        vertical: 8.h,
-                      ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8.r),
-                      ),
-                    ),
-                  ),
                 ],
               ),
               SizedBox(height: 20.h),
@@ -936,7 +758,9 @@ class _UsersScreenState extends State<UsersScreen>
                   columnSpacing: 12,
                   horizontalMargin: 12,
                   minWidth: 800,
-                  headingRowColor: MaterialStateProperty.all(Colors.grey[50]),
+                  headingRowColor: MaterialStateProperty.all(
+                    Theme.of(context).colorScheme.surface,
+                  ),
                   headingRowHeight: 56.h,
                   dataRowHeight: 64.h,
                   columns: [
@@ -946,6 +770,7 @@ class _UsersScreenState extends State<UsersScreen>
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 14.sp,
+                          color: Theme.of(context).colorScheme.onSurface,
                         ),
                       ),
                       size: ColumnSize.L,
@@ -956,6 +781,7 @@ class _UsersScreenState extends State<UsersScreen>
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 14.sp,
+                          color: Theme.of(context).colorScheme.onSurface,
                         ),
                       ),
                       size: ColumnSize.L,
@@ -966,6 +792,7 @@ class _UsersScreenState extends State<UsersScreen>
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 14.sp,
+                          color: Theme.of(context).colorScheme.onSurface,
                         ),
                       ),
                       size: ColumnSize.S,
@@ -976,6 +803,7 @@ class _UsersScreenState extends State<UsersScreen>
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 14.sp,
+                          color: Theme.of(context).colorScheme.onSurface,
                         ),
                       ),
                       size: ColumnSize.M,
@@ -986,6 +814,7 @@ class _UsersScreenState extends State<UsersScreen>
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 14.sp,
+                          color: Theme.of(context).colorScheme.onSurface,
                         ),
                       ),
                       size: ColumnSize.M,
@@ -1028,7 +857,7 @@ class _UsersScreenState extends State<UsersScreen>
         DataCell(Text(patient.email)),
         DataCell(_buildTypeChip('Patient', Colors.green)),
         DataCell(Text(patient.phoneNumber ?? 'N/A')),
-        DataCell(_buildActionButtons('patient', patient: patient)),
+        DataCell(_buildActionButtons(userType: 'patient', patient: patient)),
       ],
     );
   }
@@ -1061,7 +890,7 @@ class _UsersScreenState extends State<UsersScreen>
         DataCell(Text(doctor.email)),
         DataCell(_buildTypeChip('Doctor', Colors.blue)),
         DataCell(Text(doctor.phoneNumber ?? 'N/A')),
-        DataCell(_buildActionButtons('doctor', doctor: doctor)),
+        DataCell(_buildActionButtons(userType: 'doctor', doctor: doctor)),
       ],
     );
   }
@@ -1084,57 +913,32 @@ class _UsersScreenState extends State<UsersScreen>
     );
   }
 
-  Widget _buildActionButtons(
-    String userType, {
+  Widget _buildActionButtons({
+    required String userType,
     PatientEntity? patient,
     DoctorEntity? doctor,
   }) {
-    print(
-      '🔧 UsersScreen: Building action buttons for $userType - Patient: ${patient?.fullName ?? 'null'}, Doctor: ${doctor?.fullName ?? 'null'}',
-    );
-
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
         IconButton(
           icon: Icon(Icons.visibility, size: 18.sp, color: Colors.blue),
           onPressed: () {
-            print('👁️ UsersScreen: View details pressed for $userType');
+            print('👁️ UsersScreen: View pressed for $userType');
             if (userType == 'patient' && patient != null) {
-              print(
-                '👤 UsersScreen: Showing patient details for: ${patient.fullName}',
-              );
+              print('👁️👤 UsersScreen: Viewing patient: ${patient.fullName}');
               _showPatientDetails(patient);
             } else if (userType == 'doctor' && doctor != null) {
-              print(
-                '👨‍⚕️ UsersScreen: Showing doctor details for: ${doctor.fullName}',
-              );
+              print('👁️👨‍⚕️ UsersScreen: Viewing doctor: ${doctor.fullName}');
               _showDoctorDetails(doctor);
             } else {
               print(
-                '❌ UsersScreen: Invalid userType or null entity - Type: $userType, Patient: $patient, Doctor: $doctor',
+                '❌ UsersScreen: Invalid userType or null entity for view - Type: $userType, Patient: $patient, Doctor: $doctor',
               );
             }
           },
-          tooltip: 'View Details',
-        ),
-        IconButton(
-          icon: Icon(Icons.edit, size: 18.sp, color: Colors.orange),
-          onPressed: () {
-            print('✏️ UsersScreen: Edit pressed for $userType');
-            if (userType == 'patient' && patient != null) {
-              print('✏️👤 UsersScreen: Editing patient: ${patient.fullName}');
-              _showUserForm('patient', patient: patient, isEditing: true);
-            } else if (userType == 'doctor' && doctor != null) {
-              print('✏️👨‍⚕️ UsersScreen: Editing doctor: ${doctor.fullName}');
-              _showUserForm('doctor', doctor: doctor, isEditing: true);
-            } else {
-              print(
-                '❌ UsersScreen: Invalid userType or null entity for edit - Type: $userType, Patient: $patient, Doctor: $doctor',
-              );
-            }
-          },
-          tooltip: 'Edit ${userType == 'patient' ? 'Patient' : 'Doctor'}',
+          tooltip:
+              'View ${userType == 'patient' ? 'Patient' : 'Doctor'} Details',
         ),
         IconButton(
           icon: Icon(Icons.delete, size: 18.sp, color: Colors.red),
@@ -1166,7 +970,7 @@ class _UsersScreenState extends State<UsersScreen>
     if (patients.isEmpty) {
       return _buildEmptyState(
         'No patients found',
-        'Add your first patient to get started',
+        'No patients are currently registered in the system',
       );
     }
 
@@ -1182,33 +986,9 @@ class _UsersScreenState extends State<UsersScreen>
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    'Patients (${patients.length} total)',
-                    style: TextStyle(
-                      fontSize: 20.sp,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  ElevatedButton.icon(
-                    onPressed: () => _showUserForm('patient'),
-                    icon: Icon(Icons.add, size: 16.sp),
-                    label: Text('Add Patient'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.green,
-                      foregroundColor: Colors.white,
-                      padding: EdgeInsets.symmetric(
-                        horizontal: 16.w,
-                        vertical: 8.h,
-                      ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8.r),
-                      ),
-                    ),
-                  ),
-                ],
+              Text(
+                'Patients (${patients.length} total)',
+                style: TextStyle(fontSize: 20.sp, fontWeight: FontWeight.bold),
               ),
               SizedBox(height: 20.h),
               Expanded(
@@ -1216,7 +996,9 @@ class _UsersScreenState extends State<UsersScreen>
                   columnSpacing: 12,
                   horizontalMargin: 12,
                   minWidth: 900,
-                  headingRowColor: MaterialStateProperty.all(Colors.grey[50]),
+                  headingRowColor: MaterialStateProperty.all(
+                    Theme.of(context).colorScheme.surface,
+                  ),
                   headingRowHeight: 56.h,
                   dataRowHeight: 64.h,
                   columns: [
@@ -1226,6 +1008,7 @@ class _UsersScreenState extends State<UsersScreen>
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 14.sp,
+                          color: Theme.of(context).colorScheme.onSurface,
                         ),
                       ),
                       size: ColumnSize.L,
@@ -1236,6 +1019,7 @@ class _UsersScreenState extends State<UsersScreen>
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 14.sp,
+                          color: Theme.of(context).colorScheme.onSurface,
                         ),
                       ),
                       size: ColumnSize.L,
@@ -1246,6 +1030,7 @@ class _UsersScreenState extends State<UsersScreen>
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 14.sp,
+                          color: Theme.of(context).colorScheme.onSurface,
                         ),
                       ),
                       size: ColumnSize.S,
@@ -1256,6 +1041,7 @@ class _UsersScreenState extends State<UsersScreen>
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 14.sp,
+                          color: Theme.of(context).colorScheme.onSurface,
                         ),
                       ),
                       size: ColumnSize.S,
@@ -1266,6 +1052,7 @@ class _UsersScreenState extends State<UsersScreen>
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 14.sp,
+                          color: Theme.of(context).colorScheme.onSurface,
                         ),
                       ),
                       size: ColumnSize.M,
@@ -1287,6 +1074,10 @@ class _UsersScreenState extends State<UsersScreen>
                                         style: TextStyle(
                                           fontWeight: FontWeight.w600,
                                           fontSize: 14.sp,
+                                          color:
+                                              Theme.of(
+                                                context,
+                                              ).colorScheme.onSurface,
                                         ),
                                       ),
                                       SizedBox(height: 2.h),
@@ -1327,7 +1118,7 @@ class _UsersScreenState extends State<UsersScreen>
                                 ),
                                 DataCell(
                                   _buildActionButtons(
-                                    'patient',
+                                    userType: 'patient',
                                     patient: patient,
                                   ),
                                 ),
@@ -1374,22 +1165,6 @@ class _UsersScreenState extends State<UsersScreen>
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  ElevatedButton.icon(
-                    onPressed: () => _showUserForm('doctor'),
-                    icon: Icon(Icons.add, size: 16.sp),
-                    label: Text('Add Doctor'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.blue,
-                      foregroundColor: Colors.white,
-                      padding: EdgeInsets.symmetric(
-                        horizontal: 16.w,
-                        vertical: 8.h,
-                      ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8.r),
-                      ),
-                    ),
-                  ),
                 ],
               ),
               SizedBox(height: 20.h),
@@ -1398,7 +1173,9 @@ class _UsersScreenState extends State<UsersScreen>
                   columnSpacing: 12,
                   horizontalMargin: 12,
                   minWidth: 900,
-                  headingRowColor: MaterialStateProperty.all(Colors.grey[50]),
+                  headingRowColor: MaterialStateProperty.all(
+                    Theme.of(context).colorScheme.surface,
+                  ),
                   headingRowHeight: 56.h,
                   dataRowHeight: 64.h,
                   columns: [
@@ -1408,6 +1185,7 @@ class _UsersScreenState extends State<UsersScreen>
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 14.sp,
+                          color: Theme.of(context).colorScheme.onSurface,
                         ),
                       ),
                       size: ColumnSize.L,
@@ -1418,6 +1196,7 @@ class _UsersScreenState extends State<UsersScreen>
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 14.sp,
+                          color: Theme.of(context).colorScheme.onSurface,
                         ),
                       ),
                       size: ColumnSize.L,
@@ -1428,6 +1207,7 @@ class _UsersScreenState extends State<UsersScreen>
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 14.sp,
+                          color: Theme.of(context).colorScheme.onSurface,
                         ),
                       ),
                       size: ColumnSize.M,
@@ -1438,6 +1218,7 @@ class _UsersScreenState extends State<UsersScreen>
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 14.sp,
+                          color: Theme.of(context).colorScheme.onSurface,
                         ),
                       ),
                       size: ColumnSize.S,
@@ -1448,6 +1229,7 @@ class _UsersScreenState extends State<UsersScreen>
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 14.sp,
+                          color: Theme.of(context).colorScheme.onSurface,
                         ),
                       ),
                       size: ColumnSize.M,
@@ -1469,6 +1251,10 @@ class _UsersScreenState extends State<UsersScreen>
                                         style: TextStyle(
                                           fontWeight: FontWeight.w600,
                                           fontSize: 14.sp,
+                                          color:
+                                              Theme.of(
+                                                context,
+                                              ).colorScheme.onSurface,
                                         ),
                                       ),
                                       SizedBox(height: 2.h),
@@ -1531,7 +1317,10 @@ class _UsersScreenState extends State<UsersScreen>
                                   ),
                                 ),
                                 DataCell(
-                                  _buildActionButtons('doctor', doctor: doctor),
+                                  _buildActionButtons(
+                                    userType: 'doctor',
+                                    doctor: doctor,
+                                  ),
                                 ),
                               ],
                             ),
@@ -1703,18 +1492,6 @@ class _UsersScreenState extends State<UsersScreen>
           Text(
             subtitle,
             style: TextStyle(fontSize: 14.sp, color: Colors.grey[500]),
-          ),
-          SizedBox(height: 24.h),
-          ElevatedButton.icon(
-            onPressed: () => _showAddUserDialog(),
-            icon: Icon(Icons.add),
-            label: Text('Add First User'),
-            style: ElevatedButton.styleFrom(
-              padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 12.h),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12.r),
-              ),
-            ),
           ),
         ],
       ),

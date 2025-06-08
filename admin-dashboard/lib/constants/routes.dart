@@ -5,10 +5,7 @@ class AppRoutes {
   static const String dashboard = '/dashboard';
   static const String users = '/users';
   static const String userDetails = '/user_details';
-  static const String addUser = '/add_user';
-  static const String editUser = '/edit_user';
   static const String statistics = '/statistics';
-  static const String advancedStatistics = '/advanced_statistics';
   static const String settings = '/settings';
 }
 
