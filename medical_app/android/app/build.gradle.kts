@@ -8,7 +8,7 @@ plugins {
 android {
     namespace = "com.example.medical_app"
     compileSdk = 35
-    ndkVersion = "29.0.13113456"
+    ndkVersion = "27.2.12479018"
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17

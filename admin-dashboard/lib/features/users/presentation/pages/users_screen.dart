@@ -66,14 +66,61 @@ class _UsersScreenState extends State<UsersScreen>
           print('✅ UsersScreen: User deleted successfully');
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(state.message),
+              content: Row(
+                children: [
+                  Icon(Icons.check_circle, color: Colors.white),
+                  SizedBox(width: 8.w),
+                  Text(state.message),
+                ],
+              ),
               backgroundColor: Colors.green,
+              duration: Duration(seconds: 3),
             ),
           );
         } else if (state is UserOperationError) {
           print('❌ UsersScreen: User operation error: ${state.message}');
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(state.message), backgroundColor: Colors.red),
+            SnackBar(
+              content: Row(
+                children: [
+                  Icon(Icons.error, color: Colors.white),
+                  SizedBox(width: 8.w),
+                  Expanded(child: Text(state.message)),
+                ],
+              ),
+              backgroundColor: Colors.red,
+              duration: Duration(seconds: 5),
+              action: SnackBarAction(
+                label: 'Retry',
+                textColor: Colors.white,
+                onPressed: () {
+                  // Refresh the data
+                  context.read<UsersBloc>().add(LoadAllUsers());
+                },
+              ),
+            ),
+          );
+        } else if (state is UserOperationLoading) {
+          print('⏳ UsersScreen: User operation loading');
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Row(
+                children: [
+                  SizedBox(
+                    width: 20.w,
+                    height: 20.h,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                    ),
+                  ),
+                  SizedBox(width: 12.w),
+                  Text('Deleting user...'),
+                ],
+              ),
+              backgroundColor: Colors.orange,
+              duration: Duration(seconds: 2),
+            ),
           );
         }
       },
@@ -1502,6 +1549,19 @@ class _UsersScreenState extends State<UsersScreen>
     print(
       '⚠️ UsersScreen: Showing delete confirmation for user: $userName (ID: $userId, Type: $userType)',
     );
+
+    // Debug: Check if user ID exists and is valid
+    if (userId.isEmpty) {
+      print('❌ UsersScreen: User ID is empty!');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error: User ID is empty'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
     showDialog(
       context: context,
       builder:
@@ -1539,6 +1599,42 @@ class _UsersScreenState extends State<UsersScreen>
                   ),
                 ),
                 SizedBox(height: 12.h),
+                // Debug info
+                Container(
+                  padding: EdgeInsets.all(8.w),
+                  decoration: BoxDecoration(
+                    color: Colors.grey.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(4.r),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Debug Info:',
+                        style: TextStyle(
+                          fontSize: 10.sp,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.grey[600],
+                        ),
+                      ),
+                      Text(
+                        'ID: $userId',
+                        style: TextStyle(
+                          fontSize: 10.sp,
+                          color: Colors.grey[600],
+                        ),
+                      ),
+                      Text(
+                        'Type: $userType',
+                        style: TextStyle(
+                          fontSize: 10.sp,
+                          color: Colors.grey[600],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                SizedBox(height: 8.h),
                 Text(
                   'This action cannot be undone. All related data will be permanently deleted.',
                   style: TextStyle(fontSize: 12.sp, color: Colors.grey[600]),
@@ -1563,9 +1659,20 @@ class _UsersScreenState extends State<UsersScreen>
                     print(
                       '🔥 UsersScreen: Dispatching delete event for user: $userId',
                     );
-                    context.read<UsersBloc>().add(
-                      DeleteUserEvent(userId: userId, userType: userType),
-                    );
+                    // Add extra validation before dispatching
+                    if (userId.isNotEmpty && userType.isNotEmpty) {
+                      context.read<UsersBloc>().add(
+                        DeleteUserEvent(userId: userId, userType: userType),
+                      );
+                    } else {
+                      print('❌ UsersScreen: Invalid userId or userType');
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('Error: Invalid user data'),
+                          backgroundColor: Colors.red,
+                        ),
+                      );
+                    }
                   } else {
                     print(
                       '❌ UsersScreen: Widget not mounted, cannot dispatch delete event',

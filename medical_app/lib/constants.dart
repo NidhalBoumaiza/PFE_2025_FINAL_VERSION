@@ -5,7 +5,7 @@ class AppConstants {
   /// Use 'http://10.0.2.2:3000/api/v1' for Android emulators to access the host machine's localhost.
   /// Use 'http://192.168.1.18:3000/api/v1' for physical devices on the same network.
   /// For production, replace with your server URL (e.g., 'https://api.medicalapp.com/api/v1').
-  static const String baseUrl = 'http://192.168.0.8:3000/api/v1';
+  static const String baseUrl = 'http://192.168.1.24:3000/api/v1';
 
   /// Endpoint for user authentication and management.
   static String get usersEndpoint => '$baseUrl/users';

@@ -90,11 +90,6 @@ class _SettingsPageState extends State<SettingsPage> {
             const ThemeCubitSwitch(),
 
             const SizedBox(height: 24),
-            _buildSectionTitle("language".tr),
-            const SizedBox(height: 8),
-            _buildLanguageSelection(),
-
-            const SizedBox(height: 24),
             _buildSectionTitle("notifications".tr),
             const SizedBox(height: 8),
             _buildNotificationSettings(),
@@ -125,68 +120,6 @@ class _SettingsPageState extends State<SettingsPage> {
     );
   }
 
-  Widget _buildLanguageSelection() {
-    return Card(
-      elevation: 1,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Column(
-          children: [
-            _buildLanguageOption("french".tr, 'fr'),
-            const Divider(height: 1),
-            _buildLanguageOption("english".tr, 'en'),
-            const Divider(height: 1),
-            _buildLanguageOption("arabic".tr, 'ar'),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildLanguageOption(String language, String langCode) {
-    final isSelected = Get.locale?.languageCode == langCode;
-
-    return InkWell(
-      onTap: () async {
-        final prefs = await SharedPreferences.getInstance();
-        await prefs.setString('app_language', langCode);
-        Get.updateLocale(
-          Locale(
-            langCode,
-            langCode == 'fr'
-                ? 'FR'
-                : langCode == 'en'
-                ? 'US'
-                : 'AR',
-          ),
-        );
-      },
-      borderRadius: BorderRadius.circular(12),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              language,
-              style: GoogleFonts.raleway(
-                fontSize: 14,
-                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-              ),
-            ),
-            if (isSelected)
-              const Icon(
-                Icons.check_circle,
-                color: AppColors.primaryColor,
-                size: 20,
-              ),
-          ],
-        ),
-      ),
-    );
-  }
-
   Widget _buildNotificationSettings() {
     return Card(
       elevation: 1,
@@ -205,10 +138,11 @@ class _SettingsPageState extends State<SettingsPage> {
             subtitle: Text(
               "manage_notification_preferences".tr,
               style: GoogleFonts.raleway(
-                fontSize: 12, 
-                color: Theme.of(context).brightness == Brightness.dark 
-                    ? Colors.grey[300] 
-                    : Colors.grey[600]
+                fontSize: 12,
+                color:
+                    Theme.of(context).brightness == Brightness.dark
+                        ? Colors.grey[300]
+                        : Colors.grey[600],
               ),
             ),
             trailing: const Icon(Icons.chevron_right, size: 20),
@@ -297,9 +231,10 @@ class _SettingsPageState extends State<SettingsPage> {
                             : "update_your_personal_information".tr,
                         style: GoogleFonts.raleway(
                           fontSize: 12,
-                          color: Theme.of(context).brightness == Brightness.dark 
-                              ? Colors.grey[300] 
-                              : Colors.grey[600],
+                          color:
+                              Theme.of(context).brightness == Brightness.dark
+                                  ? Colors.grey[300]
+                                  : Colors.grey[600],
                         ),
                       ),
                       trailing: const Icon(Icons.chevron_right, size: 20),
@@ -379,10 +314,11 @@ class _SettingsPageState extends State<SettingsPage> {
             subtitle: Text(
               "update_your_password".tr,
               style: GoogleFonts.raleway(
-                fontSize: 12, 
-                color: Theme.of(context).brightness == Brightness.dark 
-                    ? Colors.grey[300] 
-                    : Colors.grey[600]
+                fontSize: 12,
+                color:
+                    Theme.of(context).brightness == Brightness.dark
+                        ? Colors.grey[300]
+                        : Colors.grey[600],
               ),
             ),
             trailing: const Icon(Icons.chevron_right, size: 20),
@@ -409,10 +345,11 @@ class _SettingsPageState extends State<SettingsPage> {
             subtitle: Text(
               "sign_out_of_your_account".tr,
               style: GoogleFonts.raleway(
-                fontSize: 12, 
-                color: Theme.of(context).brightness == Brightness.dark 
-                    ? Colors.grey[300] 
-                    : Colors.grey[600]
+                fontSize: 12,
+                color:
+                    Theme.of(context).brightness == Brightness.dark
+                        ? Colors.grey[300]
+                        : Colors.grey[600],
               ),
             ),
             trailing: const Icon(Icons.chevron_right, size: 20),
@@ -434,10 +371,11 @@ class _SettingsPageState extends State<SettingsPage> {
             subtitle: Text(
               "delete_account_warning".tr,
               style: GoogleFonts.raleway(
-                fontSize: 12, 
-                color: Theme.of(context).brightness == Brightness.dark 
-                    ? Colors.grey[300] 
-                    : Colors.grey[600]
+                fontSize: 12,
+                color:
+                    Theme.of(context).brightness == Brightness.dark
+                        ? Colors.grey[300]
+                        : Colors.grey[600],
               ),
             ),
             trailing: const Icon(Icons.chevron_right, size: 20),
@@ -596,10 +534,11 @@ class _SettingsPageState extends State<SettingsPage> {
             Text(
               "copyright".tr,
               style: GoogleFonts.raleway(
-                fontSize: 12, 
-                color: Theme.of(context).brightness == Brightness.dark 
-                    ? Colors.grey[300] 
-                    : Colors.grey[600]
+                fontSize: 12,
+                color:
+                    Theme.of(context).brightness == Brightness.dark
+                        ? Colors.grey[300]
+                        : Colors.grey[600],
               ),
             ),
             const SizedBox(height: 16),
@@ -703,9 +642,10 @@ class _SettingsPageState extends State<SettingsPage> {
                           "delete_account_description".tr,
                           style: GoogleFonts.raleway(
                             fontSize: 14,
-                            color: Theme.of(context).brightness == Brightness.dark 
-                                ? Colors.white 
-                                : Colors.black87,
+                            color:
+                                Theme.of(context).brightness == Brightness.dark
+                                    ? Colors.white
+                                    : Colors.black87,
                           ),
                         ),
                         const SizedBox(height: 16),
@@ -714,9 +654,10 @@ class _SettingsPageState extends State<SettingsPage> {
                           style: GoogleFonts.raleway(
                             fontWeight: FontWeight.w600,
                             fontSize: 14,
-                            color: Theme.of(context).brightness == Brightness.dark 
-                                ? Colors.white 
-                                : Colors.black87,
+                            color:
+                                Theme.of(context).brightness == Brightness.dark
+                                    ? Colors.white
+                                    : Colors.black87,
                           ),
                         ),
                         const SizedBox(height: 8),
@@ -765,9 +706,13 @@ class _SettingsPageState extends State<SettingsPage> {
                                           content: Text(
                                             "delete_account_warning".tr,
                                             style: TextStyle(
-                                              color: Theme.of(context).brightness == Brightness.dark 
-                                                  ? Colors.white 
-                                                  : Colors.black87,
+                                              color:
+                                                  Theme.of(
+                                                            context,
+                                                          ).brightness ==
+                                                          Brightness.dark
+                                                      ? Colors.white
+                                                      : Colors.black87,
                                             ),
                                           ),
                                           actions: [

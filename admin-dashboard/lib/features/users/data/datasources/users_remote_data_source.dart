@@ -173,131 +173,231 @@ class UsersRemoteDataSourceImpl implements UsersRemoteDataSource {
   @override
   Future<Unit> deleteUser(String userId, String userType) async {
     try {
-      print('deleteUser: Starting for userId=$userId, userType=$userType');
+      print('🗑️ deleteUser: Starting for userId=$userId, userType=$userType');
+
+      // Validate inputs
+      if (userId.isEmpty) {
+        throw ServerException('User ID cannot be empty');
+      }
 
       // Create batch for atomic operations
-      final batch = firestore.batch();
+      WriteBatch batch = firestore.batch();
+      int operationCount = 0;
 
+      // Helper function to add delete operation to batch
+      void addDeleteToBatch(DocumentReference docRef) {
+        if (operationCount >= 450) {
+          // Stay under 500 limit with safety margin
+          // Commit current batch and create new one
+          batch.commit();
+          batch = firestore.batch();
+          operationCount = 0;
+        }
+        batch.delete(docRef);
+        operationCount++;
+      }
+
+      print('📋 deleteUser: Step 1 - Deleting from main collection');
       // Delete from main collection (patients or medecins)
       if (userType == 'patient') {
-        batch.delete(firestore.collection('patients').doc(userId));
+        print('👤 deleteUser: Deleting from patients collection');
+        addDeleteToBatch(firestore.collection('patients').doc(userId));
       } else if (userType == 'medecin' || userType == 'doctor') {
-        batch.delete(firestore.collection('medecins').doc(userId));
+        print('👨‍⚕️ deleteUser: Deleting from medecins collection');
+        addDeleteToBatch(firestore.collection('medecins').doc(userId));
+      } else {
+        print('❌ deleteUser: Invalid userType: $userType');
+        throw ServerException('Invalid user type: $userType');
       }
 
+      print('👥 deleteUser: Step 2 - Deleting from users collection');
       // Delete from users collection
-      batch.delete(firestore.collection('users').doc(userId));
+      addDeleteToBatch(firestore.collection('users').doc(userId));
 
-      // Delete related data
-      // Delete notifications
-      final notificationsQuery =
-          await firestore
-              .collection('notifications')
-              .where('recipientId', isEqualTo: userId)
-              .get();
-      for (final doc in notificationsQuery.docs) {
-        batch.delete(doc.reference);
-      }
-
-      final sentNotificationsQuery =
-          await firestore
-              .collection('notifications')
-              .where('senderId', isEqualTo: userId)
-              .get();
-      for (final doc in sentNotificationsQuery.docs) {
-        batch.delete(doc.reference);
-      }
-
-      // Delete appointments
-      final appointmentsQuery =
-          await firestore
-              .collection('rendez_vous')
-              .where('patientId', isEqualTo: userId)
-              .get();
-      for (final doc in appointmentsQuery.docs) {
-        batch.delete(doc.reference);
-      }
-
-      final doctorAppointmentsQuery =
-          await firestore
-              .collection('rendez_vous')
-              .where('doctorId', isEqualTo: userId)
-              .get();
-      for (final doc in doctorAppointmentsQuery.docs) {
-        batch.delete(doc.reference);
-      }
-
-      // Delete conversations
-      final conversationsQuery =
-          await firestore
-              .collection('conversations')
-              .where('participants', arrayContains: userId)
-              .get();
-      for (final doc in conversationsQuery.docs) {
-        batch.delete(doc.reference);
-      }
-
-      // Delete prescriptions
-      final prescriptionsQuery =
-          await firestore
-              .collection('prescriptions')
-              .where('patientId', isEqualTo: userId)
-              .get();
-      for (final doc in prescriptionsQuery.docs) {
-        batch.delete(doc.reference);
-      }
-
-      final doctorPrescriptionsQuery =
-          await firestore
-              .collection('prescriptions')
-              .where('doctorId', isEqualTo: userId)
-              .get();
-      for (final doc in doctorPrescriptionsQuery.docs) {
-        batch.delete(doc.reference);
-      }
-
-      // Delete ratings
-      final ratingsQuery =
-          await firestore
-              .collection('ratings')
-              .where('patientId', isEqualTo: userId)
-              .get();
-      for (final doc in ratingsQuery.docs) {
-        batch.delete(doc.reference);
-      }
-
-      final doctorRatingsQuery =
-          await firestore
-              .collection('ratings')
-              .where('doctorId', isEqualTo: userId)
-              .get();
-      for (final doc in doctorRatingsQuery.docs) {
-        batch.delete(doc.reference);
-      }
-
-      // Delete medical files if patient
-      if (userType == 'patient') {
-        final medicalFilesQuery =
+      print('🔔 deleteUser: Step 3 - Deleting notifications');
+      // Delete related data - notifications
+      try {
+        final notificationsQuery =
             await firestore
-                .collection('dossier_medical')
+                .collection('notifications')
+                .where('recipientId', isEqualTo: userId)
+                .get();
+        print(
+          '📧 deleteUser: Found ${notificationsQuery.docs.length} recipient notifications',
+        );
+        for (final doc in notificationsQuery.docs) {
+          addDeleteToBatch(doc.reference);
+        }
+
+        final sentNotificationsQuery =
+            await firestore
+                .collection('notifications')
+                .where('senderId', isEqualTo: userId)
+                .get();
+        print(
+          '📤 deleteUser: Found ${sentNotificationsQuery.docs.length} sender notifications',
+        );
+        for (final doc in sentNotificationsQuery.docs) {
+          addDeleteToBatch(doc.reference);
+        }
+      } catch (e) {
+        print('⚠️ deleteUser: Error deleting notifications: $e');
+        // Continue with other deletions
+      }
+
+      print('📅 deleteUser: Step 4 - Deleting appointments');
+      // Delete appointments
+      try {
+        final appointmentsQuery =
+            await firestore
+                .collection('rendez_vous')
                 .where('patientId', isEqualTo: userId)
                 .get();
-        for (final doc in medicalFilesQuery.docs) {
-          batch.delete(doc.reference);
+        print(
+          '👤📅 deleteUser: Found ${appointmentsQuery.docs.length} patient appointments',
+        );
+        for (final doc in appointmentsQuery.docs) {
+          addDeleteToBatch(doc.reference);
+        }
+
+        final doctorAppointmentsQuery =
+            await firestore
+                .collection('rendez_vous')
+                .where('doctorId', isEqualTo: userId)
+                .get();
+        print(
+          '👨‍⚕️📅 deleteUser: Found ${doctorAppointmentsQuery.docs.length} doctor appointments',
+        );
+        for (final doc in doctorAppointmentsQuery.docs) {
+          addDeleteToBatch(doc.reference);
+        }
+      } catch (e) {
+        print('⚠️ deleteUser: Error deleting appointments: $e');
+        // Continue with other deletions
+      }
+
+      print('💬 deleteUser: Step 5 - Deleting conversations');
+      // Delete conversations
+      try {
+        final conversationsQuery =
+            await firestore
+                .collection('conversations')
+                .where('participants', arrayContains: userId)
+                .get();
+        print(
+          '💬 deleteUser: Found ${conversationsQuery.docs.length} conversations',
+        );
+        for (final doc in conversationsQuery.docs) {
+          addDeleteToBatch(doc.reference);
+        }
+      } catch (e) {
+        print('⚠️ deleteUser: Error deleting conversations: $e');
+        // Continue with other deletions
+      }
+
+      print('💊 deleteUser: Step 6 - Deleting prescriptions');
+      // Delete prescriptions
+      try {
+        final prescriptionsQuery =
+            await firestore
+                .collection('prescriptions')
+                .where('patientId', isEqualTo: userId)
+                .get();
+        print(
+          '👤💊 deleteUser: Found ${prescriptionsQuery.docs.length} patient prescriptions',
+        );
+        for (final doc in prescriptionsQuery.docs) {
+          addDeleteToBatch(doc.reference);
+        }
+
+        final doctorPrescriptionsQuery =
+            await firestore
+                .collection('prescriptions')
+                .where('doctorId', isEqualTo: userId)
+                .get();
+        print(
+          '👨‍⚕️💊 deleteUser: Found ${doctorPrescriptionsQuery.docs.length} doctor prescriptions',
+        );
+        for (final doc in doctorPrescriptionsQuery.docs) {
+          addDeleteToBatch(doc.reference);
+        }
+      } catch (e) {
+        print('⚠️ deleteUser: Error deleting prescriptions: $e');
+        // Continue with other deletions
+      }
+
+      print('⭐ deleteUser: Step 7 - Deleting ratings');
+      // Delete ratings
+      try {
+        final ratingsQuery =
+            await firestore
+                .collection('ratings')
+                .where('patientId', isEqualTo: userId)
+                .get();
+        print(
+          '👤⭐ deleteUser: Found ${ratingsQuery.docs.length} patient ratings',
+        );
+        for (final doc in ratingsQuery.docs) {
+          addDeleteToBatch(doc.reference);
+        }
+
+        final doctorRatingsQuery =
+            await firestore
+                .collection('ratings')
+                .where('doctorId', isEqualTo: userId)
+                .get();
+        print(
+          '👨‍⚕️⭐ deleteUser: Found ${doctorRatingsQuery.docs.length} doctor ratings',
+        );
+        for (final doc in doctorRatingsQuery.docs) {
+          addDeleteToBatch(doc.reference);
+        }
+      } catch (e) {
+        print('⚠️ deleteUser: Error deleting ratings: $e');
+        // Continue with other deletions
+      }
+
+      print('📋 deleteUser: Step 8 - Deleting medical files (if patient)');
+      // Delete medical files if patient
+      if (userType == 'patient') {
+        try {
+          final medicalFilesQuery =
+              await firestore
+                  .collection('dossier_medical')
+                  .where('patientId', isEqualTo: userId)
+                  .get();
+          print(
+            '📋 deleteUser: Found ${medicalFilesQuery.docs.length} medical files',
+          );
+          for (final doc in medicalFilesQuery.docs) {
+            addDeleteToBatch(doc.reference);
+          }
+        } catch (e) {
+          print('⚠️ deleteUser: Error deleting medical files: $e');
+          // Continue with other deletions
         }
       }
 
-      // Commit all deletions
-      await batch.commit();
+      print(
+        '💾 deleteUser: Step 9 - Committing final batch with $operationCount operations',
+      );
+      // Commit final batch
+      if (operationCount > 0) {
+        await batch.commit();
+      }
 
-      // Note: We don't delete the Firebase Auth user here as that requires
-      // the user to be currently authenticated. In a real admin system,
-      // you might want to use Firebase Admin SDK for this.
+      print('✅ deleteUser: User data deleted successfully');
+      print(
+        '🔄 deleteUser: Note - Firebase Auth user deletion requires Admin SDK',
+      );
 
-      print('deleteUser: User data deleted successfully');
       return unit;
+    } on FirebaseException catch (e) {
+      print('🔥 deleteUser: Firebase error: ${e.code} - ${e.message}');
+      throw ServerException('Firebase error: ${e.message}');
     } catch (e) {
-      print('deleteUser: Error: $e');
+      print('💥 deleteUser: Unexpected error: $e');
+      print('📍 deleteUser: Error type: ${e.runtimeType}');
       throw ServerException('Failed to delete user: $e');
     }
   }
