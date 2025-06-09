@@ -212,7 +212,7 @@ class _MedicalDossierPageState extends State<MedicalDossierPage> {
               );
             },
             icon: Icon(Icons.refresh),
-            label: Text('Try Again'),
+            label: Text('Réessayer'),
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.indigo,
               foregroundColor: Colors.white,
@@ -278,7 +278,7 @@ class _MedicalDossierPageState extends State<MedicalDossierPage> {
           ),
           SizedBox(height: 24.h),
           Text(
-            'No Medical Files',
+            'Aucun fichier médical',
             style: TextStyle(
               fontSize: 24.sp,
               fontWeight: FontWeight.bold,
@@ -287,7 +287,7 @@ class _MedicalDossierPageState extends State<MedicalDossierPage> {
           ),
           SizedBox(height: 8.h),
           Text(
-            'This patient has not uploaded any medical files yet.',
+            'Ce patient n\'a pas encore téléchargé de fichiers médicaux.',
             textAlign: TextAlign.center,
             style: TextStyle(fontSize: 16.sp, color: Colors.grey[600]),
           ),
@@ -318,7 +318,7 @@ class _MedicalDossierPageState extends State<MedicalDossierPage> {
             child: Row(
               children: [
                 _buildStatCard(
-                  'Total Files',
+                  'Total fichiers',
                   '${state.dossier.fileCount}',
                   Icons.description,
                   Colors.blue,
@@ -334,7 +334,7 @@ class _MedicalDossierPageState extends State<MedicalDossierPage> {
                 ),
                 SizedBox(width: 16.w),
                 _buildStatCard(
-                  'PDFs',
+                  'PDF',
                   '${state.dossier.pdfFiles.length}',
                   Icons.picture_as_pdf,
                   Colors.red,
@@ -342,7 +342,7 @@ class _MedicalDossierPageState extends State<MedicalDossierPage> {
                 ),
                 SizedBox(width: 16.w),
                 _buildStatCard(
-                  'Others',
+                  'Autres',
                   '${state.dossier.otherFiles.length}',
                   Icons.insert_drive_file,
                   Colors.orange,
@@ -444,10 +444,10 @@ class _MedicalDossierPageState extends State<MedicalDossierPage> {
             });
           },
           items: const [
-            DropdownMenuItem(value: 'all', child: Text('All Files')),
-            DropdownMenuItem(value: 'images', child: Text('Images Only')),
-            DropdownMenuItem(value: 'pdfs', child: Text('PDFs Only')),
-            DropdownMenuItem(value: 'others', child: Text('Other Files')),
+            DropdownMenuItem(value: 'all', child: Text('Tous les fichiers')),
+            DropdownMenuItem(value: 'images', child: Text('Images uniquement')),
+            DropdownMenuItem(value: 'pdfs', child: Text('PDF uniquement')),
+            DropdownMenuItem(value: 'others', child: Text('Autres fichiers')),
           ],
         ),
       ),
@@ -613,7 +613,7 @@ class _MedicalDossierPageState extends State<MedicalDossierPage> {
                             ),
                           ),
                           child: Text(
-                            'View',
+                            'Voir',
                             style: TextStyle(
                               fontSize: 12.sp,
                               color: Colors.blue,
@@ -904,7 +904,7 @@ class _MedicalDossierPageState extends State<MedicalDossierPage> {
                       html.window.open(file.path, '_blank');
                     },
                     icon: Icon(Icons.open_in_new, size: 16.sp),
-                    label: Text('View Full Image'),
+                    label: Text('Voir l\'image complète'),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.blue,
                       foregroundColor: Colors.white,

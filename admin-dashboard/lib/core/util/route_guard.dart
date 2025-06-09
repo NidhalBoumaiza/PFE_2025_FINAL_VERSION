@@ -32,7 +32,7 @@ class RouteGuard extends StatelessWidget {
         if (!hasAccess) {
           // User doesn't have permission, show access denied
           return Scaffold(
-            appBar: AppBar(title: const Text('Access Denied')),
+            appBar: AppBar(title: const Text('Accès refusé')),
             body: Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -40,12 +40,12 @@ class RouteGuard extends StatelessWidget {
                   const Icon(Icons.lock, size: 64, color: Colors.red),
                   const SizedBox(height: 16),
                   const Text(
-                    'Access Denied',
+                    'Accès refusé',
                     style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 8),
                   const Text(
-                    'You do not have permission to access this page.',
+                    'Vous n\'avez pas la permission d\'accéder à cette page.',
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 24),
@@ -53,7 +53,7 @@ class RouteGuard extends StatelessWidget {
                     onPressed: () {
                       Navigator.of(context).pop();
                     },
-                    child: const Text('Go Back'),
+                    child: const Text('Retour'),
                   ),
                 ],
               ),

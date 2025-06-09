@@ -117,7 +117,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
               // Welcome Text
               Text(
-                'Welcome to',
+                'Bienvenue sur',
                 style: TextStyle(
                   fontSize: 28.sp,
                   fontWeight: FontWeight.w300,
@@ -125,7 +125,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
               ),
               Text(
-                'Medical Admin',
+                'Tableau de Bord',
                 style: TextStyle(
                   fontSize: 48.sp,
                   fontWeight: FontWeight.bold,
@@ -134,7 +134,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
               ),
               Text(
-                'Dashboard',
+                'Médical Admin',
                 style: TextStyle(
                   fontSize: 48.sp,
                   fontWeight: FontWeight.bold,
@@ -148,7 +148,7 @@ class _LoginScreenState extends State<LoginScreen> {
               SizedBox(
                 width: 320.w,
                 child: Text(
-                  'Manage your medical practice with our comprehensive admin dashboard. Monitor patients.',
+                  'Gérez votre pratique médicale avec notre tableau de bord administratif complet. Surveillez les patients.',
                   style: TextStyle(
                     fontSize: 18.sp,
                     color: Colors.white.withValues(alpha: 0.8),
@@ -159,13 +159,13 @@ class _LoginScreenState extends State<LoginScreen> {
               SizedBox(height: 40.h),
 
               // // Features List
-              // _buildFeatureItem(Icons.people, 'Patient Management'),
+              // _buildFeatureItem(Icons.people, 'Gestion des Patients'),
               // SizedBox(height: 16.h),
-              // _buildFeatureItem(Icons.local_hospital, 'Doctor Directory'),
+              // _buildFeatureItem(Icons.local_hospital, 'Répertoire des Médecins'),
               // SizedBox(height: 16.h),
-              // _buildFeatureItem(Icons.analytics, 'Analytics & Reports'),
+              // _buildFeatureItem(Icons.analytics, 'Analyses et Rapports'),
               // SizedBox(height: 16.h),
-              // _buildFeatureItem(Icons.security, 'Secure & HIPAA Compliant'),
+              // _buildFeatureItem(Icons.security, 'Sécurisé et Conforme RGPD'),
             ],
           ),
         ),
@@ -224,7 +224,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           children: [
                             // Header
                             Text(
-                              'Sign In',
+                              'Connexion',
                               style: TextStyle(
                                 fontSize: 36.sp,
                                 fontWeight: FontWeight.bold,
@@ -236,7 +236,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             ),
                             SizedBox(height: 8.h),
                             Text(
-                              'Enter your credentials to access the admin dashboard',
+                              'Entrez vos identifiants pour accéder au tableau de bord administrateur',
                               style: TextStyle(
                                 fontSize: 16.sp,
                                 color:
@@ -256,7 +256,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 children: [
                                   // Email Field
                                   Text(
-                                    'Email Address',
+                                    'Adresse e-mail',
                                     style: TextStyle(
                                       fontSize: 14.sp,
                                       fontWeight: FontWeight.w600,
@@ -270,7 +270,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                   TextFormField(
                                     controller: _emailController,
                                     decoration: InputDecoration(
-                                      hintText: 'Enter your email address',
+                                      hintText: 'Entrez votre adresse e-mail',
                                       prefixIcon: Icon(
                                         Icons.email_outlined,
                                         color:
@@ -321,10 +321,10 @@ class _LoginScreenState extends State<LoginScreen> {
                                     style: TextStyle(fontSize: 16.sp),
                                     validator: (value) {
                                       if (value == null || value.isEmpty) {
-                                        return 'Please enter your email address';
+                                        return 'Veuillez entrer votre adresse e-mail';
                                       }
                                       if (!value.contains('@')) {
-                                        return 'Please enter a valid email address';
+                                        return 'Veuillez entrer une adresse e-mail valide';
                                       }
                                       return null;
                                     },
@@ -333,7 +333,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
                                   // Password Field
                                   Text(
-                                    'Password',
+                                    'Mot de passe',
                                     style: TextStyle(
                                       fontSize: 14.sp,
                                       fontWeight: FontWeight.w600,
@@ -347,7 +347,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                   TextFormField(
                                     controller: _passwordController,
                                     decoration: InputDecoration(
-                                      hintText: 'Enter your password',
+                                      hintText: 'Entrez votre mot de passe',
                                       prefixIcon: Icon(
                                         Icons.lock_outline,
                                         color:
@@ -416,10 +416,10 @@ class _LoginScreenState extends State<LoginScreen> {
                                     style: TextStyle(fontSize: 16.sp),
                                     validator: (value) {
                                       if (value == null || value.isEmpty) {
-                                        return 'Please enter your password';
+                                        return 'Veuillez entrer votre mot de passe';
                                       }
                                       if (value.length < 6) {
-                                        return 'Password must be at least 6 characters';
+                                        return 'Le mot de passe doit contenir au moins 6 caractères';
                                       }
                                       return null;
                                     },
@@ -481,7 +481,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                                   ),
                                                   SizedBox(width: 12.w),
                                                   Text(
-                                                    'Signing In...',
+                                                    'Connexion en cours...',
                                                     style: TextStyle(
                                                       fontSize: 16.sp,
                                                       fontWeight:
@@ -491,7 +491,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                                 ],
                                               )
                                               : Text(
-                                                'Sign In',
+                                                'Se connecter',
                                                 style: TextStyle(
                                                   fontSize: 16.sp,
                                                   fontWeight: FontWeight.w600,

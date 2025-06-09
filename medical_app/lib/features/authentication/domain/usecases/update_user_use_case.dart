@@ -9,6 +9,16 @@ class UpdateUserUseCase {
   UpdateUserUseCase(this.repository);
 
   Future<Either<Failure, Unit>> call(UserEntity user) async {
-    return await repository.updateUser(user);
+    print('🔧 UpdateUserUseCase: Starting update for user ${user.id}');
+    print('🔧 UpdateUserUseCase: User data - ${user.toString()}');
+
+    try {
+      final result = await repository.updateUser(user);
+      print('🔧 UpdateUserUseCase: Repository result - ${result.toString()}');
+      return result;
+    } catch (e) {
+      print('🔧 UpdateUserUseCase: Exception caught - $e');
+      rethrow;
+    }
   }
 }

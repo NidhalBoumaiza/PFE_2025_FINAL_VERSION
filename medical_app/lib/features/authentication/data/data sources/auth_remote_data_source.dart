@@ -117,42 +117,233 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   @override
   Future<void> signInWithGoogle() async {
     try {
+      print('🔵 Starting Google Sign-In process');
+
       final GoogleSignInAccount? googleUser = await googleSignIn.signIn();
       if (googleUser == null) {
+        print('❌ Google Sign-In cancelled by user');
         throw AuthException('Google Sign-In cancelled');
       }
+
+      print('✅ Google user selected: ${googleUser.email}');
+
       final GoogleSignInAuthentication googleAuth =
           await googleUser.authentication;
       final credential = GoogleAuthProvider.credential(
         accessToken: googleAuth.accessToken,
         idToken: googleAuth.idToken,
       );
+
+      print('🔐 Signing in with Google credentials to Firebase');
       final userCredential = await firebaseAuth.signInWithCredential(
         credential,
       );
       final user = userCredential.user;
+
       if (user != null) {
-        final userData = UserModel(
-          id: user.uid,
-          name: user.displayName?.split(' ').first ?? '',
-          lastName: user.displayName?.split(' ').last ?? '',
-          email: user.email?.toLowerCase().trim() ?? '',
-          role: 'patient',
-          gender: 'Homme',
-          phoneNumber: user.phoneNumber ?? '',
-          dateOfBirth: null,
-        );
-        await firestore
-            .collection('users')
-            .doc(user.uid)
-            .set(userData.toJson());
-        await localDataSource.cacheUser(userData);
-        await localDataSource.saveToken(user.uid);
+        print('✅ Firebase user created/signed in: ${user.uid}');
+
+        // Check if this is a new user or existing user
+        final isNewUser = userCredential.additionalUserInfo?.isNewUser ?? false;
+        print('👤 Is new user: $isNewUser');
+
+        final normalizedEmail = user.email?.toLowerCase().trim() ?? '';
+
+        if (isNewUser) {
+          // New user - create patient account with activation required
+          print('🆕 Creating new patient account for Google user');
+
+          // Check if email already exists in patients or medecins collections
+          final existingPatient =
+              await firestore
+                  .collection('patients')
+                  .where('email', isEqualTo: normalizedEmail)
+                  .get();
+
+          final existingMedecin =
+              await firestore
+                  .collection('medecins')
+                  .where('email', isEqualTo: normalizedEmail)
+                  .get();
+
+          if (existingPatient.docs.isNotEmpty ||
+              existingMedecin.docs.isNotEmpty) {
+            print('❌ Email already exists in patients or medecins collection');
+            // Sign out the user and throw error
+            await firebaseAuth.signOut();
+            await googleSignIn.signOut();
+            throw AuthException(
+              'An account with this email already exists. Please use email/password login.',
+            );
+          }
+
+          // Get FCM token if available
+          final prefs = await SharedPreferences.getInstance();
+          final fcmToken = prefs.getString('FCM_TOKEN');
+
+          // Create patient data - account needs activation
+          final patientData = PatientModel(
+            id: user.uid,
+            name: user.displayName?.split(' ').first ?? 'User',
+            lastName: user.displayName?.split(' ').skip(1).join(' ') ?? '',
+            email: normalizedEmail,
+            role: 'patient',
+            gender: 'Homme', // Default - user can update later
+            phoneNumber: user.phoneNumber ?? '',
+            dateOfBirth: null,
+            antecedent: '',
+            bloodType: null,
+            height: null,
+            weight: null,
+            allergies: [],
+            chronicDiseases: [],
+            emergencyContact: null,
+            address: null,
+            location: null,
+            accountStatus: true, // Google accounts are auto-activated
+            verificationCode: null,
+            validationCodeExpiresAt: null,
+            fcmToken: fcmToken,
+          );
+
+          print('💾 Saving patient data to Firestore');
+          await firestore
+              .collection('patients')
+              .doc(user.uid)
+              .set(patientData.toJson());
+
+          // Create minimal user data for notifications
+          Map<String, dynamic> userDataForNotifications = {
+            'id': user.uid,
+            'name': patientData.name,
+            'lastName': patientData.lastName,
+            'email': normalizedEmail,
+            'role': 'patient',
+          };
+
+          if (fcmToken != null && fcmToken.isNotEmpty) {
+            userDataForNotifications['fcmToken'] = fcmToken;
+          }
+
+          await firestore
+              .collection('users')
+              .doc(user.uid)
+              .set(userDataForNotifications);
+
+          print('💾 Cached user data locally');
+          await localDataSource.cacheUser(patientData);
+          await localDataSource.saveToken(user.uid);
+
+          print('✅ New Google patient account created successfully');
+        } else {
+          // Existing user - fetch their data from Firestore
+          print('👤 Existing user - fetching user data');
+
+          // Try to find user in patients collection first
+          final patientDoc =
+              await firestore.collection('patients').doc(user.uid).get();
+
+          if (patientDoc.exists) {
+            print('📋 Found existing patient data');
+            final patientData = PatientModel.fromJson(
+              patientDoc.data()! as Map<String, dynamic>,
+            );
+
+            // Update FCM token if available
+            final prefs = await SharedPreferences.getInstance();
+            final fcmToken = prefs.getString('FCM_TOKEN');
+
+            if (fcmToken != null && fcmToken.isNotEmpty) {
+              await firestore.collection('patients').doc(user.uid).update({
+                'fcmToken': fcmToken,
+              });
+
+              await firestore.collection('users').doc(user.uid).update({
+                'fcmToken': fcmToken,
+              });
+            }
+
+            await localDataSource.cacheUser(patientData);
+            await localDataSource.saveToken(user.uid);
+
+            print('✅ Existing patient login successful');
+          } else {
+            // Try medecins collection
+            final medecinDoc =
+                await firestore.collection('medecins').doc(user.uid).get();
+
+            if (medecinDoc.exists) {
+              print('👨‍⚕️ Found existing medecin data');
+              final medecinData = MedecinModel.fromJson(
+                medecinDoc.data()! as Map<String, dynamic>,
+              );
+
+              // Update FCM token if available
+              final prefs = await SharedPreferences.getInstance();
+              final fcmToken = prefs.getString('FCM_TOKEN');
+
+              if (fcmToken != null && fcmToken.isNotEmpty) {
+                await firestore.collection('medecins').doc(user.uid).update({
+                  'fcmToken': fcmToken,
+                });
+
+                await firestore.collection('users').doc(user.uid).update({
+                  'fcmToken': fcmToken,
+                });
+              }
+
+              await localDataSource.cacheUser(medecinData);
+              await localDataSource.saveToken(user.uid);
+
+              print('✅ Existing medecin login successful');
+            } else {
+              print('❌ No user data found in either collection');
+              // This shouldn't happen - create patient account as fallback
+              final userData = UserModel(
+                id: user.uid,
+                name: user.displayName?.split(' ').first ?? 'User',
+                lastName: user.displayName?.split(' ').skip(1).join(' ') ?? '',
+                email: normalizedEmail,
+                role: 'patient',
+                gender: 'Homme',
+                phoneNumber: user.phoneNumber ?? '',
+                dateOfBirth: null,
+              );
+
+              await firestore
+                  .collection('users')
+                  .doc(user.uid)
+                  .set(userData.toJson());
+              await localDataSource.cacheUser(userData);
+              await localDataSource.saveToken(user.uid);
+
+              print('⚠️ Created fallback user account');
+            }
+          }
+        }
+
+        print('🎉 Google Sign-In completed successfully');
+      } else {
+        print('❌ Firebase user is null after credential sign-in');
+        throw AuthException('Google Sign-In failed - no user data');
       }
     } on FirebaseAuthException catch (e) {
-      throw AuthException(e.message ?? 'Google Sign-In failed');
+      print('❌ Firebase Auth Exception: ${e.code} - ${e.message}');
+      if (e.code == 'account-exists-with-different-credential') {
+        throw AuthException(
+          'An account with this email already exists with a different sign-in method. Please use email/password login.',
+        );
+      } else if (e.code == 'invalid-credential') {
+        throw AuthException('Invalid Google credentials. Please try again.');
+      } else {
+        throw AuthException(e.message ?? 'Google Sign-In failed');
+      }
     } catch (e) {
-      throw ServerException('Unexpected error: $e');
+      print('❌ Unexpected error during Google Sign-In: $e');
+      if (e is AuthException) {
+        rethrow;
+      }
+      throw ServerException('Unexpected error during Google Sign-In: $e');
     }
   }
 

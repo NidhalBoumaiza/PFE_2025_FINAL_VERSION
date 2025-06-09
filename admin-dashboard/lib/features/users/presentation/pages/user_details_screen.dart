@@ -15,59 +15,49 @@ class UserDetailsScreen extends StatelessWidget {
     // and use it to fetch the user details using a dedicated UserBloc
 
     return MainLayout(
-      selectedIndex: 1, // Users tab
-      title: 'User Details',
-      child: Padding(
-        padding: EdgeInsets.all(16.w),
-        child: Center(
-          child: SizedBox(
-            width: 600.w,
-            child: Card(
-              elevation: 4,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16.r),
-              ),
-              child: Padding(
-                padding: EdgeInsets.all(24.w),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
+      selectedIndex: 1,
+      title: 'Détails de l\'utilisateur',
+      child: RefreshIndicator(
+        onRefresh: () async {
+          await Future.delayed(Duration(milliseconds: 500));
+        },
+        child: SingleChildScrollView(
+          physics: AlwaysScrollableScrollPhysics(),
+          padding: EdgeInsets.all(16.w),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Header
+              Padding(
+                padding: EdgeInsets.symmetric(vertical: 16.h),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Icon(
-                      Icons.person,
-                      size: 64.sp,
-                      color: AppTheme.primaryColor,
-                    ),
-                    SizedBox(height: 24.h),
                     Text(
-                      'User Details',
-                      style: Theme.of(context).textTheme.headlineSmall,
+                      'Détails de l\'utilisateur',
+                      style: Theme.of(context).textTheme.headlineSmall
+                          ?.copyWith(fontWeight: FontWeight.bold),
                     ),
-                    SizedBox(height: 16.h),
-                    Text(
-                      'This screen would display detailed information about a specific user. To implement this properly, you would need to create a dedicated UserBloc following the same clean architecture and BLoC pattern used for auth and dashboard features.',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(fontSize: 14.sp),
-                    ),
-                    SizedBox(height: 24.h),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        OutlinedButton.icon(
-                          icon: Icon(Icons.arrow_back, size: 20.sp),
-                          label: Text(
-                            'Back to Users',
-                            style: TextStyle(fontSize: 14.sp),
-                          ),
-                          onPressed: () {
-                            Navigator.pop(context);
-                          },
-                        ),
-                      ],
+                    ElevatedButton.icon(
+                      icon: Icon(Icons.arrow_back, size: 20.sp),
+                      label: Text(
+                        'Retour aux utilisateurs',
+                        style: TextStyle(fontSize: 14.sp),
+                      ),
+                      onPressed: () {
+                        Navigator.pushReplacementNamed(
+                          context,
+                          AppRoutes.users,
+                        );
+                      },
                     ),
                   ],
                 ),
               ),
-            ),
+
+              // User Details will be loaded here
+              // Add user details content based on userId and userType
+            ],
           ),
         ),
       ),

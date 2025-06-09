@@ -17,7 +17,7 @@ class SettingsScreen extends StatelessWidget {
 
     return MainLayout(
       selectedIndex: 3, // Settings tab
-      title: 'Settings',
+      title: 'Paramètres',
       child: Padding(
         padding: EdgeInsets.all(16.w),
         child: SingleChildScrollView(
@@ -28,7 +28,7 @@ class SettingsScreen extends StatelessWidget {
               Padding(
                 padding: EdgeInsets.symmetric(vertical: 16.h),
                 child: Text(
-                  'Settings',
+                  'Paramètres',
                   style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                     fontWeight: FontWeight.bold,
                   ),
@@ -38,7 +38,7 @@ class SettingsScreen extends StatelessWidget {
               // Theme Settings Section
               _buildSection(
                 context: context,
-                title: 'Appearance',
+                title: 'Apparence',
                 icon: Icons.palette,
                 children: [const ThemeToggleWidget()],
               ),
@@ -63,12 +63,12 @@ class SettingsScreen extends StatelessWidget {
                       ),
                       SizedBox(height: 24.h),
                       Text(
-                        'Application Settings',
+                        'Paramètres de l\'application',
                         style: Theme.of(context).textTheme.headlineSmall,
                       ),
                       SizedBox(height: 16.h),
                       Text(
-                        'Configure your admin dashboard preferences and account settings. The theme mode can be toggled above to switch between light and dark modes.',
+                        'Configurez vos préférences du tableau de bord administrateur et les paramètres de compte. Le mode thème peut être basculé ci-dessus pour passer entre les modes clair et sombre.',
                         textAlign: TextAlign.center,
                         style: TextStyle(fontSize: 14.sp),
                       ),
@@ -83,7 +83,7 @@ class SettingsScreen extends StatelessWidget {
                               children: [
                                 Divider(height: 32.h),
                                 Text(
-                                  'Account',
+                                  'Compte',
                                   style: Theme.of(
                                     context,
                                   ).textTheme.titleMedium?.copyWith(
@@ -94,11 +94,11 @@ class SettingsScreen extends StatelessWidget {
                                 SizedBox(height: 16.h),
                                 ListTile(
                                   title: Text(
-                                    'Logout',
+                                    'Déconnexion',
                                     style: TextStyle(fontSize: 16.sp),
                                   ),
                                   subtitle: Text(
-                                    'Sign out of your account',
+                                    'Se déconnecter de votre compte',
                                     style: TextStyle(fontSize: 14.sp),
                                   ),
                                   trailing: Icon(Icons.logout, size: 24.sp),
@@ -171,17 +171,17 @@ class SettingsScreen extends StatelessWidget {
       builder:
           (context) => AlertDialog(
             title: Text(
-              'Logout',
+              'Déconnexion',
               style: TextStyle(fontSize: 18.sp, fontWeight: FontWeight.bold),
             ),
             content: Text(
-              'Are you sure you want to logout?',
+              'Êtes-vous sûr de vouloir vous déconnecter ?',
               style: TextStyle(fontSize: 16.sp),
             ),
             actions: [
               TextButton(
                 onPressed: () => Navigator.of(context).pop(),
-                child: Text('Cancel', style: TextStyle(fontSize: 14.sp)),
+                child: Text('Annuler', style: TextStyle(fontSize: 14.sp)),
               ),
               TextButton(
                 onPressed: () {
@@ -189,7 +189,7 @@ class SettingsScreen extends StatelessWidget {
                   Navigator.of(context).pop();
                 },
                 child: Text(
-                  'Logout',
+                  'Déconnexion',
                   style: TextStyle(
                     color: Theme.of(context).colorScheme.error,
                     fontSize: 14.sp,

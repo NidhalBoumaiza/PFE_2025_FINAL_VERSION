@@ -19,18 +19,22 @@ class NavItem {
 
 final List<NavItem> navItems = [
   const NavItem(
-    label: 'Dashboard',
+    label: 'Tableau de bord',
     route: AppRoutes.dashboard,
     icon: Icons.dashboard,
   ),
-  const NavItem(label: 'Users', route: AppRoutes.users, icon: Icons.people),
   const NavItem(
-    label: 'Statistics',
+    label: 'Utilisateurs',
+    route: AppRoutes.users,
+    icon: Icons.people,
+  ),
+  const NavItem(
+    label: 'Statistiques',
     route: AppRoutes.statistics,
     icon: Icons.bar_chart,
   ),
   const NavItem(
-    label: 'Settings',
+    label: 'Paramètres',
     route: AppRoutes.settings,
     icon: Icons.settings,
   ),

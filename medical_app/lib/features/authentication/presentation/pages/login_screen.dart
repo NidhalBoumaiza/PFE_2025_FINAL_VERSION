@@ -8,6 +8,7 @@ import 'package:medical_app/core/utils/custom_snack_bar.dart';
 import 'package:medical_app/core/utils/navigation_with_transition.dart';
 import 'package:medical_app/features/authentication/data/data%20sources/auth_remote_data_source.dart';
 import 'package:medical_app/features/authentication/presentation/pages/forgot_password_screen.dart';
+import 'package:medical_app/features/authentication/presentation/pages/profile_completion_screen.dart';
 import 'package:medical_app/features/authentication/presentation/pages/signup_screen.dart';
 import 'package:medical_app/features/authentication/presentation/pages/verify_code_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -489,6 +490,55 @@ class _LoginScreenState extends State<LoginScreen> {
                   BlocConsumer<LoginBloc, LoginState>(
                     listener: (context, state) async {
                       if (state is LoginSuccess) {
+                        print(
+                          '🎉 Google Login successful for user: ${state.user.name}',
+                        );
+
+                        // Check if profile completion is needed for Google users
+                        final firestore = FirebaseFirestore.instance;
+                        final currentUser = FirebaseAuth.instance.currentUser;
+
+                        if (currentUser != null &&
+                            state.user.role == 'patient') {
+                          try {
+                            final patientDoc =
+                                await firestore
+                                    .collection('patients')
+                                    .doc(currentUser.uid)
+                                    .get();
+
+                            if (patientDoc.exists) {
+                              final patientData = patientDoc.data()!;
+
+                              // Check if essential medical information is missing
+                              final bool needsProfileCompletion =
+                                  patientData['height'] == null ||
+                                  patientData['weight'] == null ||
+                                  patientData['dateOfBirth'] == null ||
+                                  patientData['phoneNumber'] == null ||
+                                  patientData['phoneNumber'] == '';
+
+                              if (needsProfileCompletion) {
+                                print(
+                                  '📋 Profile completion needed, navigating to profile completion screen',
+                                );
+                                showSuccessSnackBar(
+                                  context,
+                                  "login_success".tr,
+                                );
+                                navigateToAnotherScreenWithSlideTransitionFromRightToLeftPushReplacement(
+                                  context,
+                                  ProfileCompletionScreen(user: state.user),
+                                );
+                                return;
+                              }
+                            }
+                          } catch (e) {
+                            print('⚠️ Error checking profile completion: $e');
+                          }
+                        }
+
+                        // Normal navigation for complete profiles
                         showSuccessSnackBar(context, "login_success".tr);
                         if (state.user.role == "medecin") {
                           navigateToAnotherScreenWithSlideTransitionFromRightToLeftPushReplacement(
@@ -502,7 +552,8 @@ class _LoginScreenState extends State<LoginScreen> {
                           );
                         }
                       } else if (state is LoginError) {
-                        showErrorSnackBar(context, state.message.tr);
+                        print('❌ Login error: ${state.message}');
+                        showErrorSnackBar(context, state.message);
                       }
                     },
                     builder: (context, state) {
@@ -516,13 +567,27 @@ class _LoginScreenState extends State<LoginScreen> {
                         height: 55.h,
                         margin: EdgeInsets.only(bottom: 30.h),
                         child: ElevatedButton.icon(
-                          icon: Icon(
-                            FontAwesomeIcons.google,
-                            size: 18.sp,
-                            color: Colors.white,
-                          ),
+                          icon:
+                              isGoogleLoading
+                                  ? SizedBox(
+                                    width: 18.sp,
+                                    height: 18.sp,
+                                    child: CircularProgressIndicator(
+                                      color: Colors.white,
+                                      strokeWidth: 2,
+                                    ),
+                                  )
+                                  : Icon(
+                                    FontAwesomeIcons.google,
+                                    size: 18.sp,
+                                    color: Colors.white,
+                                  ),
                           label: Text(
-                            "continue_with_google".tr,
+                            isGoogleLoading
+                                ? "signing_in_with_google".tr.isNotEmpty
+                                    ? "signing_in_with_google".tr
+                                    : "Signing in..."
+                                : "continue_with_google".tr,
                             style: GoogleFonts.raleway(
                               fontSize: 16.sp,
                               fontWeight: FontWeight.w600,
@@ -531,7 +596,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           style: ElevatedButton.styleFrom(
                             backgroundColor:
                                 isEmailPasswordLoading
-                                    ? Colors.grey
+                                    ? Colors.grey.shade400
                                     : (isGoogleLoading
                                         ? AppColors.primaryColor.withAlpha(178)
                                         : AppColors.primaryColor),
@@ -540,11 +605,14 @@ class _LoginScreenState extends State<LoginScreen> {
                               borderRadius: BorderRadius.circular(16.r),
                             ),
                             elevation: isEmailPasswordLoading ? 0 : 2,
+                            disabledBackgroundColor: Colors.grey.shade400,
+                            disabledForegroundColor: Colors.white,
                           ),
                           onPressed:
                               isGoogleLoading || isEmailPasswordLoading
                                   ? null
                                   : () {
+                                    print('🔵 Google Sign-In button pressed');
                                     context.read<LoginBloc>().add(
                                       LoginWithGoogle(),
                                     );

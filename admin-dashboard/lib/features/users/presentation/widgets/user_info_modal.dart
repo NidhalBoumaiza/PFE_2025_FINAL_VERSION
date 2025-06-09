@@ -69,7 +69,7 @@ class UserInfoModal extends StatelessWidget {
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: Text(
-                            userType == 'patient' ? 'Patient' : 'Doctor',
+                            userType == 'patient' ? 'Patient' : 'Médecin',
                             style: TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.w500,
@@ -110,7 +110,7 @@ class UserInfoModal extends StatelessWidget {
                         ),
                         const SizedBox(width: 6),
                         Text(
-                          user.accountStatus ? 'Active' : 'Inactive',
+                          user.accountStatus ? 'Actif' : 'Inactif',
                           style: TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.w500,
@@ -139,31 +139,33 @@ class UserInfoModal extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       // Basic Information
-                      _buildSection('Basic Information', [
-                        _buildInfoRow('Email', user.email),
+                      _buildSection('Informations de base', [
+                        _buildInfoRow('E-mail', user.email),
                         _buildInfoRow(
-                          'Phone',
-                          user.phoneNumber ?? 'Not provided',
+                          'Téléphone',
+                          user.phoneNumber ?? 'Non fourni',
                         ),
-                        _buildInfoRow('Gender', user.gender ?? 'Not specified'),
+                        _buildInfoRow('Sexe', user.gender ?? 'Non spécifié'),
                         if (user.dateOfBirth != null)
-                          _buildInfoRow('Date of Birth', user.dateOfBirth!),
+                          _buildInfoRow('Date de naissance', user.dateOfBirth!),
                         if (user.address != null)
-                          _buildInfoRow('Address', user.address!),
+                          _buildInfoRow('Adresse', user.address!),
                         _buildInfoRow(
-                          'Joined',
+                          'Inscrit le',
                           user.createdAt != null
                               ? DateFormat(
-                                'MMMM dd, yyyy',
+                                'dd/MM/yyyy à HH:mm',
                               ).format(user.createdAt!)
-                              : 'Unknown',
+                              : 'Inconnu',
                         ),
                         if (user.lastLogin != null)
                           _buildInfoRow(
-                            'Last Login',
-                            DateFormat(
-                              'MMM dd, yyyy at HH:mm',
-                            ).format(user.lastLogin!),
+                            'Dernière connexion',
+                            user.lastLoginAt != null
+                                ? DateFormat(
+                                  'dd/MM/yyyy à HH:mm',
+                                ).format(user.lastLoginAt!)
+                                : 'Jamais connecté',
                           ),
                       ]),
 
@@ -171,15 +173,15 @@ class UserInfoModal extends StatelessWidget {
 
                       // Type-specific information
                       if (userType == 'patient') ...[
-                        _buildSection('Medical Information', [
+                        _buildSection('Informations médicales', [
                           _buildInfoRow(
-                            'Blood Type',
-                            user.bloodType ?? 'Unknown',
+                            'Groupe sanguin',
+                            user.bloodType ?? 'Inconnu',
                           ),
                           if (user.height != null)
-                            _buildInfoRow('Height', '${user.height} cm'),
+                            _buildInfoRow('Taille', '${user.height} cm'),
                           if (user.weight != null)
-                            _buildInfoRow('Weight', '${user.weight} kg'),
+                            _buildInfoRow('Poids', '${user.weight} kg'),
                           if (user.allergies != null &&
                               user.allergies!.isNotEmpty)
                             _buildInfoRow(
@@ -189,43 +191,56 @@ class UserInfoModal extends StatelessWidget {
                           if (user.chronicDiseases != null &&
                               user.chronicDiseases!.isNotEmpty)
                             _buildInfoRow(
-                              'Chronic Diseases',
+                              'Maladies chroniques',
                               user.chronicDiseases!.join(', '),
                             ),
                           if (user.antecedent != null &&
                               user.antecedent!.isNotEmpty)
-                            _buildInfoRow('Medical History', user.antecedent!),
+                            _buildInfoRow(
+                              'Antécédents médicaux',
+                              user.antecedent!,
+                            ),
                           if (user.emergencyContactName != null)
                             _buildInfoRow(
-                              'Emergency Contact',
+                              'Contact d\'urgence',
                               user.emergencyContactName!,
                             ),
                           if (user.emergencyContactPhone != null)
                             _buildInfoRow(
-                              'Emergency Phone',
+                              'Téléphone d\'urgence',
                               user.emergencyContactPhone!,
                             ),
                         ]),
                       ] else if (userType == 'doctor') ...[
-                        _buildSection('Professional Information', [
+                        _buildSection('Informations professionnelles', [
                           _buildInfoRow(
-                            'Speciality',
-                            user.speciality ?? 'General Medicine',
+                            'Spécialité',
+                            user.speciality ?? 'Médecine générale',
                           ),
                           if (user.numLicence != null)
-                            _buildInfoRow('License Number', user.numLicence!),
+                            _buildInfoRow(
+                              'Numéro de licence',
+                              user.numLicence!,
+                            ),
                           if (user.experienceYears != null)
-                            _buildInfoRow('Experience', user.experienceYears!),
+                            _buildInfoRow(
+                              'Années d\'expérience',
+                              user.experienceYears!,
+                            ),
                           if (user.educationSummary != null)
-                            _buildInfoRow('Education', user.educationSummary!),
+                            _buildInfoRow('Formation', user.educationSummary!),
                           if (user.consultationFee != null)
                             _buildInfoRow(
-                              'Consultation Fee',
-                              '${user.consultationFee} DT',
+                              'Tarif de consultation',
+                              user.consultationFee != null
+                                  ? '${user.consultationFee} €'
+                                  : 'Non spécifié',
                             ),
                           _buildInfoRow(
-                            'Appointment Duration',
-                            '${user.appointmentDuration} minutes',
+                            'Durée de rendez-vous',
+                            user.appointmentDuration != null
+                                ? '${user.appointmentDuration} minutes'
+                                : 'Non spécifiée',
                           ),
                         ]),
                       ],
@@ -242,7 +257,7 @@ class UserInfoModal extends StatelessWidget {
                 children: [
                   TextButton(
                     onPressed: () => Navigator.of(context).pop(),
-                    child: const Text('Close'),
+                    child: const Text('Fermer'),
                   ),
                 ],
               ),

@@ -10,13 +10,27 @@ part 'update_user_state.dart';
 class UpdateUserBloc extends Bloc<UpdateUserEvent, UpdateUserState> {
   final UpdateUserUseCase updateUserUseCase;
 
-  UpdateUserBloc({required this.updateUserUseCase}) : super(UpdateUserInitial()) {
+  UpdateUserBloc({required this.updateUserUseCase})
+    : super(UpdateUserInitial()) {
     on<UpdateUserEvent>((event, emit) async {
+      print(
+        '🔄 UpdateUserBloc: Received UpdateUserEvent for user: ${event.user.id}',
+      );
       emit(UpdateUserLoading());
+      print('📤 UpdateUserBloc: Emitted UpdateUserLoading state');
+
       final result = await updateUserUseCase(event.user);
       result.fold(
-            (failure) => emit(UpdateUserFailure(_mapFailureToMessage(failure))),
-            (_) => emit(UpdateUserSuccess(event.user)),
+        (failure) {
+          print(
+            '❌ UpdateUserBloc: Update failed: ${_mapFailureToMessage(failure)}',
+          );
+          emit(UpdateUserFailure(_mapFailureToMessage(failure)));
+        },
+        (_) {
+          print('✅ UpdateUserBloc: Update successful');
+          emit(UpdateUserSuccess(event.user));
+        },
       );
     });
   }

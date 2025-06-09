@@ -49,6 +49,7 @@ class LanguageService extends Translations {
       'no_account': 'Vous n\'avez pas de compte ?',
       'sign_up': 'S\'inscrire',
       'continue_with_google': 'Continuer avec Google',
+      'signing_in_with_google': 'Connexion avec Google...',
       'email_required': 'L\'email est requis',
       'password_required': 'Le mot de passe est requis',
       'or_login_with': 'Ou se connecter avec',
@@ -587,6 +588,30 @@ class LanguageService extends Translations {
       'choking': 'Étouffement',
       'bleeding': 'Saignement',
       'burns': 'Brûlures',
+
+      // Profile completion screen translations
+      'complete_profile': 'Compléter votre profil',
+      'welcome_google_user': 'Bienvenue, @nom!',
+      'complete_profile_message':
+          'Veuillez compléter votre profil médical pour recevoir des soins personnalisés',
+      'phone_min_length': 'Numéro de téléphone invalide',
+      'height_cm': 'Taille (cm)',
+      'weight_kg': 'Poids (kg)',
+      'blood_type_placeholder': 'Sélectionnez votre groupe sanguin',
+      'antecedent_placeholder': 'Conditions médicales, chirurgies, etc.',
+      'profile_completed_success': 'Profil complété avec succès!',
+      'complete_profile_button': 'Compléter le profil',
+      'skip_for_now': 'Ignorer pour l\'instant',
+
+      // Home screen and navigation
+      'default_patient_name': 'Patient',
+      'default_email': 'patient@example.com',
+      'home': 'Accueil',
+      'filter_by_date': 'Filtrer par date',
+      'reset_filter': 'Réinitialiser le filtre',
+      'patient': 'Patient',
+      'hospitals': 'Hôpitaux',
+      'first_aid': 'Premiers secours',
     },
   };
 }

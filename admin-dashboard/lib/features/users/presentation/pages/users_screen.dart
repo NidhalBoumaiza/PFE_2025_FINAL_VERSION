@@ -91,7 +91,7 @@ class _UsersScreenState extends State<UsersScreen>
               backgroundColor: Colors.red,
               duration: Duration(seconds: 5),
               action: SnackBarAction(
-                label: 'Retry',
+                label: 'Réessayer',
                 textColor: Colors.white,
                 onPressed: () {
                   // Refresh the data
@@ -115,7 +115,7 @@ class _UsersScreenState extends State<UsersScreen>
                     ),
                   ),
                   SizedBox(width: 12.w),
-                  Text('Deleting user...'),
+                  Text('Suppression de l\'utilisateur...'),
                 ],
               ),
               backgroundColor: Colors.orange,
@@ -126,7 +126,7 @@ class _UsersScreenState extends State<UsersScreen>
       },
       child: MainLayout(
         selectedIndex: 1,
-        title: 'Users',
+        title: 'Utilisateurs',
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -556,7 +556,7 @@ class _UsersScreenState extends State<UsersScreen>
               children: [
                 Icon(Icons.people, size: 18.sp),
                 SizedBox(width: 8.w),
-                Text('All Users'),
+                Text('Tous les utilisateurs'),
               ],
             ),
           ),
@@ -576,7 +576,7 @@ class _UsersScreenState extends State<UsersScreen>
               children: [
                 Icon(Icons.medical_services, size: 18.sp),
                 SizedBox(width: 8.w),
-                Text('Doctors'),
+                Text('Médecins'),
               ],
             ),
           ),
@@ -637,7 +637,7 @@ class _UsersScreenState extends State<UsersScreen>
         }
 
         print('📭 UsersScreen: No data available state');
-        return Center(child: Text('No data available'));
+        return Center(child: Text('Aucune donnée disponible'));
       },
     );
   }
@@ -743,21 +743,17 @@ class _UsersScreenState extends State<UsersScreen>
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.error, size: 64.sp, color: Colors.red),
+          Icon(Icons.error_outline, size: 64.sp, color: Colors.red),
           SizedBox(height: 16.h),
           Text(
-            'Error: $message',
-            style: TextStyle(fontSize: 16.sp),
+            message,
+            style: TextStyle(fontSize: 16.sp, color: Colors.red),
             textAlign: TextAlign.center,
           ),
           SizedBox(height: 16.h),
           ElevatedButton(
-            onPressed: () {
-              if (mounted) {
-                context.read<UsersBloc>().add(LoadAllUsers());
-              }
-            },
-            child: Text('Retry'),
+            onPressed: () => context.read<UsersBloc>().add(LoadAllUsers()),
+            child: Text('Réessayer'),
           ),
         ],
       ),
@@ -770,8 +766,8 @@ class _UsersScreenState extends State<UsersScreen>
   ) {
     if (patients.isEmpty && doctors.isEmpty) {
       return _buildEmptyState(
-        'No users found',
-        'Add your first user to get started',
+        'Aucun utilisateur trouvé',
+        'Ajoutez votre premier utilisateur pour commencer',
       );
     }
 
@@ -791,7 +787,7 @@ class _UsersScreenState extends State<UsersScreen>
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    'All Users (${patients.length + doctors.length} total)',
+                    'Tous les utilisateurs (${patients.length + doctors.length} total)',
                     style: TextStyle(
                       fontSize: 20.sp,
                       fontWeight: FontWeight.bold,
@@ -813,7 +809,7 @@ class _UsersScreenState extends State<UsersScreen>
                   columns: [
                     DataColumn2(
                       label: Text(
-                        'Name',
+                        'Nom',
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 14.sp,
@@ -824,7 +820,7 @@ class _UsersScreenState extends State<UsersScreen>
                     ),
                     DataColumn2(
                       label: Text(
-                        'Email',
+                        'E-mail',
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 14.sp,
@@ -846,7 +842,7 @@ class _UsersScreenState extends State<UsersScreen>
                     ),
                     DataColumn2(
                       label: Text(
-                        'Phone',
+                        'Téléphone',
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 14.sp,
@@ -935,7 +931,7 @@ class _UsersScreenState extends State<UsersScreen>
           ),
         ),
         DataCell(Text(doctor.email)),
-        DataCell(_buildTypeChip('Doctor', Colors.blue)),
+        DataCell(_buildTypeChip('Médecin', Colors.blue)),
         DataCell(Text(doctor.phoneNumber ?? 'N/A')),
         DataCell(_buildActionButtons(userType: 'doctor', doctor: doctor)),
       ],
@@ -985,7 +981,7 @@ class _UsersScreenState extends State<UsersScreen>
             }
           },
           tooltip:
-              'View ${userType == 'patient' ? 'Patient' : 'Doctor'} Details',
+              'Voir les détails du ${userType == 'patient' ? 'patient' : 'médecin'}',
         ),
         IconButton(
           icon: Icon(Icons.delete, size: 18.sp, color: Colors.red),
@@ -1007,7 +1003,8 @@ class _UsersScreenState extends State<UsersScreen>
               );
             }
           },
-          tooltip: 'Delete ${userType == 'patient' ? 'Patient' : 'Doctor'}',
+          tooltip:
+              'Supprimer le ${userType == 'patient' ? 'patient' : 'médecin'}',
         ),
       ],
     );
@@ -1016,8 +1013,8 @@ class _UsersScreenState extends State<UsersScreen>
   Widget _buildPatientsTable(List<PatientEntity> patients) {
     if (patients.isEmpty) {
       return _buildEmptyState(
-        'No patients found',
-        'No patients are currently registered in the system',
+        'Aucun patient trouvé',
+        'Aucun patient n\'est actuellement enregistré dans le système',
       );
     }
 
@@ -1073,7 +1070,7 @@ class _UsersScreenState extends State<UsersScreen>
                     ),
                     DataColumn2(
                       label: Text(
-                        'Gender',
+                        'Sexe',
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 14.sp,
@@ -1084,7 +1081,7 @@ class _UsersScreenState extends State<UsersScreen>
                     ),
                     DataColumn2(
                       label: Text(
-                        'Blood Type',
+                        'Groupe sanguin',
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 14.sp,
@@ -1185,8 +1182,8 @@ class _UsersScreenState extends State<UsersScreen>
   Widget _buildDoctorsTable(List<DoctorEntity> doctors) {
     if (doctors.isEmpty) {
       return _buildEmptyState(
-        'No doctors found',
-        'Add your first doctor to get started',
+        'Aucun médecin trouvé',
+        'Ajoutez votre premier médecin pour commencer',
       );
     }
 
@@ -1206,7 +1203,7 @@ class _UsersScreenState extends State<UsersScreen>
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    'Doctors (${doctors.length} total)',
+                    'Médecins (${doctors.length} total)',
                     style: TextStyle(
                       fontSize: 20.sp,
                       fontWeight: FontWeight.bold,
@@ -1228,7 +1225,7 @@ class _UsersScreenState extends State<UsersScreen>
                   columns: [
                     DataColumn2(
                       label: Text(
-                        'Doctor',
+                        'Médecin',
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 14.sp,
@@ -1250,7 +1247,7 @@ class _UsersScreenState extends State<UsersScreen>
                     ),
                     DataColumn2(
                       label: Text(
-                        'Speciality',
+                        'Spécialité',
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 14.sp,
@@ -1261,7 +1258,7 @@ class _UsersScreenState extends State<UsersScreen>
                     ),
                     DataColumn2(
                       label: Text(
-                        'Experience',
+                        'Expérience',
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 14.sp,
@@ -1555,7 +1552,7 @@ class _UsersScreenState extends State<UsersScreen>
       print('❌ UsersScreen: User ID is empty!');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Error: User ID is empty'),
+          content: Text('Erreur : L\'ID utilisateur est vide'),
           backgroundColor: Colors.red,
         ),
       );
@@ -1570,112 +1567,82 @@ class _UsersScreenState extends State<UsersScreen>
               children: [
                 Icon(Icons.warning, color: Colors.red, size: 24.sp),
                 SizedBox(width: 12.w),
-                Text('Confirm Delete'),
+                Text('Confirmer la suppression'),
               ],
             ),
             content: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Are you sure you want to delete this user?'),
+                Text('Êtes-vous sûr de vouloir supprimer cet utilisateur ?'),
                 SizedBox(height: 8.h),
                 Container(
                   padding: EdgeInsets.all(12.w),
                   decoration: BoxDecoration(
-                    color: Colors.red.withOpacity(0.1),
+                    color: Colors.grey[100],
                     borderRadius: BorderRadius.circular(8.r),
-                  ),
-                  child: Row(
-                    children: [
-                      Icon(Icons.person, color: Colors.red, size: 20.sp),
-                      SizedBox(width: 8.w),
-                      Expanded(
-                        child: Text(
-                          userName,
-                          style: TextStyle(fontWeight: FontWeight.bold),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                SizedBox(height: 12.h),
-                // Debug info
-                Container(
-                  padding: EdgeInsets.all(8.w),
-                  decoration: BoxDecoration(
-                    color: Colors.grey.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(4.r),
+                    border: Border.all(color: Colors.grey[300]!),
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Debug Info:',
+                        'Nom',
                         style: TextStyle(
-                          fontSize: 10.sp,
-                          fontWeight: FontWeight.bold,
+                          fontSize: 12.sp,
                           color: Colors.grey[600],
+                          fontWeight: FontWeight.w500,
                         ),
                       ),
                       Text(
-                        'ID: $userId',
+                        userName.isNotEmpty ? userName : 'Non spécifié',
                         style: TextStyle(
-                          fontSize: 10.sp,
+                          fontSize: 14.sp,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      SizedBox(height: 4.h),
+                      Text(
+                        'Type',
+                        style: TextStyle(
+                          fontSize: 12.sp,
                           color: Colors.grey[600],
+                          fontWeight: FontWeight.w500,
                         ),
                       ),
                       Text(
-                        'Type: $userType',
+                        userType == 'patient' ? 'Patient' : 'Médecin',
                         style: TextStyle(
-                          fontSize: 10.sp,
-                          color: Colors.grey[600],
+                          fontSize: 14.sp,
+                          fontWeight: FontWeight.w600,
+                          color:
+                              userType == 'patient'
+                                  ? Colors.green
+                                  : Colors.blue,
                         ),
                       ),
                     ],
                   ),
                 ),
-                SizedBox(height: 8.h),
-                Text(
-                  'This action cannot be undone. All related data will be permanently deleted.',
-                  style: TextStyle(fontSize: 12.sp, color: Colors.grey[600]),
-                ),
               ],
             ),
             actions: [
               TextButton(
-                onPressed: () {
-                  print('❌ UsersScreen: Delete cancelled for user: $userName');
-                  Navigator.of(context).pop();
-                },
-                child: Text('Cancel'),
+                onPressed: () => Navigator.pop(context),
+                child: Text('Annuler'),
               ),
               ElevatedButton(
                 onPressed: () {
-                  print(
-                    '✅ UsersScreen: Delete confirmed for user: $userName (ID: $userId, Type: $userType)',
-                  );
-                  Navigator.of(context).pop();
-                  if (mounted) {
-                    print(
-                      '🔥 UsersScreen: Dispatching delete event for user: $userId',
+                  Navigator.pop(context);
+                  if (userId.isNotEmpty) {
+                    context.read<UsersBloc>().add(
+                      DeleteUserEvent(userId: userId, userType: userType),
                     );
-                    // Add extra validation before dispatching
-                    if (userId.isNotEmpty && userType.isNotEmpty) {
-                      context.read<UsersBloc>().add(
-                        DeleteUserEvent(userId: userId, userType: userType),
-                      );
-                    } else {
-                      print('❌ UsersScreen: Invalid userId or userType');
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text('Error: Invalid user data'),
-                          backgroundColor: Colors.red,
-                        ),
-                      );
-                    }
                   } else {
-                    print(
-                      '❌ UsersScreen: Widget not mounted, cannot dispatch delete event',
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('Erreur : Données utilisateur invalides'),
+                      ),
                     );
                   }
                 },
@@ -1683,7 +1650,7 @@ class _UsersScreenState extends State<UsersScreen>
                   backgroundColor: Colors.red,
                   foregroundColor: Colors.white,
                 ),
-                child: Text('Delete'),
+                child: Text('Supprimer'),
               ),
             ],
           ),

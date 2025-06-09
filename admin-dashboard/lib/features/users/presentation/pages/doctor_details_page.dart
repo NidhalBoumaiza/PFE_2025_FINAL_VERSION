@@ -149,7 +149,7 @@ class DoctorDetailsPage extends StatelessWidget {
       children: [
         _buildActionButton(
           icon: Icons.edit,
-          label: 'Edit',
+          label: 'Modifier',
           color: Colors.blue,
           onPressed: () {},
           isDarkMode: isDarkMode,
@@ -157,7 +157,7 @@ class DoctorDetailsPage extends StatelessWidget {
         SizedBox(width: 12.w),
         _buildActionButton(
           icon: Icons.schedule,
-          label: 'Schedule',
+          label: 'Planifier',
           color: Colors.green,
           onPressed: () {},
           isDarkMode: isDarkMode,
@@ -165,7 +165,7 @@ class DoctorDetailsPage extends StatelessWidget {
         SizedBox(width: 12.w),
         _buildActionButton(
           icon: Icons.more_vert,
-          label: 'More',
+          label: 'Plus',
           color: Colors.grey,
           onPressed: () {},
           isDarkMode: isDarkMode,

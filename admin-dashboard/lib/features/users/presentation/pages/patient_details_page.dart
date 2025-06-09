@@ -151,7 +151,7 @@ class PatientDetailsPage extends StatelessWidget {
       children: [
         _buildActionButton(
           icon: Icons.edit,
-          label: 'Edit',
+          label: 'Modifier',
           color: Colors.blue,
           onPressed: () {},
           isDarkMode: isDarkMode,
@@ -165,7 +165,7 @@ class PatientDetailsPage extends StatelessWidget {
           onPressed: () => _viewMedicalDossier(context),
           icon: Icon(Icons.folder_shared, size: 18.sp, color: Colors.white),
           label: Text(
-            'Medical Dossier',
+            'Dossier médical',
             style: TextStyle(fontSize: 14.sp, color: Colors.white),
           ),
           style: ElevatedButton.styleFrom(

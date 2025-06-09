@@ -222,22 +222,66 @@ class AuthRepositoryImpl implements AuthRepository {
 
   @override
   Future<Either<Failure, Unit>> updateUser(UserEntity user) async {
+    print('🏪 AuthRepository: updateUser called for ${user.id}');
+    print('🏪 AuthRepository: User type - ${user.runtimeType}');
+
     if (await networkInfo.isConnected) {
+      print('🏪 AuthRepository: Network connection confirmed');
       try {
         // Try to get the current location if location is not provided
         Map<String, dynamic>? locationData = user.location;
         if (locationData == null && user.id != null) {
+          print('🏪 AuthRepository: Getting current location...');
           final position = await LocationService.getCurrentPosition();
           if (position != null) {
             locationData = {
               'type': 'Point',
               'coordinates': [position.longitude, position.latitude],
             };
+            print('🏪 AuthRepository: Location obtained: $locationData');
           }
         }
 
         UserModel userModel;
-        if (user is PatientEntity) {
+        // Check if user is already a PatientModel (from profile completion screen)
+        if (user is PatientModel) {
+          print(
+            '🏪 AuthRepository: User is already PatientModel, using directly...',
+          );
+          final patientModel = user as PatientModel;
+          // Update location if needed
+          if (patientModel.location == null && locationData != null) {
+            userModel = PatientModel(
+              id: patientModel.id,
+              name: patientModel.name,
+              lastName: patientModel.lastName,
+              email: patientModel.email,
+              role: patientModel.role,
+              gender: patientModel.gender,
+              phoneNumber: patientModel.phoneNumber,
+              dateOfBirth: patientModel.dateOfBirth,
+              antecedent: patientModel.antecedent,
+              bloodType: patientModel.bloodType,
+              height: patientModel.height,
+              weight: patientModel.weight,
+              allergies: patientModel.allergies,
+              chronicDiseases: patientModel.chronicDiseases,
+              emergencyContact: patientModel.emergencyContact,
+              address: patientModel.address,
+              location: locationData,
+              accountStatus: patientModel.accountStatus ?? true,
+              verificationCode: patientModel.verificationCode,
+              validationCodeExpiresAt: patientModel.validationCodeExpiresAt,
+              fcmToken: patientModel.fcmToken,
+            );
+          } else {
+            userModel = patientModel;
+          }
+          print('🏪 AuthRepository: PatientModel ready for update');
+        } else if (user is PatientEntity) {
+          print(
+            '🏪 AuthRepository: Creating PatientModel from PatientEntity...',
+          );
           userModel = PatientModel(
             id: user.id!,
             name: user.name,
@@ -256,8 +300,14 @@ class AuthRepositoryImpl implements AuthRepository {
             emergencyContact: user.emergencyContact,
             address: user.address,
             location: locationData,
+            accountStatus: user.accountStatus ?? true,
+            verificationCode: user.verificationCode,
+            validationCodeExpiresAt: user.validationCodeExpiresAt,
+            fcmToken: user.fcmToken,
           );
+          print('🏪 AuthRepository: PatientModel created successfully');
         } else if (user is MedecinEntity) {
+          print('🏪 AuthRepository: Creating MedecinModel...');
           userModel = MedecinModel(
             id: user.id!,
             name: user.name,
@@ -272,11 +322,21 @@ class AuthRepositoryImpl implements AuthRepository {
             education: user.education,
             experience: user.experience,
             consultationFee: user.consultationFee,
+            appointmentDuration: user.appointmentDuration,
             address: user.address,
             location: locationData,
+            accountStatus: user.accountStatus ?? true,
+            verificationCode: user.verificationCode,
+            validationCodeExpiresAt: user.validationCodeExpiresAt,
+            fcmToken: user.fcmToken,
           );
+          print('🏪 AuthRepository: MedecinModel created successfully');
         } else {
-          userModel = UserModel(
+          print(
+            '🏪 AuthRepository: Creating generic PatientModel for UserEntity...',
+          );
+          // For generic UserEntity, treat as PatientModel (default behavior for profile completion)
+          userModel = PatientModel(
             id: user.id!,
             name: user.name,
             lastName: user.lastName,
@@ -285,18 +345,41 @@ class AuthRepositoryImpl implements AuthRepository {
             gender: user.gender,
             phoneNumber: user.phoneNumber,
             dateOfBirth: user.dateOfBirth,
+            antecedent: '',
+            bloodType: null,
+            height: null,
+            weight: null,
+            allergies: [],
+            chronicDiseases: [],
+            emergencyContact: null,
             address: user.address,
             location: locationData,
+            accountStatus: user.accountStatus ?? true,
+            verificationCode: user.verificationCode,
+            validationCodeExpiresAt: user.validationCodeExpiresAt,
+            fcmToken: user.fcmToken,
           );
+          print('🏪 AuthRepository: Generic PatientModel created successfully');
         }
+
+        print('🏪 AuthRepository: Calling remoteDataSource.updateUser...');
         await remoteDataSource.updateUser(userModel);
+        print(
+          '🏪 AuthRepository: remoteDataSource.updateUser completed successfully',
+        );
         return const Right(unit);
-      } on ServerException {
+      } on ServerException catch (e) {
+        print('🏪 AuthRepository: ServerException caught - $e');
         return Left(ServerFailure());
       } on AuthException catch (e) {
+        print('🏪 AuthRepository: AuthException caught - ${e.message}');
         return Left(AuthFailure(e.message));
+      } catch (e) {
+        print('🏪 AuthRepository: Generic exception caught - $e');
+        return Left(AuthFailure(e.toString()));
       }
     } else {
+      print('🏪 AuthRepository: No network connection');
       return Left(OfflineFailure());
     }
   }

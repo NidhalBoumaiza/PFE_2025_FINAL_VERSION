@@ -206,7 +206,7 @@ class SidebarNavigation extends StatelessWidget {
                           size: 22.sp,
                         ),
                         title: Text(
-                          isDarkMode ? 'Light Mode' : 'Dark Mode',
+                          isDarkMode ? 'Mode clair' : 'Mode sombre',
                           style: TextStyle(
                             fontSize: 15.sp,
                             fontWeight: FontWeight.w500,
@@ -318,7 +318,7 @@ class SidebarNavigation extends StatelessWidget {
                         ),
                         icon: Icon(Icons.logout, size: 20.sp),
                         label: Text(
-                          'LOGOUT',
+                          'DÉCONNEXION',
                           style: TextStyle(
                             fontSize: 14.sp,
                             fontWeight: FontWeight.bold,
@@ -344,22 +344,22 @@ class SidebarNavigation extends StatelessWidget {
       builder:
           (ctx) => AlertDialog(
             title: Text(
-              'Logout',
+              'Déconnexion',
               style: TextStyle(fontSize: 18.sp, fontWeight: FontWeight.bold),
             ),
             content: Text(
-              'Are you sure you want to logout?',
+              'Êtes-vous sûr de vouloir vous déconnecter ?',
               style: TextStyle(fontSize: 16.sp),
             ),
             actions: [
               TextButton(
                 onPressed: () => Navigator.of(ctx).pop(false),
-                child: Text('Cancel', style: TextStyle(fontSize: 14.sp)),
+                child: Text('Annuler', style: TextStyle(fontSize: 14.sp)),
               ),
               TextButton(
                 onPressed: () => Navigator.of(ctx).pop(true),
                 child: Text(
-                  'Logout',
+                  'Déconnexion',
                   style: TextStyle(
                     fontSize: 14.sp,
                     color: Theme.of(context).colorScheme.error,

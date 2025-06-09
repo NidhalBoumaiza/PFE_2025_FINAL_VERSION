@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../../../core/utils/app_colors.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
+import 'package:video_player/video_player.dart';
 
 class SecoursScreen extends StatefulWidget {
   const SecoursScreen({super.key});
@@ -30,6 +31,7 @@ class _SecoursScreenState extends State<SecoursScreen> {
       'icon': FontAwesomeIcons.heartPulse,
       'category': 'emergency',
       'color': Colors.red,
+      'videoPath': 'assets/videos/defibrillator_cpr.mp4',
     },
     {
       'title': 'bleeding_title'.tr,
@@ -37,6 +39,7 @@ class _SecoursScreenState extends State<SecoursScreen> {
       'icon': FontAwesomeIcons.droplet,
       'category': 'common',
       'color': Colors.red[700],
+      'videoPath': 'assets/videos/first_aid_deep_cut.mp4',
     },
     {
       'title': 'burns_title'.tr,
@@ -44,6 +47,7 @@ class _SecoursScreenState extends State<SecoursScreen> {
       'icon': FontAwesomeIcons.fire,
       'category': 'common',
       'color': Colors.orange,
+      'videoPath': 'assets/videos/burns_treatment.mp4',
     },
     {
       'title': 'choking_title'.tr,
@@ -51,6 +55,7 @@ class _SecoursScreenState extends State<SecoursScreen> {
       'icon': FontAwesomeIcons.lungs,
       'category': 'emergency',
       'color': Colors.purple,
+      'videoPath': 'assets/videos/choking_treatment.mp4',
     },
     {
       'title': 'fractures_title'.tr,
@@ -58,78 +63,106 @@ class _SecoursScreenState extends State<SecoursScreen> {
       'icon': FontAwesomeIcons.bone,
       'category': 'common',
       'color': Colors.blue[700],
+      'videoPath': null, // No video available for fractures
     },
     {
-      'title': 'Stroke Recognition',
+      'title': 'Reconnaissance d\'AVC',
       'description':
-          'Recognize the signs of stroke using the FAST method and how to respond quickly.',
+          'Reconnaître les signes d\'un AVC avec la méthode FAST et comment réagir rapidement.',
       'icon': FontAwesomeIcons.brain,
       'category': 'emergency',
       'color': Colors.deepPurple,
+      'videoPath': null,
     },
     {
-      'title': 'Heart Attack',
+      'title': 'Crise cardiaque',
       'description':
-          'Identify symptoms of a heart attack and the immediate actions to take.',
+          'Identifier les symptômes d\'une crise cardiaque et les actions immédiates à prendre.',
       'icon': FontAwesomeIcons.heart,
       'category': 'emergency',
       'color': Colors.red,
+      'videoPath': null,
     },
     {
-      'title': 'Allergic Reactions',
+      'title': 'Réactions allergiques',
       'description':
-          'How to recognize and respond to severe allergic reactions, including anaphylaxis.',
+          'Comment reconnaître et répondre aux réactions allergiques sévères, y compris l\'anaphylaxie.',
       'icon': FontAwesomeIcons.viruses,
       'category': 'common',
       'color': Colors.amber[700],
+      'videoPath': null,
     },
     {
-      'title': 'Poisoning',
+      'title': 'Empoisonnement',
       'description':
-          'First aid for ingested, inhaled, or contact poisoning and when to seek help.',
+          'Premiers secours pour empoisonnement ingéré, inhalé ou par contact et quand chercher de l\'aide.',
       'icon': FontAwesomeIcons.skullCrossbones,
       'category': 'children',
       'color': Colors.green[800],
+      'videoPath': null,
     },
     {
-      'title': 'Seizures',
+      'title': 'Convulsions',
       'description':
-          'How to safely help someone experiencing seizures and prevent injury.',
+          'Comment aider en sécurité quelqu\'un qui fait des convulsions et prévenir les blessures.',
       'icon': FontAwesomeIcons.bolt,
       'category': 'common',
       'color': Colors.amber,
+      'videoPath': null,
     },
     {
-      'title': 'Heat Stroke',
+      'title': 'Coup de chaleur',
       'description':
-          'Recognizing and treating heat-related illnesses, particularly in hot weather.',
+          'Reconnaître et traiter les maladies liées à la chaleur, particulièrement par temps chaud.',
       'icon': FontAwesomeIcons.temperatureHigh,
       'category': 'common',
       'color': Colors.deepOrange,
+      'videoPath': null,
     },
     {
-      'title': 'Diabetes Emergency',
+      'title': 'Urgence diabétique',
       'description':
-          'How to help someone experiencing hypoglycemia or hyperglycemia.',
+          'Comment aider quelqu\'un qui fait une hypoglycémie ou hyperglycémie.',
       'icon': FontAwesomeIcons.fileWaveform,
       'category': 'common',
       'color': Colors.blue,
+      'videoPath': null,
     },
     {
-      'title': 'Child CPR',
+      'title': 'RCP enfant',
       'description':
-          'Special CPR techniques adjusted for infants and children.',
+          'Techniques de RCP spécialement adaptées pour les nourrissons et les enfants.',
       'icon': FontAwesomeIcons.child,
       'category': 'children',
       'color': Colors.lightBlue,
+      'videoPath': null,
     },
     {
-      'title': 'Elderly Falls',
+      'title': 'Chutes de personnes âgées',
       'description':
-          'How to safely help an elderly person who has fallen and assess for injuries.',
+          'Comment aider en sécurité une personne âgée qui est tombée et évaluer les blessures.',
       'icon': FontAwesomeIcons.personWalking,
       'category': 'elderly',
       'color': Colors.grey[700],
+      'videoPath': null,
+    },
+    {
+      'title': 'Personne inconsciente qui respire',
+      'description':
+          'Que faire si quelqu\'un est inconscient mais respire encore.',
+      'icon': FontAwesomeIcons.userXmark,
+      'category': 'emergency',
+      'color': Colors.indigo,
+      'videoPath': 'assets/videos/unconscious_breathing_person.mp4',
+    },
+    {
+      'title': 'Sauvetage de véhicule',
+      'description':
+          'Manœuvre de Rautek pour sauver une personne d\'un véhicule en urgence.',
+      'icon': FontAwesomeIcons.car,
+      'category': 'emergency',
+      'color': Colors.brown,
+      'videoPath': 'assets/videos/car_rescue_rautek_maneuver.mp4',
     },
   ];
 
@@ -281,6 +314,8 @@ class _SecoursScreenState extends State<SecoursScreen> {
   }
 
   Widget _buildFirstAidCard(Map<String, dynamic> item) {
+    final hasVideo = item['videoPath'] != null;
+
     return Card(
       elevation: 2,
       shadowColor: Colors.black26,
@@ -291,72 +326,90 @@ class _SecoursScreenState extends State<SecoursScreen> {
           _showFirstAidDetails(item);
         },
         borderRadius: BorderRadius.circular(16),
-        child: Padding(
-          padding: EdgeInsets.all(14),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Icon in colored circle
-              Container(
-                padding: EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  color: (item['color'] as Color).withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Icon(
-                  item['icon'] as IconData,
-                  size: 24,
-                  color: item['color'] as Color,
-                ),
-              ),
-              SizedBox(height: 12),
-
-              // Category badge
-              Container(
-                padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(
-                  color: AppColors.primaryColor.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Text(
-                  item['category'],
-                  style: GoogleFonts.raleway(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.primaryColor,
+        child: Stack(
+          children: [
+            Padding(
+              padding: EdgeInsets.all(14),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Icon in colored circle
+                  Container(
+                    padding: EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: (item['color'] as Color).withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Icon(
+                      item['icon'] as IconData,
+                      size: 24,
+                      color: item['color'] as Color,
+                    ),
                   ),
-                ),
-              ),
-              SizedBox(height: 10),
+                  SizedBox(height: 12),
 
-              // Title
-              Text(
-                item['title'],
-                style: GoogleFonts.raleway(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.grey[800],
-                ),
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-              ),
-              SizedBox(height: 8),
-
-              // Description
-              Expanded(
-                child: Text(
-                  item['description'],
-                  style: GoogleFonts.raleway(
-                    fontSize: 12,
-                    color: Colors.grey[600],
-                    height: 1.3,
+                  // Category badge
+                  Container(
+                    padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: AppColors.primaryColor.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text(
+                      item['category'],
+                      style: GoogleFonts.raleway(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.primaryColor,
+                      ),
+                    ),
                   ),
-                  maxLines: 3,
-                  overflow: TextOverflow.ellipsis,
+                  SizedBox(height: 10),
+
+                  // Title
+                  Text(
+                    item['title'],
+                    style: GoogleFonts.raleway(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.grey[800],
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  SizedBox(height: 8),
+
+                  // Description
+                  Expanded(
+                    child: Text(
+                      item['description'],
+                      style: GoogleFonts.raleway(
+                        fontSize: 12,
+                        color: Colors.grey[600],
+                        height: 1.3,
+                      ),
+                      maxLines: 3,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            // Video play icon overlay
+            if (hasVideo)
+              Positioned(
+                top: 8,
+                right: 8,
+                child: Container(
+                  padding: EdgeInsets.all(6),
+                  decoration: BoxDecoration(
+                    color: Colors.red.withOpacity(0.9),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Icon(Icons.play_arrow, color: Colors.white, size: 16),
                 ),
               ),
-            ],
-          ),
+          ],
         ),
       ),
     );
@@ -388,6 +441,8 @@ class _SecoursScreenState extends State<SecoursScreen> {
   }
 
   void _showFirstAidDetails(Map<String, dynamic> item) {
+    final hasVideo = item['videoPath'] != null;
+
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -416,10 +471,29 @@ class _SecoursScreenState extends State<SecoursScreen> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Icon(
-                            item['icon'] as IconData,
-                            color: Colors.white,
-                            size: 24,
+                          Row(
+                            children: [
+                              Icon(
+                                item['icon'] as IconData,
+                                color: Colors.white,
+                                size: 24,
+                              ),
+                              if (hasVideo) ...[
+                                SizedBox(width: 8),
+                                Container(
+                                  padding: EdgeInsets.all(4),
+                                  decoration: BoxDecoration(
+                                    color: Colors.red,
+                                    borderRadius: BorderRadius.circular(6),
+                                  ),
+                                  child: Icon(
+                                    Icons.videocam,
+                                    color: Colors.white,
+                                    size: 16,
+                                  ),
+                                ),
+                              ],
+                            ],
                           ),
                           IconButton(
                             icon: Icon(
@@ -455,6 +529,21 @@ class _SecoursScreenState extends State<SecoursScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
+                        // Video player (if available)
+                        if (hasVideo) ...[
+                          Text(
+                            'Vidéo de démonstration',
+                            style: GoogleFonts.raleway(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.grey[800],
+                            ),
+                          ),
+                          SizedBox(height: 12),
+                          VideoPlayerWidget(videoPath: item['videoPath']),
+                          SizedBox(height: 24),
+                        ],
+
                         Text(
                           'description'.tr,
                           style: GoogleFonts.raleway(
@@ -592,6 +681,141 @@ class _SecoursScreenState extends State<SecoursScreen> {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class VideoPlayerWidget extends StatefulWidget {
+  final String videoPath;
+
+  const VideoPlayerWidget({super.key, required this.videoPath});
+
+  @override
+  State<VideoPlayerWidget> createState() => _VideoPlayerWidgetState();
+}
+
+class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
+  VideoPlayerController? _controller;
+  bool _isPlaying = false;
+  bool _isInitialized = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _initializeVideoPlayer();
+  }
+
+  void _initializeVideoPlayer() async {
+    try {
+      _controller = VideoPlayerController.asset(widget.videoPath);
+      await _controller!.initialize();
+      setState(() {
+        _isInitialized = true;
+      });
+    } catch (e) {
+      print('Error initializing video player: $e');
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller?.dispose();
+    super.dispose();
+  }
+
+  void _togglePlayPause() {
+    if (_controller != null) {
+      if (_isPlaying) {
+        _controller!.pause();
+      } else {
+        _controller!.play();
+      }
+      setState(() {
+        _isPlaying = !_isPlaying;
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (!_isInitialized || _controller == null) {
+      return Container(
+        height: 200.h,
+        decoration: BoxDecoration(
+          color: Colors.black,
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              CircularProgressIndicator(color: Colors.white),
+              SizedBox(height: 8),
+              Text(
+                'Chargement de la vidéo...',
+                style: GoogleFonts.raleway(color: Colors.white),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    return Container(
+      height: 200.h,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(12),
+        color: Colors.black,
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(12),
+        child: Stack(
+          children: [
+            VideoPlayer(_controller!),
+            Positioned.fill(
+              child: GestureDetector(
+                onTap: _togglePlayPause,
+                child: Container(
+                  color: Colors.transparent,
+                  child: Center(
+                    child: AnimatedOpacity(
+                      opacity: _isPlaying ? 0.0 : 1.0,
+                      duration: Duration(milliseconds: 300),
+                      child: Container(
+                        padding: EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: Colors.black54,
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(
+                          _isPlaying ? Icons.pause : Icons.play_arrow,
+                          color: Colors.white,
+                          size: 32,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            // Video progress indicator
+            Positioned(
+              bottom: 0,
+              left: 0,
+              right: 0,
+              child: VideoProgressIndicator(
+                _controller!,
+                allowScrubbing: true,
+                colors: VideoProgressColors(
+                  playedColor: AppColors.primaryColor,
+                  bufferedColor: Colors.grey[300]!,
+                  backgroundColor: Colors.grey[600]!,
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

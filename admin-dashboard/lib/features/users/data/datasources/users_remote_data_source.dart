@@ -217,29 +217,29 @@ class UsersRemoteDataSourceImpl implements UsersRemoteDataSource {
       print('🔔 deleteUser: Step 3 - Deleting notifications');
       // Delete related data - notifications
       try {
-        final notificationsQuery =
-            await firestore
-                .collection('notifications')
-                .where('recipientId', isEqualTo: userId)
-                .get();
+      final notificationsQuery =
+          await firestore
+              .collection('notifications')
+              .where('recipientId', isEqualTo: userId)
+              .get();
         print(
           '📧 deleteUser: Found ${notificationsQuery.docs.length} recipient notifications',
         );
-        for (final doc in notificationsQuery.docs) {
+      for (final doc in notificationsQuery.docs) {
           addDeleteToBatch(doc.reference);
-        }
+      }
 
-        final sentNotificationsQuery =
-            await firestore
-                .collection('notifications')
-                .where('senderId', isEqualTo: userId)
-                .get();
+      final sentNotificationsQuery =
+          await firestore
+              .collection('notifications')
+              .where('senderId', isEqualTo: userId)
+              .get();
         print(
           '📤 deleteUser: Found ${sentNotificationsQuery.docs.length} sender notifications',
         );
-        for (final doc in sentNotificationsQuery.docs) {
+      for (final doc in sentNotificationsQuery.docs) {
           addDeleteToBatch(doc.reference);
-        }
+      }
       } catch (e) {
         print('⚠️ deleteUser: Error deleting notifications: $e');
         // Continue with other deletions
@@ -248,29 +248,29 @@ class UsersRemoteDataSourceImpl implements UsersRemoteDataSource {
       print('📅 deleteUser: Step 4 - Deleting appointments');
       // Delete appointments
       try {
-        final appointmentsQuery =
-            await firestore
-                .collection('rendez_vous')
-                .where('patientId', isEqualTo: userId)
-                .get();
+      final appointmentsQuery =
+          await firestore
+              .collection('rendez_vous')
+              .where('patientId', isEqualTo: userId)
+              .get();
         print(
           '👤📅 deleteUser: Found ${appointmentsQuery.docs.length} patient appointments',
         );
-        for (final doc in appointmentsQuery.docs) {
+      for (final doc in appointmentsQuery.docs) {
           addDeleteToBatch(doc.reference);
-        }
+      }
 
-        final doctorAppointmentsQuery =
-            await firestore
-                .collection('rendez_vous')
-                .where('doctorId', isEqualTo: userId)
-                .get();
+      final doctorAppointmentsQuery =
+          await firestore
+              .collection('rendez_vous')
+              .where('doctorId', isEqualTo: userId)
+              .get();
         print(
           '👨‍⚕️📅 deleteUser: Found ${doctorAppointmentsQuery.docs.length} doctor appointments',
         );
-        for (final doc in doctorAppointmentsQuery.docs) {
+      for (final doc in doctorAppointmentsQuery.docs) {
           addDeleteToBatch(doc.reference);
-        }
+      }
       } catch (e) {
         print('⚠️ deleteUser: Error deleting appointments: $e');
         // Continue with other deletions
@@ -279,17 +279,17 @@ class UsersRemoteDataSourceImpl implements UsersRemoteDataSource {
       print('💬 deleteUser: Step 5 - Deleting conversations');
       // Delete conversations
       try {
-        final conversationsQuery =
-            await firestore
-                .collection('conversations')
-                .where('participants', arrayContains: userId)
-                .get();
+      final conversationsQuery =
+          await firestore
+              .collection('conversations')
+              .where('participants', arrayContains: userId)
+              .get();
         print(
           '💬 deleteUser: Found ${conversationsQuery.docs.length} conversations',
         );
-        for (final doc in conversationsQuery.docs) {
+      for (final doc in conversationsQuery.docs) {
           addDeleteToBatch(doc.reference);
-        }
+      }
       } catch (e) {
         print('⚠️ deleteUser: Error deleting conversations: $e');
         // Continue with other deletions
@@ -298,29 +298,29 @@ class UsersRemoteDataSourceImpl implements UsersRemoteDataSource {
       print('💊 deleteUser: Step 6 - Deleting prescriptions');
       // Delete prescriptions
       try {
-        final prescriptionsQuery =
-            await firestore
-                .collection('prescriptions')
-                .where('patientId', isEqualTo: userId)
-                .get();
+      final prescriptionsQuery =
+          await firestore
+              .collection('prescriptions')
+              .where('patientId', isEqualTo: userId)
+              .get();
         print(
           '👤💊 deleteUser: Found ${prescriptionsQuery.docs.length} patient prescriptions',
         );
-        for (final doc in prescriptionsQuery.docs) {
+      for (final doc in prescriptionsQuery.docs) {
           addDeleteToBatch(doc.reference);
-        }
+      }
 
-        final doctorPrescriptionsQuery =
-            await firestore
-                .collection('prescriptions')
-                .where('doctorId', isEqualTo: userId)
-                .get();
+      final doctorPrescriptionsQuery =
+          await firestore
+              .collection('prescriptions')
+              .where('doctorId', isEqualTo: userId)
+              .get();
         print(
           '👨‍⚕️💊 deleteUser: Found ${doctorPrescriptionsQuery.docs.length} doctor prescriptions',
         );
-        for (final doc in doctorPrescriptionsQuery.docs) {
+      for (final doc in doctorPrescriptionsQuery.docs) {
           addDeleteToBatch(doc.reference);
-        }
+      }
       } catch (e) {
         print('⚠️ deleteUser: Error deleting prescriptions: $e');
         // Continue with other deletions
@@ -329,29 +329,29 @@ class UsersRemoteDataSourceImpl implements UsersRemoteDataSource {
       print('⭐ deleteUser: Step 7 - Deleting ratings');
       // Delete ratings
       try {
-        final ratingsQuery =
-            await firestore
-                .collection('ratings')
-                .where('patientId', isEqualTo: userId)
-                .get();
+      final ratingsQuery =
+          await firestore
+              .collection('ratings')
+              .where('patientId', isEqualTo: userId)
+              .get();
         print(
           '👤⭐ deleteUser: Found ${ratingsQuery.docs.length} patient ratings',
         );
-        for (final doc in ratingsQuery.docs) {
+      for (final doc in ratingsQuery.docs) {
           addDeleteToBatch(doc.reference);
-        }
+      }
 
-        final doctorRatingsQuery =
-            await firestore
-                .collection('ratings')
-                .where('doctorId', isEqualTo: userId)
-                .get();
+      final doctorRatingsQuery =
+          await firestore
+              .collection('ratings')
+              .where('doctorId', isEqualTo: userId)
+              .get();
         print(
           '👨‍⚕️⭐ deleteUser: Found ${doctorRatingsQuery.docs.length} doctor ratings',
         );
-        for (final doc in doctorRatingsQuery.docs) {
+      for (final doc in doctorRatingsQuery.docs) {
           addDeleteToBatch(doc.reference);
-        }
+      }
       } catch (e) {
         print('⚠️ deleteUser: Error deleting ratings: $e');
         // Continue with other deletions
@@ -361,17 +361,17 @@ class UsersRemoteDataSourceImpl implements UsersRemoteDataSource {
       // Delete medical files if patient
       if (userType == 'patient') {
         try {
-          final medicalFilesQuery =
-              await firestore
-                  .collection('dossier_medical')
-                  .where('patientId', isEqualTo: userId)
-                  .get();
+        final medicalFilesQuery =
+            await firestore
+                .collection('dossier_medical')
+                .where('patientId', isEqualTo: userId)
+                .get();
           print(
             '📋 deleteUser: Found ${medicalFilesQuery.docs.length} medical files',
           );
-          for (final doc in medicalFilesQuery.docs) {
+        for (final doc in medicalFilesQuery.docs) {
             addDeleteToBatch(doc.reference);
-          }
+        }
         } catch (e) {
           print('⚠️ deleteUser: Error deleting medical files: $e');
           // Continue with other deletions
@@ -383,7 +383,7 @@ class UsersRemoteDataSourceImpl implements UsersRemoteDataSource {
       );
       // Commit final batch
       if (operationCount > 0) {
-        await batch.commit();
+      await batch.commit();
       }
 
       print('✅ deleteUser: User data deleted successfully');

@@ -84,7 +84,7 @@ class AppWithTheme extends StatelessWidget {
             return BlocBuilder<AuthBloc, AuthState>(
               builder: (context, state) {
                 return MaterialApp(
-                  title: 'Admin Dashboard',
+                  title: 'Tableau de Bord Admin',
                   debugShowCheckedModeBanner: false,
                   theme: AppTheme.lightTheme,
                   darkTheme: AppTheme.darkTheme,
