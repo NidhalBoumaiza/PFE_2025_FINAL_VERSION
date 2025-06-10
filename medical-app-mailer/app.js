@@ -5,13 +5,10 @@ const rateLimit = require("express-rate-limit");
 const AppError = require("./utils/appError");
 const globalErrorHandler = require("./controllers/errorController");
 const xss = require("xss-clean");
-const path = require("path");
 const app = express();
 
 //------------ROUTES----------------
 const userRouter = require("./routes/userRouter");
-const notificationRouter = require("./routes/notificationRouter");
-const dossierMedicalRoutes = require("./routes/dossierMedicalRoutes");
 
 //------------------------------
 // Implement CORS
@@ -43,13 +40,8 @@ app.use((req, res, next) => {
   next();
 });
 
-// Add this line to serve static files from the uploads directory
-app.use("/uploads", express.static(path.join(__dirname, "uploads")));
-
 // 3) ROUTES
 app.use("/api/v1/users", userRouter);
-app.use("/api/v1/notifications", notificationRouter);
-app.use("/api/v1/dossier-medical", dossierMedicalRoutes);
 
 // Handle undefined routes
 app.all("*", (req, res, next) => {

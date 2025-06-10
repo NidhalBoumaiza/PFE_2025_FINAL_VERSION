@@ -1,152 +1,67 @@
 # Medical App Mailer
 
-This is the backend service for the Medical App project.
+This is a simplified backend service focused on email functionality and password reset for the Medical App project.
 
-## Dossier Medical API
+## Features
 
-The Dossier Medical API allows you to manage patient medical files.
+- **Email Service**: Send various types of emails (account activation, password reset, etc.)
+- **Password Reset**: Direct password reset functionality using Firebase Authentication
+- **Beautiful Email Templates**: HTML email templates with modern design
+- **Rate Limiting**: Protection against spam and abuse
+- **CORS Support**: Cross-origin resource sharing enabled
+- **XSS Protection**: Built-in security against cross-site scripting
 
-### Endpoints
+## API Endpoints
 
-#### Get a Patient's Medical Record
+### Email Service
+
+#### Send Email
 
 ```
-GET /api/v1/dossier-medical/:patientId
+POST /api/v1/users/sendMailService
 ```
+
+**Request Body**
+
+```json
+{
+  "email": "user@example.com",
+  "subject": "Activation de compte", // or "Mot de passe oublié", "Changer mot de passe", "Compte Activer"
+  "code": "123456" // Optional, required for verification emails
+}
+```
+
+**Supported Email Types**
+
+- `"Activation de compte"` - Account activation with verification code
+- `"Mot de passe oublié"` - Forgot password with reset code
+- `"Changer mot de passe"` - Change password with verification code
+- `"Compte Activer"` - Account activation confirmation (no code needed)
 
 **Response**
 
 ```json
 {
   "status": "success",
-  "data": {
-    "dossier": {
-      "_id": "60d21b4667d0d8992e610c85",
-      "patientId": "firebase-patient-id",
-      "files": [
-        {
-          "_id": "60d21b4667d0d8992e610c86",
-          "filename": "2023-06-20T10-30-45.123Z-blood-test.pdf",
-          "originalName": "blood-test.pdf",
-          "path": "uploads/patient-files/firebase-patient-id/2023-06-20T10-30-45.123Z-blood-test.pdf",
-          "mimetype": "application/pdf",
-          "size": 123456,
-          "description": "Blood test results from May 2023",
-          "createdAt": "2023-06-20T10:30:45.123Z"
-        }
-      ],
-      "createdAt": "2023-06-20T10:30:45.123Z",
-      "updatedAt": "2023-06-20T10:30:45.123Z"
-    }
-  }
+  "message": "Un e-mail a été envoyé à user@example.com avec succès"
 }
 ```
 
-#### Add a Single File to a Patient's Medical Record
+### Password Reset
+
+#### Reset Password Directly
 
 ```
-POST /api/v1/dossier-medical/:patientId/files
+POST /api/v1/users/resetPasswordDirect
 ```
 
-**Request**
-
-- Format: `multipart/form-data`
-- Fields:
-  - `file`: The file to upload (required)
-  - `description`: Description of the file (optional)
-
-**Response**
+**Request Body**
 
 ```json
 {
-  "status": "success",
-  "data": {
-    "dossier": {
-      "_id": "60d21b4667d0d8992e610c85",
-      "patientId": "firebase-patient-id",
-      "files": [
-        {
-          "_id": "60d21b4667d0d8992e610c86",
-          "filename": "2023-06-20T10-30-45.123Z-blood-test.pdf",
-          "originalName": "blood-test.pdf",
-          "path": "uploads/patient-files/firebase-patient-id/2023-06-20T10-30-45.123Z-blood-test.pdf",
-          "mimetype": "application/pdf",
-          "size": 123456,
-          "description": "Blood test results from May 2023",
-          "createdAt": "2023-06-20T10:30:45.123Z"
-        }
-      ],
-      "createdAt": "2023-06-20T10:30:45.123Z",
-      "updatedAt": "2023-06-20T10:30:45.123Z"
-    }
-  }
-}
-```
-
-#### Add Multiple Files to a Patient's Medical Record
-
-```
-POST /api/v1/dossier-medical/:patientId/multiple-files
-```
-
-**Request**
-
-- Format: `multipart/form-data`
-- Fields:
-  - `files`: The files to upload (required, up to 10 files)
-  - `descriptions`: JSON object mapping file IDs to descriptions
-    (optional) Example:
-    `{"file1": "X-ray report", "file2": "MRI scan"}`
-
-**Response**
-
-```json
-{
-  "status": "success",
-  "data": {
-    "dossier": {
-      "_id": "60d21b4667d0d8992e610c85",
-      "patientId": "firebase-patient-id",
-      "files": [
-        {
-          "_id": "60d21b4667d0d8992e610c86",
-          "filename": "2023-06-20T10-30-45.123Z-blood-test.pdf",
-          "originalName": "blood-test.pdf",
-          "path": "uploads/patient-files/firebase-patient-id/2023-06-20T10-30-45.123Z-blood-test.pdf",
-          "mimetype": "application/pdf",
-          "size": 123456,
-          "description": "Blood test results from May 2023",
-          "createdAt": "2023-06-20T10:30:45.123Z"
-        },
-        {
-          "_id": "60d21b4667d0d8992e610c87",
-          "filename": "2023-06-20T10-31-45.123Z-xray.jpg",
-          "originalName": "xray.jpg",
-          "path": "uploads/patient-files/firebase-patient-id/2023-06-20T10-31-45.123Z-xray.jpg",
-          "mimetype": "image/jpeg",
-          "size": 234567,
-          "description": "Chest X-ray from June 2023",
-          "createdAt": "2023-06-20T10:31:45.123Z"
-        }
-      ],
-      "createdAt": "2023-06-20T10:30:45.123Z",
-      "updatedAt": "2023-06-20T10:31:45.123Z"
-    }
-  }
-}
-```
-
-#### Update a File Description
-
-```
-PATCH /api/v1/dossier-medical/:patientId/files/:fileId
-```
-
-**Request**
-
-```json
-{
-  "description": "Updated description for the file"
+  "email": "user@example.com",
+  "newPassword": "newSecurePassword123",
+  "verificationCode": "123456"
 }
 ```
 
@@ -155,58 +70,88 @@ PATCH /api/v1/dossier-medical/:patientId/files/:fileId
 ```json
 {
   "status": "success",
-  "data": {
-    "file": {
-      "_id": "60d21b4667d0d8992e610c86",
-      "filename": "2023-06-20T10-30-45.123Z-blood-test.pdf",
-      "originalName": "blood-test.pdf",
-      "path": "uploads/patient-files/firebase-patient-id/2023-06-20T10-30-45.123Z-blood-test.pdf",
-      "mimetype": "application/pdf",
-      "size": 123456,
-      "description": "Updated description for the file",
-      "createdAt": "2023-06-20T10:30:45.123Z"
-    }
-  }
+  "message": "Mot de passe réinitialisé avec succès"
 }
 ```
 
-#### Delete a File
+## Environment Variables
 
-```
-DELETE /api/v1/dossier-medical/:patientId/files/:fileId
-```
+Create a `.env` file in the root directory with the following variables:
 
-**Response**
+```env
+# Email Configuration
+USERMAILER=your-gmail-address@gmail.com
+PASSWORDMAILER=your-app-password
+PORTMAILER=587
 
-```json
-{
-  "status": "success",
-  "message": "Fichier supprimé avec succès"
-}
-```
+# Firebase Configuration
+# Place your serviceAccountKey.json file in the root directory
 
-### File Access
-
-Files can be accessed directly via their URL:
-
-```
-GET /uploads/patient-files/:patientId/:filename
+# Application Configuration
+NODE_ENV=development
+PORT=3000
 ```
 
-### Supported File Types
+## Installation
 
-- Images: JPEG, PNG, JPG
-- Documents: PDF
+1. Clone the repository
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+3. Set up environment variables (see above)
+4. Place your Firebase service account key file as `serviceAccountKey.json` in the root directory
+5. Start the server:
+   ```bash
+   npm start
+   ```
 
-### File Size Limit
+## Dependencies
 
-Maximum file size: 10MB per file
+- **express**: Web framework
+- **nodemailer**: Email sending functionality
+- **firebase-admin**: Firebase authentication and Firestore
+- **cors**: Cross-origin resource sharing
+- **express-rate-limit**: Rate limiting middleware
+- **xss-clean**: XSS protection
+- **morgan**: HTTP request logger
 
-## Authentication
+## Email Templates
 
-All endpoints require authentication. Include the JWT token in the
-Authorization header:
+The service includes beautiful HTML email templates with:
+- Modern, responsive design
+- App branding (MediLink)
+- Prominent verification code display
+- Professional styling
+- Mobile-friendly layout
 
+## Security Features
+
+- Rate limiting (1,000,000 requests per hour per IP)
+- XSS protection
+- CORS enabled
+- Input validation
+- Firebase authentication integration
+
+## Development
+
+For development mode, authentication is disabled to make testing easier. In production, proper authentication middleware is applied.
+
+```bash
+# Development mode
+npm start
+
+# Production mode
+NODE_ENV=production npm run dev
 ```
-Authorization: Bearer your-token-here
-```
+
+## Error Handling
+
+The API includes comprehensive error handling with appropriate HTTP status codes and descriptive error messages in French.
+
+## Firebase Integration
+
+The service integrates with Firebase for:
+- User authentication and password management
+- Firestore database for user verification codes
+- Support for multiple user collections (patients, medecins, users)
