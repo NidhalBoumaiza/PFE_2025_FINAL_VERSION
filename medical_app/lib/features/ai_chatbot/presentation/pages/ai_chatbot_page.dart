@@ -62,9 +62,9 @@ class _AiChatbotPageState extends State<AiChatbotPage> {
       isScrollControlled: true,
       builder:
           (context) => AttachmentBottomSheet(
-            onImageSelected: _handleImageSelection,
-            onPdfSelected: _handlePdfSelection,
-          ),
+        onImageSelected: _handleImageSelection,
+        onPdfSelected: _handlePdfSelection,
+      ),
     );
   }
 
@@ -87,45 +87,45 @@ class _AiChatbotPageState extends State<AiChatbotPage> {
       context: context,
       builder:
           (context) => AlertDialog(
-            title: Text('ai_image_prompt_title'.tr),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text('ai_image_prompt_description'.tr),
-                const SizedBox(height: 16),
-                TextField(
-                  controller: promptController,
-                  decoration: InputDecoration(
-                    hintText: 'ai_image_prompt_hint'.tr,
-                    border: const OutlineInputBorder(),
-                  ),
-                  maxLines: 3,
-                ),
-              ],
+        title: Text('Ajouter une instruction pour l\'image'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text('Entrez une instruction pour l\'analyse de l\'image'),
+            const SizedBox(height: 16),
+            TextField(
+              controller: promptController,
+              decoration: InputDecoration(
+                hintText: 'Décrivez ce que vous voulez analyser',
+                border: const OutlineInputBorder(),
+              ),
+              maxLines: 3,
             ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: Text('cancel'.tr),
-              ),
-              ElevatedButton(
-                onPressed: () {
-                  final prompt = promptController.text.trim();
-                  if (prompt.isNotEmpty) {
-                    context.read<AiChatbotBloc>().add(
-                      SendImageMessageEvent(
-                        imageFile: imageFile,
-                        taskPrompt: prompt,
-                      ),
-                    );
-                    Navigator.pop(context);
-                    _scrollToBottom();
-                  }
-                },
-                child: Text('ai_analyze'.tr),
-              ),
-            ],
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text('Annuler'),
           ),
+          ElevatedButton(
+            onPressed: () {
+              final prompt = promptController.text.trim();
+              if (prompt.isNotEmpty) {
+                context.read<AiChatbotBloc>().add(
+                  SendImageMessageEvent(
+                    imageFile: imageFile,
+                    taskPrompt: prompt,
+                  ),
+                );
+                Navigator.pop(context);
+                _scrollToBottom();
+              }
+            },
+            child: Text('Analyser'),
+          ),
+        ],
+      ),
     );
   }
 
@@ -151,7 +151,7 @@ class _AiChatbotPageState extends State<AiChatbotPage> {
       resizeToAvoidBottomInset: true,
       appBar: AppBar(
         title: Text(
-          'ai_assistant'.tr,
+          'Assistant IA',
           style: GoogleFonts.raleway(
             fontSize: 18.sp,
             fontWeight: FontWeight.bold,
@@ -170,7 +170,7 @@ class _AiChatbotPageState extends State<AiChatbotPage> {
             onPressed: () {
               context.read<AiChatbotBloc>().add(const ClearChatEvent());
             },
-            tooltip: 'ai_clear_chat'.tr,
+            tooltip: 'Effacer la conversation',
           ),
         ],
       ),
@@ -196,9 +196,9 @@ class _AiChatbotPageState extends State<AiChatbotPage> {
 
                 if (state is AiChatbotLoaded || state is AiChatbotError) {
                   final messages =
-                      state is AiChatbotLoaded
-                          ? state.messages
-                          : (state as AiChatbotError).messages;
+                  state is AiChatbotLoaded
+                      ? state.messages
+                      : (state as AiChatbotError).messages;
                   final isLoading = state is AiChatbotLoaded && state.isLoading;
 
                   if (messages.isEmpty) {
@@ -242,7 +242,7 @@ class _AiChatbotPageState extends State<AiChatbotPage> {
           ),
           SizedBox(height: 24.h),
           Text(
-            'ai_welcome_title'.tr,
+            'Bienvenue dans l\'Assistant IA',
             style: GoogleFonts.raleway(
               fontSize: 24.sp,
               fontWeight: FontWeight.bold,
@@ -252,7 +252,7 @@ class _AiChatbotPageState extends State<AiChatbotPage> {
           ),
           SizedBox(height: 16.h),
           Text(
-            'ai_welcome_description'.tr,
+            'Posez des questions, téléchargez des images ou des PDF pour une analyse intelligente',
             style: GoogleFonts.raleway(
               fontSize: 16.sp,
               color: Colors.grey[600],
@@ -262,14 +262,14 @@ class _AiChatbotPageState extends State<AiChatbotPage> {
           SizedBox(height: 32.h),
           _buildFeatureCard(
             icon: Icons.image,
-            title: 'ai_image_analysis'.tr,
-            description: 'ai_image_analysis_desc'.tr,
+            title: 'Analyse d\'image',
+            description: 'Téléchargez une image pour une analyse détaillée par l\'IA',
           ),
           SizedBox(height: 16.h),
           _buildFeatureCard(
             icon: Icons.picture_as_pdf,
-            title: 'ai_pdf_analysis'.tr,
-            description: 'ai_pdf_analysis_desc'.tr,
+            title: 'Analyse de PDF',
+            description: 'Envoyez un fichier PDF pour extraire et analyser son contenu',
           ),
           SizedBox(height: 40.h),
         ],
@@ -347,7 +347,7 @@ class _AiChatbotPageState extends State<AiChatbotPage> {
                 ),
                 SizedBox(width: 8.w),
                 Text(
-                  'ai_thinking'.tr,
+                  'L\'IA réfléchit...',
                   style: GoogleFonts.raleway(
                     fontSize: 14.sp,
                     color: Colors.grey[600],
@@ -400,7 +400,7 @@ class _AiChatbotPageState extends State<AiChatbotPage> {
                   controller: _messageController,
                   focusNode: _focusNode,
                   decoration: InputDecoration(
-                    hintText: 'ai_type_message'.tr,
+                    hintText: 'Tapez votre message...',
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(24.r),
                       borderSide: BorderSide.none,

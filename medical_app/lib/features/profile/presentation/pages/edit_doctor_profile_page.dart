@@ -3,11 +3,13 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/utils/app_colors.dart';
 import '../../../../core/widgets/location_picker_widget.dart';
 import '../../../../core/widgets/office_location_map_widget.dart';
 import '../../../authentication/domain/entities/medecin_entity.dart';
+import '../../../authentication/data/models/medecin_model.dart';
+import 'blocs/BLoC update profile/update_user_bloc.dart';
 
 class EditDoctorProfilePage extends StatefulWidget {
   final MedecinEntity doctor;
@@ -32,8 +34,6 @@ class _EditDoctorProfilePageState extends State<EditDoctorProfilePage> {
   // Location fields
   LatLng? _selectedLocation;
   String _selectedAddress = '';
-
-  bool _isLoading = false;
 
   @override
   void initState() {
@@ -109,10 +109,6 @@ class _EditDoctorProfilePageState extends State<EditDoctorProfilePage> {
   Future<void> _saveProfile() async {
     if (!_formKey.currentState!.validate()) return;
 
-    setState(() {
-      _isLoading = true;
-    });
-
     try {
       // Prepare location data
       Map<String, dynamic>? locationData;
@@ -135,8 +131,8 @@ class _EditDoctorProfilePageState extends State<EditDoctorProfilePage> {
         };
       }
 
-      // Create updated doctor entity
-      final updatedDoctor = MedecinEntity(
+      // Create updated doctor model using MedecinModel to ensure all fields are preserved
+      final updatedDoctor = MedecinModel(
         id: widget.doctor.id,
         name: _nameController.text.trim(),
         lastName: _lastNameController.text.trim(),
@@ -145,57 +141,32 @@ class _EditDoctorProfilePageState extends State<EditDoctorProfilePage> {
         gender: widget.doctor.gender,
         phoneNumber: _phoneController.text.trim(),
         dateOfBirth: widget.doctor.dateOfBirth,
-        speciality: widget.doctor.speciality,
-        numLicence: widget.doctor.numLicence,
+        speciality: widget.doctor.speciality ?? '',
+        numLicence: widget.doctor.numLicence ?? '',
         appointmentDuration:
             int.tryParse(_appointmentDurationController.text) ?? 30,
         consultationFee: double.tryParse(_consultationFeeController.text),
         education: widget.doctor.education,
         experience: widget.doctor.experience,
-        location: locationData,
-        address: addressData,
+        location: locationData ?? widget.doctor.location,
+        address: addressData ?? widget.doctor.address,
         accountStatus: widget.doctor.accountStatus,
         verificationCode: widget.doctor.verificationCode,
         validationCodeExpiresAt: widget.doctor.validationCodeExpiresAt,
         fcmToken: widget.doctor.fcmToken,
       );
 
-      // Here you would typically call a BLoC or repository to save the updated profile
-      // For now, we'll just show a success message
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            'profile_updated_successfully'.tr,
-            style: GoogleFonts.raleway(),
-          ),
-          backgroundColor: Colors.green,
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10),
-          ),
-        ),
-      );
-
-      Navigator.of(context).pop(updatedDoctor);
+      // Dispatch update event to BLoC
+      context.read<UpdateUserBloc>().add(UpdateUserEvent(updatedDoctor));
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            'error_updating_profile'.tr,
-            style: GoogleFonts.raleway(),
-          ),
-          backgroundColor: Colors.red,
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10),
-          ),
-        ),
+      // Show error message
+      Get.snackbar(
+        'error'.tr,
+        'error_updating_profile'.tr,
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+        snackPosition: SnackPosition.TOP,
       );
-    } finally {
-      setState(() {
-        _isLoading = false;
-      });
     }
   }
 
@@ -218,285 +189,321 @@ class _EditDoctorProfilePageState extends State<EditDoctorProfilePage> {
           icon: const Icon(Icons.chevron_left, size: 28, color: Colors.white),
           onPressed: () => Navigator.of(context).pop(),
         ),
-        actions: [
-          if (_isLoading)
-            Center(
-              child: Padding(
-                padding: EdgeInsets.only(right: 16.w),
-                child: SizedBox(
-                  width: 20.w,
-                  height: 20.h,
-                  child: const CircularProgressIndicator(
-                    color: Colors.white,
-                    strokeWidth: 2,
-                  ),
-                ),
-              ),
-            )
-          else
-            TextButton(
-              onPressed: _saveProfile,
-              child: Text(
-                'save'.tr,
-                style: GoogleFonts.raleway(
-                  fontSize: 16.sp,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                ),
-              ),
-            ),
-        ],
       ),
-      body: SingleChildScrollView(
-        padding: EdgeInsets.all(16.w),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Profile Header
-              Center(
-                child: Column(
-                  children: [
-                    Container(
-                      height: 100.h,
-                      width: 100.w,
-                      decoration: BoxDecoration(
-                        color: AppColors.primaryColor,
-                        borderRadius: BorderRadius.circular(50.r),
-                      ),
-                      child: Icon(
-                        Icons.person,
-                        color: Colors.white,
-                        size: 50.sp,
-                      ),
-                    ),
-                    SizedBox(height: 16.h),
-                    Text(
-                      'Dr. ${widget.doctor.name} ${widget.doctor.lastName}',
-                      style: GoogleFonts.raleway(
-                        fontSize: 20.sp,
-                        fontWeight: FontWeight.bold,
-                        color: theme.textTheme.titleLarge?.color,
-                      ),
-                    ),
-                    Text(
-                      widget.doctor.speciality ?? 'specialty_not_specified'.tr,
-                      style: GoogleFonts.raleway(
-                        fontSize: 16.sp,
-                        color: theme.textTheme.bodyMedium?.color,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+      body: BlocConsumer<UpdateUserBloc, UpdateUserState>(
+        listener: (context, state) {
+          if (state is UpdateUserSuccess) {
+            // Show success message
+            Get.snackbar(
+              'success'.tr,
+              'profile_updated_successfully'.tr,
+              backgroundColor: Colors.green,
+              colorText: Colors.white,
+              snackPosition: SnackPosition.TOP,
+            );
 
-              SizedBox(height: 32.h),
+            // Return to previous screen with updated doctor data
+            Navigator.of(context).pop(state.user);
+          } else if (state is UpdateUserFailure) {
+            // Show error message
+            Get.snackbar(
+              'error'.tr,
+              state.message,
+              backgroundColor: Colors.red,
+              colorText: Colors.white,
+              snackPosition: SnackPosition.TOP,
+            );
+          }
+        },
+        builder: (context, state) {
+          final isLoading = state is UpdateUserLoading;
 
-              // Personal Information Section
-              _buildSectionTitle('personal_information'.tr),
-              SizedBox(height: 16.h),
-
-              _buildTextField(
-                controller: _nameController,
-                label: 'first_name_label'.tr,
-                icon: Icons.person_outline,
-                validator: (value) {
-                  if (value == null || value.trim().isEmpty) {
-                    return 'first_name_required'.tr;
-                  }
-                  return null;
-                },
-              ),
-
-              SizedBox(height: 16.h),
-
-              _buildTextField(
-                controller: _lastNameController,
-                label: 'name_label'.tr,
-                icon: Icons.person_outline,
-                validator: (value) {
-                  if (value == null || value.trim().isEmpty) {
-                    return 'name_required'.tr;
-                  }
-                  return null;
-                },
-              ),
-
-              SizedBox(height: 16.h),
-
-              _buildTextField(
-                controller: _phoneController,
-                label: 'phone_number_label'.tr,
-                icon: Icons.phone_outlined,
-                keyboardType: TextInputType.phone,
-                validator: (value) {
-                  if (value == null || value.trim().isEmpty) {
-                    return 'phone_number_required'.tr;
-                  }
-                  return null;
-                },
-              ),
-
-              SizedBox(height: 24.h),
-
-              // Professional Information Section
-              _buildSectionTitle('professional_information'.tr),
-              SizedBox(height: 16.h),
-
-              _buildTextField(
-                controller: _consultationFeeController,
-                label: 'consultation_fee'.tr,
-                icon: Icons.attach_money,
-                keyboardType: TextInputType.number,
-                validator: (value) {
-                  if (value != null && value.isNotEmpty) {
-                    if (double.tryParse(value) == null ||
-                        double.parse(value) <= 0) {
-                      return 'invalid_consultation_fee'.tr;
-                    }
-                  }
-                  return null;
-                },
-              ),
-
-              SizedBox(height: 16.h),
-
-              _buildTextField(
-                controller: _appointmentDurationController,
-                label: 'appointment_duration'.tr,
-                icon: Icons.schedule,
-                keyboardType: TextInputType.number,
-                validator: (value) {
-                  if (value == null || value.trim().isEmpty) {
-                    return 'appointment_duration_required'.tr;
-                  }
-                  if (int.tryParse(value) == null || int.parse(value) <= 0) {
-                    return 'invalid_appointment_duration'.tr;
-                  }
-                  return null;
-                },
-              ),
-
-              SizedBox(height: 24.h),
-
-              // Office Location Section
-              _buildSectionTitle('office_location'.tr),
-              SizedBox(height: 16.h),
-
-              Card(
-                elevation: 2,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16.r),
-                ),
-                child: Padding(
-                  padding: EdgeInsets.all(16.w),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      if (_selectedLocation != null) ...[
-                        OfficeLocationMapWidget(
-                          latitude: _selectedLocation!.latitude,
-                          longitude: _selectedLocation!.longitude,
-                          address: _selectedAddress,
-                          height: 200,
-                          isInteractive: true,
-                          onTap: _openLocationPicker,
-                        ),
-                        SizedBox(height: 12.h),
-                        if (_selectedAddress.isNotEmpty)
-                          Row(
-                            children: [
-                              Icon(
-                                Icons.location_on,
-                                color: AppColors.primaryColor,
-                                size: 16.sp,
-                              ),
-                              SizedBox(width: 8.w),
-                              Expanded(
-                                child: Text(
-                                  _selectedAddress,
-                                  style: GoogleFonts.raleway(
-                                    fontSize: 12.sp,
-                                    color: Colors.grey[600],
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                      ] else ...[
+          return SingleChildScrollView(
+            padding: EdgeInsets.all(16.w),
+            child: Form(
+              key: _formKey,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Profile Header
+                  Center(
+                    child: Column(
+                      children: [
                         Container(
-                          width: double.infinity,
-                          height: 120.h,
+                          height: 100.h,
+                          width: 100.w,
                           decoration: BoxDecoration(
-                            color: Colors.grey[50],
-                            borderRadius: BorderRadius.circular(12.r),
-                            border: Border.all(
-                              color: Colors.grey[300]!,
-                              style: BorderStyle.solid,
-                            ),
+                            color: AppColors.primaryColor,
+                            borderRadius: BorderRadius.circular(50.r),
                           ),
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(
-                                Icons.add_location_alt,
-                                size: 40.sp,
-                                color: AppColors.primaryColor,
-                              ),
-                              SizedBox(height: 8.h),
-                              Text(
-                                'tap_to_set_office_location'.tr,
-                                style: GoogleFonts.raleway(
-                                  fontSize: 14.sp,
-                                  color: Colors.grey[600],
-                                ),
-                              ),
-                            ],
+                          child: Icon(
+                            Icons.person,
+                            color: Colors.white,
+                            size: 50.sp,
+                          ),
+                        ),
+                        SizedBox(height: 16.h),
+                        Text(
+                          'Dr. ${widget.doctor.name} ${widget.doctor.lastName}',
+                          style: GoogleFonts.raleway(
+                            fontSize: 20.sp,
+                            fontWeight: FontWeight.bold,
+                            color: theme.textTheme.titleLarge?.color,
+                          ),
+                        ),
+                        Text(
+                          widget.doctor.speciality ?? 'specialty_not_specified'.tr,
+                          style: GoogleFonts.raleway(
+                            fontSize: 16.sp,
+                            color: theme.textTheme.bodyMedium?.color,
                           ),
                         ),
                       ],
-
-                      SizedBox(height: 12.h),
-
-                      SizedBox(
-                        width: double.infinity,
-                        child: OutlinedButton.icon(
-                          onPressed: _openLocationPicker,
-                          icon: Icon(
-                            _selectedLocation != null
-                                ? Icons.edit_location
-                                : Icons.location_searching,
-                            size: 20.sp,
-                          ),
-                          label: Text(
-                            _selectedLocation != null
-                                ? 'change_location'.tr
-                                : 'set_office_location'.tr,
-                            style: GoogleFonts.raleway(
-                              fontSize: 14.sp,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                          style: OutlinedButton.styleFrom(
-                            foregroundColor: AppColors.primaryColor,
-                            side: BorderSide(color: AppColors.primaryColor),
-                            padding: EdgeInsets.symmetric(vertical: 12.h),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12.r),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
+                    ),
                   ),
-                ),
-              ),
 
-              SizedBox(height: 32.h),
-            ],
-          ),
-        ),
+                  SizedBox(height: 32.h),
+
+                  // Personal Information Section
+                  _buildSectionTitle('personal_information'.tr),
+                  SizedBox(height: 16.h),
+
+                  _buildTextField(
+                    controller: _nameController,
+                    label: 'first_name_label'.tr,
+                    icon: Icons.person_outline,
+                    validator: (value) {
+                      if (value == null || value.trim().isEmpty) {
+                        return 'first_name_required'.tr;
+                      }
+                      return null;
+                    },
+                  ),
+
+                  SizedBox(height: 16.h),
+
+                  _buildTextField(
+                    controller: _lastNameController,
+                    label: 'name_label'.tr,
+                    icon: Icons.person_outline,
+                    validator: (value) {
+                      if (value == null || value.trim().isEmpty) {
+                        return 'name_required'.tr;
+                      }
+                      return null;
+                    },
+                  ),
+
+                  SizedBox(height: 16.h),
+
+                  _buildTextField(
+                    controller: _phoneController,
+                    label: 'phone_number_label'.tr,
+                    icon: Icons.phone_outlined,
+                    keyboardType: TextInputType.phone,
+                    validator: (value) {
+                      if (value == null || value.trim().isEmpty) {
+                        return 'phone_number_required'.tr;
+                      }
+                      return null;
+                    },
+                  ),
+
+                  SizedBox(height: 24.h),
+
+                  // Professional Information Section
+                  _buildSectionTitle('professional_information'.tr),
+                  SizedBox(height: 16.h),
+
+                  _buildTextField(
+                    controller: _consultationFeeController,
+                    label: 'consultation_fee'.tr,
+                    icon: Icons.attach_money,
+                    keyboardType: TextInputType.number,
+                    validator: (value) {
+                      if (value != null && value.isNotEmpty) {
+                        if (double.tryParse(value) == null ||
+                            double.parse(value) <= 0) {
+                          return 'invalid_consultation_fee'.tr;
+                        }
+                      }
+                      return null;
+                    },
+                  ),
+
+                  SizedBox(height: 16.h),
+
+                  _buildTextField(
+                    controller: _appointmentDurationController,
+                    label: 'appointment_duration'.tr,
+                    icon: Icons.schedule,
+                    keyboardType: TextInputType.number,
+                    validator: (value) {
+                      if (value == null || value.trim().isEmpty) {
+                        return 'appointment_duration_required'.tr;
+                      }
+                      if (int.tryParse(value) == null || int.parse(value) <= 0) {
+                        return 'invalid_appointment_duration'.tr;
+                      }
+                      return null;
+                    },
+                  ),
+
+                  SizedBox(height: 24.h),
+
+                  // Office Location Section
+                  _buildSectionTitle('office_location'.tr),
+                  SizedBox(height: 16.h),
+
+                  Card(
+                    elevation: 2,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16.r),
+                    ),
+                    child: Padding(
+                      padding: EdgeInsets.all(16.w),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          if (_selectedLocation != null) ...[
+                            OfficeLocationMapWidget(
+                              latitude: _selectedLocation!.latitude,
+                              longitude: _selectedLocation!.longitude,
+                              address: _selectedAddress,
+                              height: 200,
+                              isInteractive: true,
+                              onTap: _openLocationPicker,
+                            ),
+                            SizedBox(height: 12.h),
+                            if (_selectedAddress.isNotEmpty)
+                              Row(
+                                children: [
+                                  Icon(
+                                    Icons.location_on,
+                                    color: AppColors.primaryColor,
+                                    size: 16.sp,
+                                  ),
+                                  SizedBox(width: 8.w),
+                                  Expanded(
+                                    child: Text(
+                                      _selectedAddress,
+                                      style: GoogleFonts.raleway(
+                                        fontSize: 12.sp,
+                                        color: Colors.grey[600],
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                          ] else ...[
+                            Container(
+                              width: double.infinity,
+                              height: 120.h,
+                              decoration: BoxDecoration(
+                                color: Colors.grey[50],
+                                borderRadius: BorderRadius.circular(12.r),
+                                border: Border.all(
+                                  color: Colors.grey[300]!,
+                                  style: BorderStyle.solid,
+                                ),
+                              ),
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(
+                                    Icons.add_location_alt,
+                                    size: 40.sp,
+                                    color: AppColors.primaryColor,
+                                  ),
+                                  SizedBox(height: 8.h),
+                                  Text(
+                                    'tap_to_set_office_location'.tr,
+                                    style: GoogleFonts.raleway(
+                                      fontSize: 14.sp,
+                                      color: Colors.grey[600],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+
+                          SizedBox(height: 12.h),
+
+                          SizedBox(
+                            width: double.infinity,
+                            child: OutlinedButton.icon(
+                              onPressed: _openLocationPicker,
+                              icon: Icon(
+                                _selectedLocation != null
+                                    ? Icons.edit_location
+                                    : Icons.location_searching,
+                                size: 20.sp,
+                              ),
+                              label: Text(
+                                _selectedLocation != null
+                                    ? 'change_location'.tr
+                                    : 'set_office_location'.tr,
+                                style: GoogleFonts.raleway(
+                                  fontSize: 14.sp,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              style: OutlinedButton.styleFrom(
+                                foregroundColor: AppColors.primaryColor,
+                                side: BorderSide(color: AppColors.primaryColor),
+                                padding: EdgeInsets.symmetric(vertical: 12.h),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12.r),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+
+                  SizedBox(height: 32.h),
+
+                  // Save Button
+                  Container(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: !isLoading ? _saveProfile : null,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.primaryColor,
+                        foregroundColor: Colors.white,
+                        disabledBackgroundColor: Colors.grey[300],
+                        padding: EdgeInsets.symmetric(vertical: 15.h),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16.r),
+                        ),
+                        elevation: 2,
+                      ),
+                      child: isLoading
+                          ? SizedBox(
+                              height: 20.h,
+                              width: 20.w,
+                              child: CircularProgressIndicator(
+                                color: Colors.white,
+                                strokeWidth: 2,
+                              ),
+                            )
+                          : Text(
+                              'save'.tr,
+                              style: GoogleFonts.raleway(
+                                fontSize: 16.sp,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
       ),
     );
   }

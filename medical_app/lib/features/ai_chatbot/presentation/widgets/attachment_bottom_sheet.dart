@@ -36,7 +36,7 @@ class AttachmentBottomSheet extends StatelessWidget {
             ),
             SizedBox(height: 20.h),
             Text(
-              'ai_select_attachment'.tr,
+              'Sélectionner une pièce jointe',
               style: GoogleFonts.raleway(
                 fontSize: 18.sp,
                 fontWeight: FontWeight.bold,
@@ -50,8 +50,8 @@ class AttachmentBottomSheet extends StatelessWidget {
                 _buildAttachmentOption(
                   context: context,
                   icon: Icons.image,
-                  title: 'ai_select_image'.tr,
-                  subtitle: 'ai_analyze_medical_images'.tr,
+                  title: 'Image',
+                  subtitle: 'Analyser des images médicales',
                   onTap: () {
                     Navigator.pop(context);
                     onImageSelected();
@@ -60,8 +60,8 @@ class AttachmentBottomSheet extends StatelessWidget {
                 _buildAttachmentOption(
                   context: context,
                   icon: Icons.picture_as_pdf,
-                  title: 'ai_select_pdf'.tr,
-                  subtitle: 'ai_analyze_medical_docs'.tr,
+                  title: 'PDF',
+                  subtitle: 'Analyser des documents médicaux',
                   onTap: () {
                     Navigator.pop(context);
                     onPdfSelected();
@@ -136,4 +136,4 @@ class AttachmentBottomSheet extends StatelessWidget {
       ),
     );
   }
-} 
+}

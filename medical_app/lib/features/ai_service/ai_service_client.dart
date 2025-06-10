@@ -13,10 +13,10 @@ class AiServiceClient {
   /// Check if the AI service is available
   Future<bool> isServiceAvailable() async {
     try {
-      final response = await http
-          .get(Uri.parse('$baseUrl/health'))
-          .timeout(timeoutDuration);
-
+      final response = await http.get(
+        Uri.parse('$baseUrl/health'),
+      ).timeout(timeoutDuration);
+      
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         return data['status'] == 'ok';
@@ -31,13 +31,11 @@ class AiServiceClient {
   /// Send a text message to the AI service and get a response
   Future<String> sendTextMessage(String message) async {
     try {
-      final response = await http
-          .post(
-            Uri.parse('$baseUrl/chat'),
-            headers: {'Content-Type': 'application/json'},
-            body: jsonEncode({'message': message}),
-          )
-          .timeout(timeoutDuration);
+      final response = await http.post(
+        Uri.parse('$baseUrl/chat'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'message': message}),
+      ).timeout(timeoutDuration);
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
@@ -48,9 +46,7 @@ class AiServiceClient {
       }
     } catch (e) {
       if (e is SocketException) {
-        throw Exception(
-          'Cannot connect to AI service. Please check if the service is running.',
-        );
+        throw Exception('Cannot connect to AI service. Please check if the service is running.');
       }
       throw Exception('Error communicating with AI service: $e');
     }
@@ -69,11 +65,8 @@ class AiServiceClient {
       final fileStream = http.ByteStream(imageFile.openRead());
       final fileLength = await imageFile.length();
       final filename = path.basename(imageFile.path);
-      final fileExtension = path
-          .extension(filename)
-          .toLowerCase()
-          .replaceAll('.', '');
-
+      final fileExtension = path.extension(filename).toLowerCase().replaceAll('.', '');
+      
       final multipartFile = http.MultipartFile(
         'image',
         fileStream,
@@ -81,17 +74,17 @@ class AiServiceClient {
         filename: filename,
         contentType: MediaType('image', fileExtension),
       );
-
+      
       request.files.add(multipartFile);
-
+      
       // Add form fields
       request.fields['task_prompt'] = '<MEDICAL_ANALYSIS>';
       request.fields['text_input'] = prompt;
-
+      
       // Send the request
       final streamedResponse = await request.send().timeout(timeoutDuration);
       final response = await http.Response.fromStream(streamedResponse);
-
+      
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         return data['result'] ?? 'No analysis result from AI service';
@@ -101,9 +94,7 @@ class AiServiceClient {
       }
     } catch (e) {
       if (e is SocketException) {
-        throw Exception(
-          'Cannot connect to AI service. Please check if the service is running.',
-        );
+        throw Exception('Cannot connect to AI service. Please check if the service is running.');
       }
       throw Exception('Error analyzing image: $e');
     }
@@ -122,7 +113,7 @@ class AiServiceClient {
       final fileStream = http.ByteStream(pdfFile.openRead());
       final fileLength = await pdfFile.length();
       final filename = path.basename(pdfFile.path);
-
+      
       final multipartFile = http.MultipartFile(
         'pdf',
         fileStream,
@@ -130,13 +121,13 @@ class AiServiceClient {
         filename: filename,
         contentType: MediaType('application', 'pdf'),
       );
-
+      
       request.files.add(multipartFile);
-
+      
       // Send the request
       final streamedResponse = await request.send().timeout(timeoutDuration);
       final response = await http.Response.fromStream(streamedResponse);
-
+      
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         return data['summary'] ?? 'No summary from AI service';
@@ -146,11 +137,9 @@ class AiServiceClient {
       }
     } catch (e) {
       if (e is SocketException) {
-        throw Exception(
-          'Cannot connect to AI service. Please check if the service is running.',
-        );
+        throw Exception('Cannot connect to AI service. Please check if the service is running.');
       }
       throw Exception('Error analyzing PDF: $e');
     }
   }
-}
+} 

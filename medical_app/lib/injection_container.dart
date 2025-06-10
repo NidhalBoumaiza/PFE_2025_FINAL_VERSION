@@ -107,8 +107,8 @@ import 'package:medical_app/features/ai_chatbot/domain/usecases/analyze_image_us
 import 'package:medical_app/features/ai_chatbot/domain/usecases/analyze_pdf_usecase.dart';
 import 'package:medical_app/features/ai_chatbot/domain/usecases/send_text_message_usecase.dart';
 import 'package:medical_app/features/ai_chatbot/presentation/bloc/ai_chatbot_bloc.dart';
+import 'package:medical_app/features/ai_chatbot/data/datasources/ai_chatbot_remote_datasource.dart';
 import 'package:dio/dio.dart';
-import 'package:medical_app/features/ai_service/ai_service_client.dart';
 
 final sl = GetIt.instance;
 
@@ -117,21 +117,21 @@ Future<void> init() async {
   sl.registerFactory(() => ThemeCubit());
   sl.registerFactory(() => LoginBloc(loginUseCase: sl()));
   sl.registerFactory(
-    () => SignupBloc(createAccountUseCase: sl(), profilePictureService: sl()),
+        () => SignupBloc(createAccountUseCase: sl(), profilePictureService: sl()),
   );
   sl.registerFactory(() => UpdateUserBloc(updateUserUseCase: sl()));
   sl.registerFactory(() => ToggleCubit());
   sl.registerFactory(
-    () => ForgotPasswordBloc(sendVerificationCodeUseCase: sl()),
+        () => ForgotPasswordBloc(sendVerificationCodeUseCase: sl()),
   );
   sl.registerFactory(() => VerifyCodeBloc(verifyCodeUseCase: sl()));
   sl.registerFactory(() => ResetPasswordBloc(changePasswordUseCase: sl()));
   sl.registerFactory(
-    () => UpdatePasswordBloc(updatePasswordDirectUseCase: sl()),
+        () => UpdatePasswordBloc(updatePasswordDirectUseCase: sl()),
   );
   sl.registerFactory(() => DeleteAccountBloc(deleteAccountUseCase: sl()));
   sl.registerFactory(
-    () => RendezVousBloc(
+        () => RendezVousBloc(
       fetchRendezVousUseCase: sl(),
       updateRendezVousStatusUseCase: sl(),
       createRendezVousUseCase: sl(),
@@ -142,20 +142,20 @@ Future<void> init() async {
   );
   sl.registerFactory(() => ConversationsBloc(getConversationsUseCase: sl()));
   sl.registerFactory(
-    () => MessagerieBloc(
+        () => MessagerieBloc(
       sendMessageUseCase: sl(),
       getMessagesUseCase: sl(),
       getMessagesStreamUseCase: sl(),
     ),
   );
   sl.registerFactory(
-    () => DashboardBloc(
+        () => DashboardBloc(
       getDoctorDashboardStatsUseCase: sl(),
       getUpcomingAppointmentsUseCase: sl(),
     ),
   );
   sl.registerFactory(
-    () => PrescriptionBloc(
+        () => PrescriptionBloc(
       createPrescriptionUseCase: sl(),
       editPrescriptionUseCase: sl(),
       getPatientPrescriptionsUseCase: sl(),
@@ -167,7 +167,7 @@ Future<void> init() async {
     ),
   );
   sl.registerFactory(
-    () => NotificationBloc(
+        () => NotificationBloc(
       getNotificationsUseCase: sl(),
       sendNotificationUseCase: sl(),
       markNotificationAsReadUseCase: sl(),
@@ -180,7 +180,7 @@ Future<void> init() async {
     ),
   );
   sl.registerFactory(
-    () => RatingBloc(
+        () => RatingBloc(
       submitDoctorRatingUseCase: sl(),
       hasPatientRatedAppointmentUseCase: sl(),
       getDoctorRatingsUseCase: sl(),
@@ -188,7 +188,7 @@ Future<void> init() async {
     ),
   );
   sl.registerFactory(
-    () => DossierMedicalBloc(
+        () => DossierMedicalBloc(
       getDossierMedical: sl(),
       hasDossierMedical: sl(),
       addFileToDossier: sl(),
@@ -198,7 +198,7 @@ Future<void> init() async {
     ),
   );
   sl.registerFactory(
-    () => AiChatbotBloc(
+        () => AiChatbotBloc(
       sendTextMessageUseCase: sl(),
       analyzeImageUseCase: sl(),
       analyzePdfUseCase: sl(),
@@ -258,41 +258,41 @@ Future<void> init() async {
 
   // Repositories
   sl.registerLazySingleton<AuthRepository>(
-    () => AuthRepositoryImpl(remoteDataSource: sl(), networkInfo: sl()),
+        () => AuthRepositoryImpl(remoteDataSource: sl(), networkInfo: sl()),
   );
   sl.registerLazySingleton<RendezVousRepository>(
-    () => RendezVousRepositoryImpl(
+        () => RendezVousRepositoryImpl(
       remoteDataSource: sl(),
       localDataSource: sl(),
       networkInfo: sl(),
     ),
   );
   sl.registerLazySingleton<MessagingRepository>(
-    () => MessagingRepositoryImpl(remoteDataSource: sl(), networkInfo: sl()),
+        () => MessagingRepositoryImpl(remoteDataSource: sl(), networkInfo: sl()),
   );
   sl.registerLazySingleton<DashboardRepository>(
-    () => DashboardRepositoryImpl(remoteDataSource: sl(), networkInfo: sl()),
+        () => DashboardRepositoryImpl(remoteDataSource: sl(), networkInfo: sl()),
   );
   sl.registerLazySingleton<PrescriptionRepository>(
-    () => PrescriptionRepositoryImpl(remoteDataSource: sl(), networkInfo: sl()),
+        () => PrescriptionRepositoryImpl(remoteDataSource: sl(), networkInfo: sl()),
   );
   sl.registerLazySingleton<NotificationRepository>(
-    () => NotificationRepositoryImpl(remoteDataSource: sl(), networkInfo: sl()),
+        () => NotificationRepositoryImpl(remoteDataSource: sl(), networkInfo: sl()),
   );
   sl.registerLazySingleton<RatingRepository>(
-    () => RatingRepositoryImpl(remoteDataSource: sl(), networkInfo: sl()),
+        () => RatingRepositoryImpl(remoteDataSource: sl(), networkInfo: sl()),
   );
   sl.registerLazySingleton<DossierMedicalRepository>(
-    () =>
+        () =>
         DossierMedicalRepositoryImpl(remoteDataSource: sl(), networkInfo: sl()),
   );
   sl.registerLazySingleton<AiChatbotRepository>(
-    () => AiChatbotRepositoryImpl(aiServiceClient: sl()),
+        () => AiChatbotRepositoryImpl(remoteDataSource: sl()),
   );
 
   // Data Sources
   sl.registerLazySingleton<AuthRemoteDataSource>(
-    () => AuthRemoteDataSourceImpl(
+        () => AuthRemoteDataSourceImpl(
       firebaseAuth: sl(),
       firestore: sl(),
       googleSignIn: sl(),
@@ -300,60 +300,63 @@ Future<void> init() async {
     ),
   );
   sl.registerLazySingleton<AuthLocalDataSource>(
-    () => AuthLocalDataSourceImpl(sharedPreferences: sl()),
+        () => AuthLocalDataSourceImpl(sharedPreferences: sl()),
   );
   sl.registerLazySingleton<ProfilePictureService>(
-    () => ProfilePictureServiceImpl(storage: sl(), firestore: sl()),
+        () => ProfilePictureServiceImpl(storage: sl(), firestore: sl()),
   );
   sl.registerLazySingleton<RendezVousRemoteDataSource>(
-    () => RendezVousRemoteDataSourceImpl(
+        () => RendezVousRemoteDataSourceImpl(
       firestore: sl(),
       localDataSource: sl(),
       notificationRemoteDataSource: sl(),
     ),
   );
   sl.registerLazySingleton<RendezVousLocalDataSource>(
-    () => RendezVousLocalDataSourceImpl(sharedPreferences: sl()),
+        () => RendezVousLocalDataSourceImpl(sharedPreferences: sl()),
   );
   sl.registerLazySingleton<MessagingRemoteDataSource>(
-    () => MessagingRemoteDataSourceImpl(
+        () => MessagingRemoteDataSourceImpl(
       firestore: sl(),
       storage: sl(),
       notificationRemoteDataSource: sl(),
     ),
   );
   sl.registerLazySingleton<MessagingLocalDataSource>(
-    () => MessagingLocalDataSourceImpl(),
+        () => MessagingLocalDataSourceImpl(),
   );
   sl.registerLazySingleton<DashboardRemoteDataSource>(
-    () => DashboardRemoteDataSourceImpl(firestore: sl()),
+        () => DashboardRemoteDataSourceImpl(firestore: sl()),
   );
   sl.registerLazySingleton<PrescriptionRemoteDataSource>(
-    () => PrescriptionRemoteDataSourceImpl(
+        () => PrescriptionRemoteDataSourceImpl(
       firestore: sl(),
       notificationRemoteDataSource: sl(),
     ),
   );
   sl.registerLazySingleton<NotificationRemoteDataSource>(
-    () => NotificationRemoteDataSourceImpl(
+        () => NotificationRemoteDataSourceImpl(
       firestore: sl(),
       firebaseMessaging: sl(),
       flutterLocalNotificationsPlugin: sl(),
     ),
   );
   sl.registerLazySingleton<RatingRemoteDataSource>(
-    () => RatingRemoteDataSourceImpl(
+        () => RatingRemoteDataSourceImpl(
       firestore: sl(),
       notificationRemoteDataSource: sl(),
     ),
   );
   sl.registerLazySingleton<DossierMedicalRemoteDataSource>(
-    () => DossierMedicalRemoteDataSourceImpl(
+        () => DossierMedicalRemoteDataSourceImpl(
       client: sl(),
       storage: sl(),
       firestore: sl(),
       notificationRemoteDataSource: sl(),
     ),
+  );
+  sl.registerLazySingleton<AiChatbotRemoteDataSource>(
+        () => AiChatbotRemoteDataSourceImpl(dio: sl()),
   );
 
   // Core
@@ -367,15 +370,10 @@ Future<void> init() async {
   sl.registerLazySingleton(() => FirebaseStorage.instance);
   sl.registerLazySingleton(() => GoogleSignIn());
   sl.registerLazySingleton<InternetConnectionChecker>(
-    () => InternetConnectionChecker.instance,
+        () => InternetConnectionChecker.instance,
   );
   sl.registerLazySingleton(() => FirebaseMessaging.instance);
   sl.registerLazySingleton(() => FlutterLocalNotificationsPlugin());
   sl.registerLazySingleton(() => http.Client());
   sl.registerLazySingleton(() => Dio());
-
-  // AI Service
-  sl.registerLazySingleton(() => AiServiceClient(
-        baseUrl: 'http://192.168.36.221:5000', // Updated IP address for physical device
-      ));
 }

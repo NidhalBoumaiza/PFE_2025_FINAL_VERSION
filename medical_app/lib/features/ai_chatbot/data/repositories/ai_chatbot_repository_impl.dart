@@ -1,16 +1,16 @@
 import 'dart:io';
-import 'package:medical_app/features/ai_service/ai_service_client.dart';
+import '../datasources/ai_chatbot_remote_datasource.dart';
 import '../../domain/repositories/ai_chatbot_repository.dart';
 
 class AiChatbotRepositoryImpl implements AiChatbotRepository {
-  final AiServiceClient aiServiceClient;
+  final AiChatbotRemoteDataSource remoteDataSource;
 
-  AiChatbotRepositoryImpl({required this.aiServiceClient});
+  AiChatbotRepositoryImpl({required this.remoteDataSource});
 
   @override
   Future<String> analyzeImage(File imageFile, String prompt) async {
     try {
-      return await aiServiceClient.analyzeImage(imageFile, prompt);
+      return await remoteDataSource.analyzeImage(imageFile, prompt);
     } catch (e) {
       throw Exception('Failed to analyze image: $e');
     }
@@ -19,7 +19,7 @@ class AiChatbotRepositoryImpl implements AiChatbotRepository {
   @override
   Future<String> analyzePdf(File pdfFile) async {
     try {
-      return await aiServiceClient.analyzePdf(pdfFile);
+      return await remoteDataSource.analyzePdf(pdfFile);
     } catch (e) {
       throw Exception('Failed to analyze PDF: $e');
     }
@@ -28,9 +28,9 @@ class AiChatbotRepositoryImpl implements AiChatbotRepository {
   @override
   Future<String> sendTextMessage(String message) async {
     try {
-      return await aiServiceClient.sendTextMessage(message);
+      return await remoteDataSource.sendTextMessage(message);
     } catch (e) {
       throw Exception('Failed to send message: $e');
     }
   }
-} 
+}

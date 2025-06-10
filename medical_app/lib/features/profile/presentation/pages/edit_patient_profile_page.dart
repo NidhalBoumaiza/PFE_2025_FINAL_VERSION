@@ -3,10 +3,12 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../core/utils/app_colors.dart';
-import '../../../authentication/domain/entities/user_entity.dart';
 import '../../../authentication/domain/entities/patient_entity.dart';
+import '../../../authentication/data/models/patient_model.dart';
+import 'blocs/BLoC update profile/update_user_bloc.dart';
 
 class EditPatientProfilePage extends StatefulWidget {
   final PatientEntity patient;
@@ -200,20 +202,6 @@ class _EditPatientProfilePageState extends State<EditPatientProfilePage> {
     if (!_formKey.currentState!.validate()) return;
 
     try {
-      // Show loading dialog
-      showDialog(
-        context: context,
-        barrierDismissible: false,
-        builder:
-            (context) => Center(
-              child: CircularProgressIndicator(
-                valueColor: AlwaysStoppedAnimation<Color>(
-                  AppColors.primaryColor,
-                ),
-              ),
-            ),
-      );
-
       // Parse date
       DateTime? dateOfBirth;
       if (_dateOfBirthController.text.isNotEmpty) {
@@ -245,65 +233,56 @@ class _EditPatientProfilePageState extends State<EditPatientProfilePage> {
                   .toList()
               : null;
 
-      // Create updated patient entity
-      final updatedPatient = PatientEntity(
+      // Create emergency contact map
+      Map<String, String?>? emergencyContact;
+      if (_emergencyNameController.text.trim().isNotEmpty ||
+          _emergencyRelationController.text.trim().isNotEmpty ||
+          _emergencyPhoneController.text.trim().isNotEmpty) {
+        emergencyContact = {
+          'name': _emergencyNameController.text.trim().isNotEmpty
+              ? _emergencyNameController.text.trim()
+              : null,
+          'relationship': _emergencyRelationController.text.trim().isNotEmpty
+              ? _emergencyRelationController.text.trim()
+              : null,
+          'phoneNumber': _emergencyPhoneController.text.trim().isNotEmpty
+              ? _emergencyPhoneController.text.trim()
+              : null,
+        };
+      }
+
+      // Create updated patient model using PatientModel to ensure all fields are preserved
+      final updatedPatient = PatientModel(
         id: widget.patient.id,
         name: _firstNameController.text.trim(),
         lastName: _lastNameController.text.trim(),
         email: widget.patient.email,
+        role: widget.patient.role,
+        gender: _selectedGender ?? widget.patient.gender,
         phoneNumber: _phoneController.text.trim(),
         dateOfBirth: dateOfBirth,
-        gender: _selectedGender ?? '',
+        antecedent: widget.patient.antecedent ?? '',
         bloodType: _selectedBloodType,
-        height:
-            _heightController.text.isNotEmpty
-                ? double.tryParse(_heightController.text)
-                : null,
-        weight:
-            _weightController.text.isNotEmpty
-                ? double.tryParse(_weightController.text)
-                : null,
-        allergies: allergies,
-        chronicDiseases: chronicDiseases,
-        emergencyContact: {
-          'name':
-              _emergencyNameController.text.trim().isNotEmpty
-                  ? _emergencyNameController.text.trim()
-                  : null,
-          'relationship':
-              _emergencyRelationController.text.trim().isNotEmpty
-                  ? _emergencyRelationController.text.trim()
-                  : null,
-          'phoneNumber':
-              _emergencyPhoneController.text.trim().isNotEmpty
-                  ? _emergencyPhoneController.text.trim()
-                  : null,
-        },
-        antecedent: widget.patient.antecedent,
-        role: widget.patient.role,
+        height: _heightController.text.isNotEmpty
+            ? double.tryParse(_heightController.text)
+            : null,
+        weight: _weightController.text.isNotEmpty
+            ? double.tryParse(_weightController.text)
+            : null,
+        allergies: allergies ?? [],
+        chronicDiseases: chronicDiseases ?? [],
+        emergencyContact: emergencyContact,
+        address: widget.patient.address,
+        location: widget.patient.location,
+        accountStatus: widget.patient.accountStatus,
+        verificationCode: widget.patient.verificationCode,
+        validationCodeExpiresAt: widget.patient.validationCodeExpiresAt,
+        fcmToken: widget.patient.fcmToken,
       );
 
-      // TODO: Implement actual save logic with your repository/bloc
-      // await _profileRepository.updatePatientProfile(updatedPatient);
-
-      // Close loading dialog
-      Navigator.of(context).pop();
-
-      // Show success message
-      Get.snackbar(
-        'success'.tr,
-        'profile_updated_successfully'.tr,
-        backgroundColor: Colors.green,
-        colorText: Colors.white,
-        snackPosition: SnackPosition.TOP,
-      );
-
-      // Return to previous screen
-      Navigator.of(context).pop(updatedPatient);
+      // Dispatch update event to BLoC
+      context.read<UpdateUserBloc>().add(UpdateUserEvent(updatedPatient));
     } catch (e) {
-      // Close loading dialog
-      Navigator.of(context).pop();
-
       // Show error message
       Get.snackbar(
         'error'.tr,
@@ -334,207 +313,246 @@ class _EditPatientProfilePageState extends State<EditPatientProfilePage> {
           onPressed: () => Navigator.of(context).pop(),
         ),
       ),
-      body: Form(
-        key: _formKey,
-        child: SingleChildScrollView(
-          padding: EdgeInsets.all(20.w),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Personal Information Section
-              _buildSectionHeader('personal_information'.tr, Icons.person),
-              SizedBox(height: 20.h),
+      body: BlocConsumer<UpdateUserBloc, UpdateUserState>(
+        listener: (context, state) {
+          if (state is UpdateUserSuccess) {
+            // Show success message
+            Get.snackbar(
+              'success'.tr,
+              'profile_updated_successfully'.tr,
+              backgroundColor: Colors.green,
+              colorText: Colors.white,
+              snackPosition: SnackPosition.TOP,
+            );
 
-              Row(
+            // Return to previous screen with updated patient data
+            Navigator.of(context).pop(state.user);
+          } else if (state is UpdateUserFailure) {
+            // Show error message
+            Get.snackbar(
+              'error'.tr,
+              state.message,
+              backgroundColor: Colors.red,
+              colorText: Colors.white,
+              snackPosition: SnackPosition.TOP,
+            );
+          }
+        },
+        builder: (context, state) {
+          final isLoading = state is UpdateUserLoading;
+
+          return Form(
+            key: _formKey,
+            child: SingleChildScrollView(
+              padding: EdgeInsets.all(20.w),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Expanded(
-                    child: _buildTextField(
-                      controller: _firstNameController,
-                      label: 'first_name_label'.tr,
-                      icon: Icons.person_outline,
-                      validator:
-                          (value) =>
-                              value!.isEmpty ? 'first_name_required'.tr : null,
+                  // Personal Information Section
+                  _buildSectionHeader('personal_information'.tr, Icons.person),
+                  SizedBox(height: 20.h),
+
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _buildTextField(
+                          controller: _firstNameController,
+                          label: 'first_name_label'.tr,
+                          icon: Icons.person_outline,
+                          validator:
+                              (value) =>
+                                  value!.isEmpty ? 'first_name_required'.tr : null,
+                        ),
+                      ),
+                      SizedBox(width: 16.w),
+                      Expanded(
+                        child: _buildTextField(
+                          controller: _lastNameController,
+                          label: 'name_label'.tr,
+                          icon: Icons.person_outline,
+                          validator:
+                              (value) => value!.isEmpty ? 'name_required'.tr : null,
+                        ),
+                      ),
+                    ],
+                  ),
+
+                  SizedBox(height: 16.h),
+                  _buildTextField(
+                    controller: _phoneController,
+                    label: 'phone_number_label'.tr,
+                    icon: Icons.phone,
+                    keyboardType: TextInputType.phone,
+                    validator:
+                        (value) =>
+                            value!.isEmpty ? 'phone_number_required'.tr : null,
+                  ),
+
+                  SizedBox(height: 16.h),
+                  _buildTextField(
+                    controller: _dateOfBirthController,
+                    label: 'date_of_birth_label'.tr,
+                    icon: Icons.calendar_today,
+                    readOnly: true,
+                    onTap: _selectDate,
+                    validator:
+                        (value) =>
+                            value!.isEmpty ? 'date_of_birth_required'.tr : null,
+                  ),
+
+                  SizedBox(height: 16.h),
+                  _buildDropdownField(
+                    value: _selectedGender,
+                    label: 'gender'.tr,
+                    icon: Icons.wc,
+                    items: _genders,
+                    onChanged: (value) {
+                      setState(() {
+                        _selectedGender = value;
+                        _hasChanges = true;
+                      });
+                    },
+                  ),
+
+                  // Medical Information Section
+                  SizedBox(height: 30.h),
+                  _buildSectionHeader(
+                    'medical_information'.tr,
+                    Icons.medical_services,
+                  ),
+                  SizedBox(height: 20.h),
+
+                  _buildDropdownField(
+                    value: _selectedBloodType,
+                    label: 'blood_type'.tr,
+                    icon: Icons.bloodtype,
+                    items: _bloodTypes,
+                    onChanged: (value) {
+                      setState(() {
+                        _selectedBloodType = value;
+                        _hasChanges = true;
+                      });
+                    },
+                  ),
+
+                  SizedBox(height: 16.h),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _buildTextField(
+                          controller: _heightController,
+                          label: 'height'.tr,
+                          icon: Icons.height,
+                          keyboardType: TextInputType.number,
+                          suffix: Text(
+                            'cm',
+                            style: GoogleFonts.raleway(color: Colors.grey[600]),
+                          ),
+                        ),
+                      ),
+                      SizedBox(width: 16.w),
+                      Expanded(
+                        child: _buildTextField(
+                          controller: _weightController,
+                          label: 'weight'.tr,
+                          icon: Icons.monitor_weight,
+                          keyboardType: TextInputType.number,
+                          suffix: Text(
+                            'kg',
+                            style: GoogleFonts.raleway(color: Colors.grey[600]),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+
+                  SizedBox(height: 16.h),
+                  _buildTextField(
+                    controller: _allergiesController,
+                    label: 'allergies'.tr,
+                    icon: Icons.warning,
+                    hintText: 'enter_allergies_hint'.tr,
+                    maxLines: 2,
+                  ),
+
+                  SizedBox(height: 16.h),
+                  _buildTextField(
+                    controller: _chronicDiseasesController,
+                    label: 'chronic_diseases'.tr,
+                    icon: Icons.local_hospital,
+                    hintText: 'enter_chronic_diseases_hint'.tr,
+                    maxLines: 2,
+                  ),
+
+                  // Emergency Contact Section
+                  SizedBox(height: 30.h),
+                  _buildSectionHeader('emergency_contact'.tr, Icons.emergency),
+                  SizedBox(height: 20.h),
+
+                  _buildTextField(
+                    controller: _emergencyNameController,
+                    label: 'emergency_contact_name'.tr,
+                    icon: Icons.person,
+                    hintText: 'enter_emergency_name_hint'.tr,
+                  ),
+
+                  SizedBox(height: 16.h),
+                  _buildTextField(
+                    controller: _emergencyRelationController,
+                    label: 'emergency_relationship'.tr,
+                    icon: Icons.people,
+                    hintText: 'enter_emergency_relationship_hint'.tr,
+                  ),
+
+                  SizedBox(height: 16.h),
+                  _buildTextField(
+                    controller: _emergencyPhoneController,
+                    label: 'emergency_phone'.tr,
+                    icon: Icons.phone,
+                    keyboardType: TextInputType.phone,
+                    hintText: 'enter_emergency_phone_hint'.tr,
+                  ),
+
+                  // Save Button
+                  SizedBox(height: 40.h),
+                  Container(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: (_hasChanges && !isLoading) ? _saveChanges : null,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.primaryColor,
+                        foregroundColor: Colors.white,
+                        disabledBackgroundColor: Colors.grey[300],
+                        padding: EdgeInsets.symmetric(vertical: 15.h),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16.r),
+                        ),
+                        elevation: 2,
+                      ),
+                      child: isLoading
+                          ? SizedBox(
+                              height: 20.h,
+                              width: 20.w,
+                              child: CircularProgressIndicator(
+                                color: Colors.white,
+                                strokeWidth: 2,
+                              ),
+                            )
+                          : Text(
+                              'save'.tr,
+                              style: GoogleFonts.raleway(
+                                fontSize: 16.sp,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
                     ),
                   ),
-                  SizedBox(width: 16.w),
-                  Expanded(
-                    child: _buildTextField(
-                      controller: _lastNameController,
-                      label: 'name_label'.tr,
-                      icon: Icons.person_outline,
-                      validator:
-                          (value) => value!.isEmpty ? 'name_required'.tr : null,
-                    ),
-                  ),
+                  SizedBox(height: 20.h),
                 ],
               ),
-
-              SizedBox(height: 16.h),
-              _buildTextField(
-                controller: _phoneController,
-                label: 'phone_number_label'.tr,
-                icon: Icons.phone,
-                keyboardType: TextInputType.phone,
-                validator:
-                    (value) =>
-                        value!.isEmpty ? 'phone_number_required'.tr : null,
-              ),
-
-              SizedBox(height: 16.h),
-              _buildTextField(
-                controller: _dateOfBirthController,
-                label: 'date_of_birth_label'.tr,
-                icon: Icons.calendar_today,
-                readOnly: true,
-                onTap: _selectDate,
-                validator:
-                    (value) =>
-                        value!.isEmpty ? 'date_of_birth_required'.tr : null,
-              ),
-
-              SizedBox(height: 16.h),
-              _buildDropdownField(
-                value: _selectedGender,
-                label: 'gender'.tr,
-                icon: Icons.wc,
-                items: _genders,
-                onChanged: (value) {
-                  setState(() {
-                    _selectedGender = value;
-                    _hasChanges = true;
-                  });
-                },
-              ),
-
-              // Medical Information Section
-              SizedBox(height: 30.h),
-              _buildSectionHeader(
-                'medical_information'.tr,
-                Icons.medical_services,
-              ),
-              SizedBox(height: 20.h),
-
-              _buildDropdownField(
-                value: _selectedBloodType,
-                label: 'blood_type'.tr,
-                icon: Icons.bloodtype,
-                items: _bloodTypes,
-                onChanged: (value) {
-                  setState(() {
-                    _selectedBloodType = value;
-                    _hasChanges = true;
-                  });
-                },
-              ),
-
-              SizedBox(height: 16.h),
-              Row(
-                children: [
-                  Expanded(
-                    child: _buildTextField(
-                      controller: _heightController,
-                      label: 'height'.tr,
-                      icon: Icons.height,
-                      keyboardType: TextInputType.number,
-                      suffix: Text(
-                        'cm',
-                        style: GoogleFonts.raleway(color: Colors.grey[600]),
-                      ),
-                    ),
-                  ),
-                  SizedBox(width: 16.w),
-                  Expanded(
-                    child: _buildTextField(
-                      controller: _weightController,
-                      label: 'weight'.tr,
-                      icon: Icons.monitor_weight,
-                      keyboardType: TextInputType.number,
-                      suffix: Text(
-                        'kg',
-                        style: GoogleFonts.raleway(color: Colors.grey[600]),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-
-              SizedBox(height: 16.h),
-              _buildTextField(
-                controller: _allergiesController,
-                label: 'allergies'.tr,
-                icon: Icons.warning,
-                hintText: 'enter_allergies_hint'.tr,
-                maxLines: 2,
-              ),
-
-              SizedBox(height: 16.h),
-              _buildTextField(
-                controller: _chronicDiseasesController,
-                label: 'chronic_diseases'.tr,
-                icon: Icons.local_hospital,
-                hintText: 'enter_chronic_diseases_hint'.tr,
-                maxLines: 2,
-              ),
-
-              // Emergency Contact Section
-              SizedBox(height: 30.h),
-              _buildSectionHeader('emergency_contact'.tr, Icons.emergency),
-              SizedBox(height: 20.h),
-
-              _buildTextField(
-                controller: _emergencyNameController,
-                label: 'emergency_contact_name'.tr,
-                icon: Icons.person,
-                hintText: 'enter_emergency_name_hint'.tr,
-              ),
-
-              SizedBox(height: 16.h),
-              _buildTextField(
-                controller: _emergencyRelationController,
-                label: 'emergency_relationship'.tr,
-                icon: Icons.people,
-                hintText: 'enter_emergency_relationship_hint'.tr,
-              ),
-
-              SizedBox(height: 16.h),
-              _buildTextField(
-                controller: _emergencyPhoneController,
-                label: 'emergency_phone'.tr,
-                icon: Icons.phone,
-                keyboardType: TextInputType.phone,
-                hintText: 'enter_emergency_phone_hint'.tr,
-              ),
-
-              // Save Button
-              SizedBox(height: 40.h),
-              Container(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: _hasChanges ? _saveChanges : null,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primaryColor,
-                    foregroundColor: Colors.white,
-                    disabledBackgroundColor: Colors.grey[300],
-                    padding: EdgeInsets.symmetric(vertical: 15.h),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16.r),
-                    ),
-                    elevation: 2,
-                  ),
-                  child: Text(
-                    'save'.tr,
-                    style: GoogleFonts.raleway(
-                      fontSize: 16.sp,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-              ),
-              SizedBox(height: 20.h),
-            ],
-          ),
-        ),
+            ),
+          );
+        },
       ),
     );
   }
