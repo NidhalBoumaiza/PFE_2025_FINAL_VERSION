@@ -1,7 +1,7 @@
 const catchAsync = require("../utils/catchAsync");
 const AppError = require("../utils/appError");
 const sendEmail = require("../utils/email");
-const admin = require("firebase-admin");
+const { admin, isFirebaseInitialized } = require("../utils/firebase");
 //-----------------------------------------
 
 //-----------------------------------------
@@ -78,8 +78,20 @@ exports.resetPasswordDirect = catchAsync(async (req, res, next) => {
     );
   }
 
+  // Check if Firebase is properly initialized
+  if (!isFirebaseInitialized()) {
+    console.error("Firebase Admin SDK is not initialized");
+    return next(
+      new AppError(
+        "Service d'authentification non disponible. Veuillez réessayer plus tard.",
+        500
+      )
+    );
+  }
+
   try {
     console.log(`Password reset request for email: ${email}`);
+    console.log(`Firebase Admin SDK initialized: ${isFirebaseInitialized()}`);
 
     // 1. Verify the verification code in Firestore
     const normalizedEmail = email.toLowerCase().trim();
@@ -95,18 +107,28 @@ exports.resetPasswordDirect = catchAsync(async (req, res, next) => {
         `Searching in ${collection} collection for email: ${normalizedEmail}`
       );
 
-      const snapshot = await admin
-        .firestore()
-        .collection(collection)
-        .where("email", "==", normalizedEmail)
-        .get();
+      try {
+        const snapshot = await admin
+          .firestore()
+          .collection(collection)
+          .where("email", "==", normalizedEmail)
+          .get();
 
-      if (!snapshot.empty) {
-        collectionName = collection;
-        userId = snapshot.docs[0].id;
-        userData = snapshot.docs[0].data();
-        console.log(`User found in ${collection} with ID: ${userId}`);
-        break;
+        if (!snapshot.empty) {
+          collectionName = collection;
+          userId = snapshot.docs[0].id;
+          userData = snapshot.docs[0].data();
+          console.log(`User found in ${collection} with ID: ${userId}`);
+          break;
+        }
+      } catch (firestoreError) {
+        console.error(`Error searching in ${collection}:`, firestoreError.message);
+        return next(
+          new AppError(
+            "Erreur lors de la recherche de l'utilisateur",
+            500
+          )
+        );
       }
     }
 

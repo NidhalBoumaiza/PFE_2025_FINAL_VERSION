@@ -6,13 +6,48 @@ import 'package:http_parser/http_parser.dart';
 abstract class AiChatbotRemoteDataSource {
   Future<String> analyzeImage(File imageFile, String taskPrompt);
   Future<String> analyzePdf(File pdfFile);
+  Future<String> sendTextMessage(String message);
 }
 
 class AiChatbotRemoteDataSourceImpl implements AiChatbotRemoteDataSource {
   final Dio dio;
-  static const String baseUrl = 'http://localhost:5000';
+  static const String baseUrl = 'http://10.0.2.2:5000';
 
   AiChatbotRemoteDataSourceImpl({required this.dio});
+
+  @override
+  Future<String> sendTextMessage(String message) async {
+    try {
+      final response = await dio.post(
+        '$baseUrl/chat',
+        data: {'message': message},
+        options: Options(headers: {'Content-Type': 'application/json'}),
+      );
+
+      if (response.statusCode == 200) {
+        final responseData = response.data;
+        if (responseData is Map<String, dynamic>) {
+          return responseData['response'] ?? 'Message envoyé avec succès';
+        } else if (responseData is String) {
+          return responseData;
+        } else {
+          return 'Message envoyé avec succès';
+        }
+      } else {
+        throw Exception('Failed to send message: ${response.statusCode}');
+      }
+    } on DioException catch (e) {
+      if (e.response != null) {
+        throw Exception(
+          'Server error: ${e.response?.statusCode} - ${e.response?.data}',
+        );
+      } else {
+        throw Exception('Network error: ${e.message}');
+      }
+    } catch (e) {
+      throw Exception('Unexpected error: $e');
+    }
+  }
 
   @override
   Future<String> analyzeImage(File imageFile, String taskPrompt) async {
@@ -29,18 +64,16 @@ class AiChatbotRemoteDataSourceImpl implements AiChatbotRemoteDataSource {
       final response = await dio.post(
         '$baseUrl/analyze-image',
         data: formData,
-        options: Options(
-          headers: {
-            'Content-Type': 'multipart/form-data',
-          },
-        ),
+        options: Options(headers: {'Content-Type': 'multipart/form-data'}),
       );
 
       if (response.statusCode == 200) {
         // Assuming the API returns a JSON with a 'result' or 'response' field
         final responseData = response.data;
         if (responseData is Map<String, dynamic>) {
-          return responseData['result'] ?? responseData['response'] ?? 'Analysis completed';
+          return responseData['result'] ??
+              responseData['response'] ??
+              'Analysis completed';
         } else if (responseData is String) {
           return responseData;
         } else {
@@ -51,7 +84,9 @@ class AiChatbotRemoteDataSourceImpl implements AiChatbotRemoteDataSource {
       }
     } on DioException catch (e) {
       if (e.response != null) {
-        throw Exception('Server error: ${e.response?.statusCode} - ${e.response?.data}');
+        throw Exception(
+          'Server error: ${e.response?.statusCode} - ${e.response?.data}',
+        );
       } else {
         throw Exception('Network error: ${e.message}');
       }
@@ -74,18 +109,17 @@ class AiChatbotRemoteDataSourceImpl implements AiChatbotRemoteDataSource {
       final response = await dio.post(
         '$baseUrl/analyze-pdf',
         data: formData,
-        options: Options(
-          headers: {
-            'Content-Type': 'multipart/form-data',
-          },
-        ),
+        options: Options(headers: {'Content-Type': 'multipart/form-data'}),
       );
 
       if (response.statusCode == 200) {
         // Assuming the API returns a JSON with a 'result' or 'response' field
         final responseData = response.data;
         if (responseData is Map<String, dynamic>) {
-          return responseData['result'] ?? responseData['response'] ?? 'PDF analysis completed';
+          return responseData['summary'] ??
+              responseData['result'] ??
+              responseData['response'] ??
+              'PDF analysis completed';
         } else if (responseData is String) {
           return responseData;
         } else {
@@ -96,7 +130,9 @@ class AiChatbotRemoteDataSourceImpl implements AiChatbotRemoteDataSource {
       }
     } on DioException catch (e) {
       if (e.response != null) {
-        throw Exception('Server error: ${e.response?.statusCode} - ${e.response?.data}');
+        throw Exception(
+          'Server error: ${e.response?.statusCode} - ${e.response?.data}',
+        );
       } else {
         throw Exception('Network error: ${e.message}');
       }
@@ -104,4 +140,4 @@ class AiChatbotRemoteDataSourceImpl implements AiChatbotRemoteDataSource {
       throw Exception('Unexpected error: $e');
     }
   }
-} 
+}
