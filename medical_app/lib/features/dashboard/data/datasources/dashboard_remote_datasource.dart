@@ -45,12 +45,12 @@ class DashboardRemoteDataSourceImpl implements DashboardRemoteDataSource {
       final now = DateTime.now();
       print('Fetching upcoming appointments for doctor: $doctorId');
       
-      // Query for all appointments for this doctor, not just pending ones
+      // Query for pending appointments only for this doctor
       final querySnapshot = await firestore
           .collection('rendez_vous')
           .where('doctorId', isEqualTo: doctorId)
-          // Exclude cancelled appointments
-          .where('status', whereNotIn: ['cancelled'])  
+          // Show only pending appointments in upcoming section
+          .where('status', isEqualTo: 'pending')  
           .get();
 
       print('Found ${querySnapshot.docs.length} total appointments');
@@ -217,7 +217,7 @@ class DashboardRemoteDataSourceImpl implements DashboardRemoteDataSource {
         totalPatients: totalPatients,
         totalAppointments: appointmentsCount['total'] ?? 0,
         pendingAppointments: appointmentsCount['pending'] ?? 0,
-        completedAppointments: appointmentsCount['completed'] ?? 0,
+        completedAppointments: (appointmentsCount['completed'] ?? 0) + (appointmentsCount['accepted'] ?? 0),
         cancelledAppointments: appointmentsCount['cancelled'] ?? 0,
         upcomingAppointments: upcomingAppointments,
       );

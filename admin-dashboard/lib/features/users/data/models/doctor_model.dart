@@ -1,4 +1,5 @@
 import '../../domain/entities/doctor_entity.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class DoctorModel extends DoctorEntity {
   const DoctorModel({
@@ -48,30 +49,77 @@ class DoctorModel extends DoctorEntity {
       id: json['id'] as String?,
       fullName: json['fullName'] as String? ?? '',
       email: json['email'] as String? ?? '',
-      dateOfBirth:
-          json['dateOfBirth'] != null
-              ? DateTime.parse(json['dateOfBirth'] as String)
-              : null,
+      dateOfBirth: _parseDateTime(json['dateOfBirth']),
       age: json['age'] as int?,
       gender: json['gender'] as String?,
-      phoneNumber: json['phoneNumber'] as String?,
-      address: json['address'] as String?,
+      phoneNumber: json['phoneNumber']?.toString() ?? '',
+      address: json['address']?.toString() ?? '',
       speciality: json['speciality'] as String?,
-      numLicence: json['numLicence'] as String?,
-      experienceYears: json['experienceYears'] as String? ?? 'N/A',
-      educationSummary: json['educationSummary'] as String? ?? 'N/A',
-      appointmentDuration: json['appointmentDuration'] as int? ?? 30,
-      consultationFee: (json['consultationFee'] as num?)?.toDouble(),
-      accountStatus: json['accountStatus'] as bool? ?? true,
-      lastLogin:
-          json['lastLogin'] != null
-              ? DateTime.parse(json['lastLogin'] as String)
-              : null,
-      createdAt:
-          json['createdAt'] != null
-              ? DateTime.parse(json['createdAt'] as String)
-              : null,
+      numLicence: json['numLicence']?.toString() ?? '',
+      experienceYears: json['experienceYears']?.toString() ?? 'N/A',
+      educationSummary: json['educationSummary']?.toString() ?? 'N/A',
+      appointmentDuration: _parseInt(json['appointmentDuration']) ?? 30,
+      consultationFee: _parseDouble(json['consultationFee']),
+      accountStatus: _parseBool(json['accountStatus']) ?? true,
+      lastLogin: _parseDateTime(json['updatedAt']),
+      createdAt: _parseDateTime(json['createdAt']),
     );
+  }
+
+  // Helper methods to safely parse different data types
+  static DateTime? _parseDateTime(dynamic value) {
+    if (value == null) return null;
+    
+    if (value is Timestamp) {
+      return value.toDate();
+    } else if (value is String && value.isNotEmpty) {
+      try {
+        return DateTime.parse(value);
+      } catch (_) {
+        return null;
+      }
+    }
+    return null;
+  }
+
+  static double? _parseDouble(dynamic value) {
+    if (value == null) return null;
+    
+    if (value is double) return value;
+    if (value is int) return value.toDouble();
+    if (value is String && value.isNotEmpty) {
+      try {
+        return double.parse(value);
+      } catch (_) {
+        return null;
+      }
+    }
+    return null;
+  }
+
+  static int? _parseInt(dynamic value) {
+    if (value == null) return null;
+    
+    if (value is int) return value;
+    if (value is double) return value.toInt();
+    if (value is String && value.isNotEmpty) {
+      try {
+        return int.parse(value);
+      } catch (_) {
+        return null;
+      }
+    }
+    return null;
+  }
+
+  static bool? _parseBool(dynamic value) {
+    if (value == null) return null;
+    
+    if (value is bool) return value;
+    if (value is String) {
+      return value.toLowerCase() == 'true';
+    }
+    return null;
   }
 
   Map<String, dynamic> toFirestore() {

@@ -140,6 +140,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
         int inactivePatients = 0;
         int activeDoctors = 0;
         int inactiveDoctors = 0;
+        int totalPatients = 0;
+        int totalDoctors = 0;
 
         // Get activity statistics from UserStatisticsLoaded state
         if (state is UserStatisticsLoaded) {
@@ -147,6 +149,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
           inactivePatients = state.statistics['inactivePatients'] ?? 0;
           activeDoctors = state.statistics['activeDoctors'] ?? 0;
           inactiveDoctors = state.statistics['inactiveDoctors'] ?? 0;
+          totalPatients = state.statistics['totalPatients'] ?? 0;
+          totalDoctors = state.statistics['totalDoctors'] ?? 0;
         }
 
         // Show loading state for statistics
@@ -164,18 +168,24 @@ class _DashboardScreenState extends State<DashboardScreen> {
             inactivePatients,
             activeDoctors,
             inactiveDoctors,
+            totalPatients,
+            totalDoctors,
           ),
           tablet: _buildEnhancedStatsForTablet(
             activePatients,
             inactivePatients,
             activeDoctors,
             inactiveDoctors,
+            totalPatients,
+            totalDoctors,
           ),
           desktop: _buildEnhancedStatsForDesktop(
             activePatients,
             inactivePatients,
             activeDoctors,
             inactiveDoctors,
+            totalPatients,
+            totalDoctors,
           ),
         );
       },
@@ -185,6 +195,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
   Widget _buildLoadingStatsForMobile() {
     return Column(
       children: [
+        _buildLoadingStatCard('Total Patients', Colors.green),
+        SizedBox(height: 16.h),
+        _buildLoadingStatCard('Total Médecins', Colors.blue),
+        SizedBox(height: 16.h),
         _buildLoadingStatCard('Patients actifs', Colors.green),
         SizedBox(height: 16.h),
         _buildLoadingStatCard('Patients inactifs', Colors.orange),
@@ -198,10 +212,18 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   Widget _buildLoadingStatsForTablet() {
     return StaggeredGrid.count(
-      crossAxisCount: 2,
+      crossAxisCount: 3,
       mainAxisSpacing: 16.h,
       crossAxisSpacing: 16.w,
       children: [
+        StaggeredGridTile.fit(
+          crossAxisCellCount: 1,
+          child: _buildLoadingStatCard('Total Patients', Colors.green),
+        ),
+        StaggeredGridTile.fit(
+          crossAxisCellCount: 1,
+          child: _buildLoadingStatCard('Total Médecins', Colors.blue),
+        ),
         StaggeredGridTile.fit(
           crossAxisCellCount: 1,
           child: _buildLoadingStatCard('Patients actifs', Colors.green),
@@ -224,10 +246,18 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   Widget _buildLoadingStatsForDesktop() {
     return StaggeredGrid.count(
-      crossAxisCount: 4,
+      crossAxisCount: 6,
       mainAxisSpacing: 16.h,
       crossAxisSpacing: 16.w,
       children: [
+        StaggeredGridTile.fit(
+          crossAxisCellCount: 1,
+          child: _buildLoadingStatCard('Total Patients', Colors.green),
+        ),
+        StaggeredGridTile.fit(
+          crossAxisCellCount: 1,
+          child: _buildLoadingStatCard('Total Médecins', Colors.blue),
+        ),
         StaggeredGridTile.fit(
           crossAxisCellCount: 1,
           child: _buildLoadingStatCard('Patients actifs', Colors.green),
@@ -253,35 +283,77 @@ class _DashboardScreenState extends State<DashboardScreen> {
     int inactivePatients,
     int activeDoctors,
     int inactiveDoctors,
+    int totalPatients,
+    int totalDoctors,
   ) {
     return Column(
       children: [
-        StatCard(
-          title: 'Patients actifs',
-          value: activePatients.toString(),
-          icon: Icons.people,
-          iconColor: Colors.green,
+        // Total counts first
+        Row(
+          children: [
+            Expanded(
+              child: StatCard(
+                title: 'Total Patients',
+                value: totalPatients.toString(),
+                icon: Icons.people,
+                iconColor: Colors.green,
+              ),
+            ),
+            SizedBox(width: 16.w),
+            Expanded(
+              child: StatCard(
+                title: 'Total Médecins',
+                value: totalDoctors.toString(),
+                icon: Icons.local_hospital,
+                iconColor: Colors.blue,
+              ),
+            ),
+          ],
         ),
         SizedBox(height: 16.h),
-        StatCard(
-          title: 'Patients inactifs',
-          value: inactivePatients.toString(),
-          icon: Icons.people_outline,
-          iconColor: Colors.orange,
+        // Activity stats in grid
+        Row(
+          children: [
+            Expanded(
+              child: StatCard(
+                title: 'Patients actifs',
+                value: activePatients.toString(),
+                icon: Icons.people,
+                iconColor: Colors.green,
+              ),
+            ),
+            SizedBox(width: 16.w),
+            Expanded(
+              child: StatCard(
+                title: 'Patients inactifs',
+                value: inactivePatients.toString(),
+                icon: Icons.people_outline,
+                iconColor: Colors.orange,
+              ),
+            ),
+          ],
         ),
         SizedBox(height: 16.h),
-        StatCard(
-          title: 'Médecins actifs',
-          value: activeDoctors.toString(),
-          icon: Icons.local_hospital,
-          iconColor: Colors.blue,
-        ),
-        SizedBox(height: 16.h),
-        StatCard(
-          title: 'Médecins inactifs',
-          value: inactiveDoctors.toString(),
-          icon: Icons.local_hospital_outlined,
-          iconColor: Colors.red,
+        Row(
+          children: [
+            Expanded(
+              child: StatCard(
+                title: 'Médecins actifs',
+                value: activeDoctors.toString(),
+                icon: Icons.local_hospital,
+                iconColor: Colors.blue,
+              ),
+            ),
+            SizedBox(width: 16.w),
+            Expanded(
+              child: StatCard(
+                title: 'Médecins inactifs',
+                value: inactiveDoctors.toString(),
+                icon: Icons.local_hospital_outlined,
+                iconColor: Colors.red,
+              ),
+            ),
+          ],
         ),
       ],
     );
@@ -292,12 +364,32 @@ class _DashboardScreenState extends State<DashboardScreen> {
     int inactivePatients,
     int activeDoctors,
     int inactiveDoctors,
+    int totalPatients,
+    int totalDoctors,
   ) {
     return StaggeredGrid.count(
-      crossAxisCount: 2,
+      crossAxisCount: 3,
       mainAxisSpacing: 16.h,
       crossAxisSpacing: 16.w,
       children: [
+        StaggeredGridTile.fit(
+          crossAxisCellCount: 1,
+          child: StatCard(
+            title: 'Total Patients',
+            value: totalPatients.toString(),
+            icon: Icons.people,
+            iconColor: Colors.green,
+          ),
+        ),
+        StaggeredGridTile.fit(
+          crossAxisCellCount: 1,
+          child: StatCard(
+            title: 'Total Médecins',
+            value: totalDoctors.toString(),
+            icon: Icons.local_hospital,
+            iconColor: Colors.blue,
+          ),
+        ),
         StaggeredGridTile.fit(
           crossAxisCellCount: 1,
           child: StatCard(
@@ -343,12 +435,32 @@ class _DashboardScreenState extends State<DashboardScreen> {
     int inactivePatients,
     int activeDoctors,
     int inactiveDoctors,
+    int totalPatients,
+    int totalDoctors,
   ) {
     return StaggeredGrid.count(
-      crossAxisCount: 4,
+      crossAxisCount: 6,
       mainAxisSpacing: 16.h,
       crossAxisSpacing: 16.w,
       children: [
+        StaggeredGridTile.fit(
+          crossAxisCellCount: 1,
+          child: StatCard(
+            title: 'Total Patients',
+            value: totalPatients.toString(),
+            icon: Icons.people,
+            iconColor: Colors.green,
+          ),
+        ),
+        StaggeredGridTile.fit(
+          crossAxisCellCount: 1,
+          child: StatCard(
+            title: 'Total Médecins',
+            value: totalDoctors.toString(),
+            icon: Icons.local_hospital,
+            iconColor: Colors.blue,
+          ),
+        ),
         StaggeredGridTile.fit(
           crossAxisCellCount: 1,
           child: StatCard(

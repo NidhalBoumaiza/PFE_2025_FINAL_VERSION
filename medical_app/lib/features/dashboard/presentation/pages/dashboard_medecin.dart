@@ -154,7 +154,7 @@ class _DashboardMedecinState extends State<DashboardMedecin> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Text(
-                        'duration'.tr + ': ',
+                        'durée'.tr + ': ',
                         style: GoogleFonts.raleway(
                           fontSize: 16.sp,
                           fontWeight: FontWeight.w600,
@@ -534,31 +534,6 @@ class _DashboardMedecinState extends State<DashboardMedecin> {
                         ),
                       ),
                     ),
-                    SizedBox(width: 12.w),
-                    Expanded(
-                      child: _buildQuickActionButton(
-                        context,
-                        "emergencies".tr,
-                        Icons.warning,
-                        Colors.red,
-                        () {
-                          // Navigate to a different page or show a message
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(
-                                'emergency_feature_development'.tr,
-                                style: GoogleFonts.raleway(),
-                              ),
-                              backgroundColor: Colors.red,
-                              behavior: SnackBarBehavior.floating,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                            ),
-                          );
-                        },
-                      ),
-                    ),
                   ],
                 ),
 
@@ -568,29 +543,36 @@ class _DashboardMedecinState extends State<DashboardMedecin> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(
-                      'upcoming_appointments'.tr,
-                      style: GoogleFonts.poppins(
-                        fontSize: 18.sp,
-                        fontWeight: FontWeight.bold,
-                        color: theme.textTheme.titleLarge?.color,
+                    Flexible(
+                      flex: 2,
+                      child: Text(
+                        'upcoming_appointments'.tr,
+                        style: GoogleFonts.poppins(
+                          fontSize: 18.sp,
+                          fontWeight: FontWeight.bold,
+                          color: theme.textTheme.titleLarge?.color,
+                        ),
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
-                    TextButton(
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const AppointmentsMedecins(),
+                    Flexible(
+                      child: TextButton(
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const AppointmentsMedecins(),
+                            ),
+                          );
+                        },
+                        child: Text(
+                          'see_all'.tr,
+                          style: GoogleFonts.raleway(
+                            fontSize: 14.sp,
+                            color: AppColors.primaryColor,
+                            fontWeight: FontWeight.w600,
                           ),
-                        );
-                      },
-                      child: Text(
-                        'see_all'.tr,
-                        style: GoogleFonts.raleway(
-                          fontSize: 14.sp,
-                          color: AppColors.primaryColor,
-                          fontWeight: FontWeight.w600,
+                          overflow: TextOverflow.ellipsis,
                         ),
                       ),
                     ),
@@ -843,6 +825,8 @@ class _DashboardMedecinState extends State<DashboardMedecin> {
                         fontWeight: FontWeight.bold,
                         color: theme.textTheme.bodyLarge?.color,
                       ),
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 1,
                     ),
                     SizedBox(height: 4.h),
                     Text(
@@ -851,14 +835,14 @@ class _DashboardMedecinState extends State<DashboardMedecin> {
                         fontSize: 14.sp,
                         color: theme.textTheme.bodySmall?.color,
                       ),
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 1,
                     ),
                     SizedBox(height: 8.h),
-                    Wrap(
-                      spacing: 12.w,
-                      runSpacing: 8.h,
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Row(
-                          mainAxisSize: MainAxisSize.min,
                           children: [
                             Icon(
                               Icons.calendar_today,
@@ -866,17 +850,20 @@ class _DashboardMedecinState extends State<DashboardMedecin> {
                               color: theme.textTheme.bodySmall?.color,
                             ),
                             SizedBox(width: 4.w),
-                            Text(
-                              formattedDate,
-                              style: GoogleFonts.raleway(
-                                fontSize: 14.sp,
-                                color: theme.textTheme.bodySmall?.color,
+                            Flexible(
+                              child: Text(
+                                formattedDate,
+                                style: GoogleFonts.raleway(
+                                  fontSize: 14.sp,
+                                  color: theme.textTheme.bodySmall?.color,
+                                ),
+                                overflow: TextOverflow.ellipsis,
                               ),
                             ),
                           ],
                         ),
+                        SizedBox(height: 4.h),
                         Row(
-                          mainAxisSize: MainAxisSize.min,
                           children: [
                             Icon(
                               Icons.access_time,
@@ -884,11 +871,14 @@ class _DashboardMedecinState extends State<DashboardMedecin> {
                               color: theme.textTheme.bodySmall?.color,
                             ),
                             SizedBox(width: 4.w),
-                            Text(
-                              formattedTime,
-                              style: GoogleFonts.raleway(
-                                fontSize: 14.sp,
-                                color: theme.textTheme.bodySmall?.color,
+                            Flexible(
+                              child: Text(
+                                formattedTime,
+                                style: GoogleFonts.raleway(
+                                  fontSize: 14.sp,
+                                  color: theme.textTheme.bodySmall?.color,
+                                ),
+                                overflow: TextOverflow.ellipsis,
                               ),
                             ),
                           ],

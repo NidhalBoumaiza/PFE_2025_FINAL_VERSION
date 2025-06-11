@@ -25,6 +25,16 @@ class UsersScreen extends StatefulWidget {
 class _UsersScreenState extends State<UsersScreen>
     with TickerProviderStateMixin, AutomaticKeepAliveClientMixin {
   late TabController _tabController;
+  
+  // Search controllers for each tab
+  final TextEditingController _allUsersSearchController = TextEditingController();
+  final TextEditingController _patientsSearchController = TextEditingController();
+  final TextEditingController _doctorsSearchController = TextEditingController();
+  
+  // Search query strings
+  String _allUsersSearchQuery = '';
+  String _patientsSearchQuery = '';
+  String _doctorsSearchQuery = '';
 
   @override
   bool get wantKeepAlive => true;
@@ -53,6 +63,9 @@ class _UsersScreenState extends State<UsersScreen>
   void dispose() {
     print('🗑️ UsersScreen: dispose called');
     _tabController.dispose();
+    _allUsersSearchController.dispose();
+    _patientsSearchController.dispose();
+    _doctorsSearchController.dispose();
     super.dispose();
   }
 
@@ -633,7 +646,27 @@ class _UsersScreenState extends State<UsersScreen>
           print(
             '✅ UsersScreen: All users available - ${patients.length} patients, ${doctors.length} doctors',
           );
-          return _buildCombinedUsersTable(patients, doctors);
+          
+          // Apply search filter to both patients and doctors
+          final filteredPatients = _filterPatients(patients, _allUsersSearchQuery);
+          final filteredDoctors = _filterDoctors(doctors, _allUsersSearchQuery);
+          
+          return Column(
+            children: [
+              _buildSearchField(
+                controller: _allUsersSearchController,
+                hintText: 'Rechercher un utilisateur par nom...',
+                onChanged: (value) {
+                  setState(() {
+                    _allUsersSearchQuery = value;
+                  });
+                },
+              ),
+              Expanded(
+                child: _buildCombinedUsersTable(filteredPatients, filteredDoctors),
+              ),
+            ],
+          );
         }
 
         print('📭 UsersScreen: No data available state');
@@ -685,7 +718,25 @@ class _UsersScreenState extends State<UsersScreen>
           return Center(child: CircularProgressIndicator());
         }
 
-        return _buildPatientsTable(patients);
+        // Apply search filter
+        final filteredPatients = _filterPatients(patients, _patientsSearchQuery);
+
+        return Column(
+          children: [
+            _buildSearchField(
+              controller: _patientsSearchController,
+              hintText: 'Rechercher un patient par nom...',
+              onChanged: (value) {
+                setState(() {
+                  _patientsSearchQuery = value;
+                });
+              },
+            ),
+            Expanded(
+              child: _buildPatientsTable(filteredPatients),
+            ),
+          ],
+        );
       },
     );
   }
@@ -733,7 +784,25 @@ class _UsersScreenState extends State<UsersScreen>
           return Center(child: CircularProgressIndicator());
         }
 
-        return _buildDoctorsTable(doctors);
+        // Apply search filter
+        final filteredDoctors = _filterDoctors(doctors, _doctorsSearchQuery);
+
+        return Column(
+          children: [
+            _buildSearchField(
+              controller: _doctorsSearchController,
+              hintText: 'Rechercher un médecin par nom...',
+              onChanged: (value) {
+                setState(() {
+                  _doctorsSearchQuery = value;
+                });
+              },
+            ),
+            Expanded(
+              child: _buildDoctorsTable(filteredDoctors),
+            ),
+          ],
+        );
       },
     );
   }
@@ -1126,7 +1195,7 @@ class _UsersScreenState extends State<UsersScreen>
                                       ),
                                       SizedBox(height: 2.h),
                                       Text(
-                                        'Age: ${patient.age ?? 'N/A'}',
+                                        'Age: ${patient.calculatedAge ?? 'N/A'}',
                                         style: TextStyle(
                                           fontSize: 12.sp,
                                           color: Colors.grey[600],
@@ -1655,5 +1724,70 @@ class _UsersScreenState extends State<UsersScreen>
             ],
           ),
     );
+  }
+
+  // Helper method to build search field
+  Widget _buildSearchField({
+    required TextEditingController controller,
+    required String hintText,
+    required Function(String) onChanged,
+  }) {
+    return Container(
+      margin: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+      child: TextField(
+        controller: controller,
+        onChanged: onChanged,
+        decoration: InputDecoration(
+          hintText: hintText,
+          prefixIcon: Icon(Icons.search, color: Colors.grey[600]),
+          suffixIcon: controller.text.isNotEmpty
+              ? IconButton(
+                  icon: Icon(Icons.clear, color: Colors.grey[600]),
+                  onPressed: () {
+                    controller.clear();
+                    onChanged('');
+                  },
+                )
+              : null,
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12.r),
+            borderSide: BorderSide(color: Colors.grey[300]!),
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12.r),
+            borderSide: BorderSide(color: Colors.grey[300]!),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12.r),
+            borderSide: BorderSide(color: Theme.of(context).primaryColor),
+          ),
+          filled: true,
+          fillColor: Colors.grey[50],
+          contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+        ),
+      ),
+    );
+  }
+
+  // Helper method to filter patients by search query
+  List<PatientEntity> _filterPatients(List<PatientEntity> patients, String query) {
+    if (query.isEmpty) return patients;
+    
+    return patients.where((patient) {
+      final fullName = patient.fullName.toLowerCase();
+      final searchQuery = query.toLowerCase();
+      return fullName.contains(searchQuery);
+    }).toList();
+  }
+
+  // Helper method to filter doctors by search query
+  List<DoctorEntity> _filterDoctors(List<DoctorEntity> doctors, String query) {
+    if (query.isEmpty) return doctors;
+    
+    return doctors.where((doctor) {
+      final fullName = doctor.fullName.toLowerCase();
+      final searchQuery = query.toLowerCase();
+      return fullName.contains(searchQuery);
+    }).toList();
   }
 }

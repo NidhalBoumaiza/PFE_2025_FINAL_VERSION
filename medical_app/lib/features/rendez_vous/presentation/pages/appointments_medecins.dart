@@ -121,6 +121,7 @@ class _AppointmentsMedecinsState extends State<AppointmentsMedecins> {
 
     print('Filtering ${appointments.length} appointments...');
     print('Current status filter: $statusFilter');
+    print('Current date filter: $selectedDate');
 
     // Apply date filter if selected
     if (selectedDate != null) {
@@ -136,8 +137,8 @@ class _AppointmentsMedecinsState extends State<AppointmentsMedecins> {
       print('After date filter: ${filteredAppointments.length} appointments');
     }
 
-    // Apply status filter if selected
-    if (statusFilter != null && statusFilter!.isNotEmpty) {
+    // Apply status filter if selected (null means show all)
+    if (statusFilter != null) {
       filteredAppointments =
           filteredAppointments.where((appointment) {
             final matches = appointment.status == statusFilter;
@@ -148,6 +149,8 @@ class _AppointmentsMedecinsState extends State<AppointmentsMedecins> {
           }).toList();
 
       print('After status filter: ${filteredAppointments.length} appointments');
+    } else {
+      print('No status filter applied - showing all ${filteredAppointments.length} appointments');
     }
   }
 
@@ -1248,9 +1251,9 @@ class _AppointmentsMedecinsState extends State<AppointmentsMedecins> {
       onTap: () {
         print('Filter chip tapped: $label, status: $status');
         setState(() {
-          statusFilter = status;
-          _applyDateFilter();
+          statusFilter = status; // status can be null for "Tout"
         });
+        _applyDateFilter(); // Apply filter immediately after setting it
         print('After setting filter - statusFilter: $statusFilter');
         print('Filtered appointments: ${filteredAppointments.length}');
       },

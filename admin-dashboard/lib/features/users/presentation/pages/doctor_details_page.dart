@@ -145,51 +145,37 @@ class DoctorDetailsPage extends StatelessWidget {
   }
 
   Widget _buildQuickActions(BuildContext context, bool isDarkMode) {
+    final theme = Theme.of(context);
+
     return Row(
       children: [
-        _buildActionButton(
-          icon: Icons.edit,
-          label: 'Modifier',
-          color: Colors.blue,
-          onPressed: () {},
-          isDarkMode: isDarkMode,
-        ),
-        SizedBox(width: 12.w),
-        _buildActionButton(
-          icon: Icons.schedule,
-          label: 'Planifier',
-          color: Colors.green,
-          onPressed: () {},
-          isDarkMode: isDarkMode,
-        ),
-        SizedBox(width: 12.w),
-        _buildActionButton(
-          icon: Icons.more_vert,
-          label: 'Plus',
-          color: Colors.grey,
-          onPressed: () {},
-          isDarkMode: isDarkMode,
+        // Only show a view profile indicator, remove all action buttons
+        Container(
+          padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+          decoration: BoxDecoration(
+            color: theme.colorScheme.primary.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(8.r),
+          ),
+          child: Row(
+            children: [
+              Icon(
+                Icons.visibility,
+                size: 18.sp,
+                color: theme.colorScheme.primary,
+              ),
+              SizedBox(width: 8.w),
+              Text(
+                'Consultation du profil',
+                style: TextStyle(
+                  fontSize: 14.sp,
+                  color: theme.colorScheme.primary,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+          ),
         ),
       ],
-    );
-  }
-
-  Widget _buildActionButton({
-    required IconData icon,
-    required String label,
-    required Color color,
-    required VoidCallback onPressed,
-    required bool isDarkMode,
-  }) {
-    return OutlinedButton.icon(
-      onPressed: onPressed,
-      icon: Icon(icon, size: 18.sp, color: color),
-      label: Text(label, style: TextStyle(fontSize: 14.sp, color: color)),
-      style: OutlinedButton.styleFrom(
-        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
-        side: BorderSide(color: color.withOpacity(0.3)),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
-      ),
     );
   }
 
@@ -331,11 +317,9 @@ class DoctorDetailsPage extends StatelessWidget {
           flex: 1,
           child: Column(
             children: [
-              _buildPracticeInfoCard(context, isDarkMode),
-              SizedBox(height: 24.h),
               _buildAccountInfoCard(context, isDarkMode),
               SizedBox(height: 24.h),
-              _buildRecentActivityCard(context, isDarkMode),
+              _buildPracticeInfoCard(context, isDarkMode),
             ],
           ),
         ),
@@ -392,7 +376,7 @@ class DoctorDetailsPage extends StatelessWidget {
                   _buildInfoItem(
                     context,
                     'Age',
-                    '${doctor.age ?? 'N/A'} years',
+                    '${doctor.calculatedAge ?? 'N/A'} years',
                     isDarkMode,
                   ),
                 ]),
@@ -699,64 +683,11 @@ class DoctorDetailsPage extends StatelessWidget {
           SizedBox(height: 16.h),
           _buildInfoItem(
             context,
-            'Last Login',
-            doctor.lastLogin != null
-                ? '${doctor.lastLogin!.day}/${doctor.lastLogin!.month}/${doctor.lastLogin!.year}'
-                : 'Never',
-            isDarkMode,
-          ),
-          SizedBox(height: 16.h),
-          _buildInfoItem(
-            context,
             'Account Created',
             doctor.createdAt != null
                 ? '${doctor.createdAt!.day}/${doctor.createdAt!.month}/${doctor.createdAt!.year}'
                 : 'Not available',
             isDarkMode,
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildRecentActivityCard(BuildContext context, bool isDarkMode) {
-    final theme = Theme.of(context);
-
-    return Container(
-      width: double.infinity,
-      padding: EdgeInsets.all(20.w),
-      decoration: BoxDecoration(
-        color: isDarkMode ? theme.colorScheme.surface : Colors.white,
-        borderRadius: BorderRadius.circular(16.r),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 15,
-            offset: Offset(0, 5),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _buildCardHeader(
-            context,
-            'Recent Activity',
-            Icons.history,
-            Colors.purple,
-            isDarkMode,
-          ),
-          SizedBox(height: 20.h),
-          Text(
-            'No recent activity to display',
-            style: TextStyle(
-              fontSize: 14.sp,
-              color:
-                  isDarkMode
-                      ? theme.colorScheme.onSurface.withOpacity(0.7)
-                      : Colors.grey[600],
-              fontStyle: FontStyle.italic,
-            ),
           ),
         ],
       ),

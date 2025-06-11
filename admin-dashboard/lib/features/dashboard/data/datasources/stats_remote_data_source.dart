@@ -22,16 +22,60 @@ class StatsRemoteDataSourceImpl implements StatsRemoteDataSource {
   @override
   Future<StatsModel> getStats() async {
     try {
-      // Get patient counts from patients collection
+      print('📊 StatsRemoteDataSource: Starting to calculate stats with validation');
+      
+      // Get patient counts from patients collection with validation
       final patientsQuery = await firestore.collection('patients').get();
-      final totalPatients = patientsQuery.docs.length;
+      int validPatients = 0;
+      
+      for (var doc in patientsQuery.docs) {
+        final data = doc.data();
+        // Apply same validation as UsersRemoteDataSourceImpl
+        final name = data['name']?.toString().trim();
+        final lastName = data['lastName']?.toString().trim();
+        final email = data['email']?.toString().trim();
+        final role = data['role']?.toString().trim();
+        
+        if (name != null && name.isNotEmpty &&
+            lastName != null && lastName.isNotEmpty &&
+            email != null && email.isNotEmpty &&
+            role != null && role.isNotEmpty) {
+          validPatients++;
+        } else {
+          print('❌ StatsRemoteDataSource: Invalid patient ${doc.id} - missing required fields');
+        }
+      }
+      
+      print('✅ StatsRemoteDataSource: Valid patients: $validPatients out of ${patientsQuery.docs.length}');
 
-      // Get doctor counts from medecins collection
+      // Get doctor counts from medecins collection with validation
       final doctorsQuery = await firestore.collection('medecins').get();
-      final totalDoctors = doctorsQuery.docs.length;
+      int validDoctors = 0;
+      
+      for (var doc in doctorsQuery.docs) {
+        final data = doc.data();
+        // Apply same validation as UsersRemoteDataSourceImpl
+        final name = data['name']?.toString().trim();
+        final lastName = data['lastName']?.toString().trim();
+        final email = data['email']?.toString().trim();
+        final role = data['role']?.toString().trim();
+        
+        if (name != null && name.isNotEmpty &&
+            lastName != null && lastName.isNotEmpty &&
+            email != null && email.isNotEmpty &&
+            role != null && role.isNotEmpty) {
+          validDoctors++;
+        } else {
+          print('❌ StatsRemoteDataSource: Invalid doctor ${doc.id} - missing required fields');
+        }
+      }
+      
+      print('✅ StatsRemoteDataSource: Valid doctors: $validDoctors out of ${doctorsQuery.docs.length}');
 
-      // Total users (patients + doctors)
-      final totalUsers = totalPatients + totalDoctors;
+      // Total users (valid patients + valid doctors)
+      final totalUsers = validPatients + validDoctors;
+      
+      print('📈 StatsRemoteDataSource: Final counts - Users: $totalUsers, Patients: $validPatients, Doctors: $validDoctors');
 
       // Get appointment counts from rendez_vous collection
       final appointmentQuery = await firestore.collection('rendez_vous').get();
@@ -77,8 +121,8 @@ class StatsRemoteDataSourceImpl implements StatsRemoteDataSource {
 
       return StatsModel(
         totalUsers: totalUsers,
-        totalDoctors: totalDoctors,
-        totalPatients: totalPatients,
+        totalDoctors: validDoctors,
+        totalPatients: validPatients,
         totalAppointments: totalAppointments,
         pendingAppointments: pendingAppointments,
         completedAppointments: acceptedAppointments + completedAppointments,
@@ -91,7 +135,7 @@ class StatsRemoteDataSourceImpl implements StatsRemoteDataSource {
         topPatientsByCancelledAppointments: topPatientsByCancelledAppointments,
       );
     } catch (e) {
-      print('Error getting stats: $e');
+      print('💥 StatsRemoteDataSource: Error getting stats: $e');
       throw ServerException(e.toString());
     }
   }
@@ -140,6 +184,21 @@ class StatsRemoteDataSourceImpl implements StatsRemoteDataSource {
         final doctorData = doctorDoc.data();
         final doctorId = doctorDoc.id;
 
+        // Apply same validation as other methods
+        final name = doctorData['name']?.toString().trim();
+        final lastName = doctorData['lastName']?.toString().trim();
+        final email = doctorData['email']?.toString().trim();
+        final role = doctorData['role']?.toString().trim();
+        
+        // Skip invalid doctors
+        if (name == null || name.isEmpty ||
+            lastName == null || lastName.isEmpty ||
+            email == null || email.isEmpty ||
+            role == null || role.isEmpty) {
+          print('❌ StatsRemoteDataSource: Skipping invalid doctor ${doctorId} in top stats');
+          continue;
+        }
+
         // Count completed/accepted appointments for this doctor
         final completedAppointmentsQuery =
             await firestore
@@ -163,9 +222,8 @@ class StatsRemoteDataSourceImpl implements StatsRemoteDataSource {
           doctorStats.add(
             DoctorStatistics(
               id: doctorId,
-              name:
-                  '${doctorData['name'] ?? 'Unknown'} ${doctorData['lastName'] ?? ''}',
-              email: doctorData['email'] ?? '',
+              name: '$name $lastName',
+              email: email,
               appointmentCount: completedCount,
               completionRate: completionRate,
             ),
@@ -203,6 +261,21 @@ class StatsRemoteDataSourceImpl implements StatsRemoteDataSource {
         final doctorData = doctorDoc.data();
         final doctorId = doctorDoc.id;
 
+        // Apply same validation as other methods
+        final name = doctorData['name']?.toString().trim();
+        final lastName = doctorData['lastName']?.toString().trim();
+        final email = doctorData['email']?.toString().trim();
+        final role = doctorData['role']?.toString().trim();
+        
+        // Skip invalid doctors
+        if (name == null || name.isEmpty ||
+            lastName == null || lastName.isEmpty ||
+            email == null || email.isEmpty ||
+            role == null || role.isEmpty) {
+          print('❌ StatsRemoteDataSource: Skipping invalid doctor ${doctorId} in cancelled stats');
+          continue;
+        }
+
         // Count rejected appointments for this doctor
         final rejectedAppointmentsQuery =
             await firestore
@@ -224,9 +297,8 @@ class StatsRemoteDataSourceImpl implements StatsRemoteDataSource {
           doctorStats.add(
             DoctorStatistics(
               id: doctorId,
-              name:
-                  '${doctorData['name'] ?? 'Unknown'} ${doctorData['lastName'] ?? ''}',
-              email: doctorData['email'] ?? '',
+              name: '$name $lastName',
+              email: email,
               appointmentCount: rejectedCount,
               completionRate: totalCount > 0 ? rejectedCount / totalCount : 0.0,
             ),
@@ -265,6 +337,21 @@ class StatsRemoteDataSourceImpl implements StatsRemoteDataSource {
         final patientData = patientDoc.data();
         final patientId = patientDoc.id;
 
+        // Apply same validation as other methods
+        final name = patientData['name']?.toString().trim();
+        final lastName = patientData['lastName']?.toString().trim();
+        final email = patientData['email']?.toString().trim();
+        final role = patientData['role']?.toString().trim();
+        
+        // Skip invalid patients
+        if (name == null || name.isEmpty ||
+            lastName == null || lastName.isEmpty ||
+            email == null || email.isEmpty ||
+            role == null || role.isEmpty) {
+          print('❌ StatsRemoteDataSource: Skipping invalid patient ${patientId} in cancelled stats');
+          continue;
+        }
+
         // Count rejected appointments for this patient
         final rejectedAppointmentsQuery =
             await firestore
@@ -286,9 +373,8 @@ class StatsRemoteDataSourceImpl implements StatsRemoteDataSource {
           patientStats.add(
             PatientStatistics(
               id: patientId,
-              name:
-                  '${patientData['name'] ?? 'Unknown'} ${patientData['lastName'] ?? ''}',
-              email: patientData['email'] ?? '',
+              name: '$name $lastName',
+              email: email,
               cancelledAppointments: rejectedCount,
               totalAppointments: totalCount,
               cancellationRate:

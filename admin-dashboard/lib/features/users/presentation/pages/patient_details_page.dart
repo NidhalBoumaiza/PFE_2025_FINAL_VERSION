@@ -149,53 +149,32 @@ class PatientDetailsPage extends StatelessWidget {
 
     return Row(
       children: [
-        _buildActionButton(
-          icon: Icons.edit,
-          label: 'Modifier',
-          color: Colors.blue,
-          onPressed: () {},
-          isDarkMode: isDarkMode,
-        ),
-        SizedBox(width: 12.w),
-
-        // Print button
-        SizedBox(width: 12.w),
-        // Medical Dossier button
-        ElevatedButton.icon(
-          onPressed: () => _viewMedicalDossier(context),
-          icon: Icon(Icons.folder_shared, size: 18.sp, color: Colors.white),
-          label: Text(
-            'Dossier médical',
-            style: TextStyle(fontSize: 14.sp, color: Colors.white),
+        Container(
+          padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+          decoration: BoxDecoration(
+            color: theme.colorScheme.primary.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(8.r),
           ),
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.indigo,
-            padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(8.r),
-            ),
+          child: Row(
+            children: [
+              Icon(
+                Icons.visibility,
+                size: 18.sp,
+                color: theme.colorScheme.primary,
+              ),
+              SizedBox(width: 8.w),
+              Text(
+                'Consultation du profil',
+                style: TextStyle(
+                  fontSize: 14.sp,
+                  color: theme.colorScheme.primary,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
           ),
         ),
       ],
-    );
-  }
-
-  Widget _buildActionButton({
-    required IconData icon,
-    required String label,
-    required Color color,
-    required VoidCallback onPressed,
-    required bool isDarkMode,
-  }) {
-    return OutlinedButton.icon(
-      onPressed: onPressed,
-      icon: Icon(icon, size: 18.sp, color: color),
-      label: Text(label, style: TextStyle(fontSize: 14.sp, color: color)),
-      style: OutlinedButton.styleFrom(
-        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
-        side: BorderSide(color: color.withOpacity(0.3)),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
-      ),
     );
   }
 
@@ -244,7 +223,7 @@ class PatientDetailsPage extends StatelessWidget {
             child: _buildOverviewItem(
               context,
               'Age',
-              '${patient.age ?? 'N/A'} years',
+              '${patient.calculatedAge ?? 'N/A'} years',
               Icons.cake,
               Colors.orange,
               isDarkMode,
@@ -337,11 +316,9 @@ class PatientDetailsPage extends StatelessWidget {
           flex: 1,
           child: Column(
             children: [
-              _buildEmergencyContactCard(context, isDarkMode),
-              SizedBox(height: 24.h),
               _buildAccountInfoCard(context, isDarkMode),
               SizedBox(height: 24.h),
-              _buildRecentActivityCard(context, isDarkMode),
+              _buildEmergencyContactCard(context, isDarkMode),
             ],
           ),
         ),
@@ -599,64 +576,11 @@ class PatientDetailsPage extends StatelessWidget {
           SizedBox(height: 16.h),
           _buildInfoItem(
             context,
-            'Last Login',
-            patient.lastLogin != null
-                ? '${patient.lastLogin!.day}/${patient.lastLogin!.month}/${patient.lastLogin!.year}'
-                : 'Never',
-            isDarkMode,
-          ),
-          SizedBox(height: 16.h),
-          _buildInfoItem(
-            context,
             'Account Created',
             patient.createdAt != null
                 ? '${patient.createdAt!.day}/${patient.createdAt!.month}/${patient.createdAt!.year}'
                 : 'Not available',
             isDarkMode,
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildRecentActivityCard(BuildContext context, bool isDarkMode) {
-    final theme = Theme.of(context);
-
-    return Container(
-      width: double.infinity,
-      padding: EdgeInsets.all(20.w),
-      decoration: BoxDecoration(
-        color: isDarkMode ? theme.colorScheme.surface : Colors.white,
-        borderRadius: BorderRadius.circular(16.r),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 15,
-            offset: Offset(0, 5),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _buildCardHeader(
-            context,
-            'Recent Activity',
-            Icons.history,
-            Colors.purple,
-            isDarkMode,
-          ),
-          SizedBox(height: 20.h),
-          Text(
-            'No recent activity to display',
-            style: TextStyle(
-              fontSize: 14.sp,
-              color:
-                  isDarkMode
-                      ? theme.colorScheme.onSurface.withOpacity(0.7)
-                      : Colors.grey[600],
-              fontStyle: FontStyle.italic,
-            ),
           ),
         ],
       ),
@@ -906,7 +830,7 @@ class PatientDetailsPage extends StatelessWidget {
                         ? '${patient.dateOfBirth!.day}/${patient.dateOfBirth!.month}/${patient.dateOfBirth!.year}'
                         : 'Not provided',
                   ),
-                  _buildPdfRow('Age', '${patient.age ?? 'N/A'} years'),
+                  _buildPdfRow('Age', '${patient.calculatedAge ?? 'N/A'} years'),
                   _buildPdfRow('Address', patient.address ?? 'Not provided'),
                 ]),
                 pw.SizedBox(height: 20),
@@ -963,12 +887,6 @@ class PatientDetailsPage extends StatelessWidget {
                   _buildPdfRow(
                     'Account Status',
                     patient.accountStatus ? 'Active' : 'Inactive',
-                  ),
-                  _buildPdfRow(
-                    'Last Login',
-                    patient.lastLogin != null
-                        ? '${patient.lastLogin!.day}/${patient.lastLogin!.month}/${patient.lastLogin!.year}'
-                        : 'Never',
                   ),
                   _buildPdfRow(
                     'Account Created',

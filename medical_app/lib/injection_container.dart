@@ -375,5 +375,13 @@ Future<void> init() async {
   sl.registerLazySingleton(() => FirebaseMessaging.instance);
   sl.registerLazySingleton(() => FlutterLocalNotificationsPlugin());
   sl.registerLazySingleton(() => http.Client());
-  sl.registerLazySingleton(() => Dio());
+  sl.registerLazySingleton(() {
+    final dio = Dio();
+    dio.options = BaseOptions(
+      connectTimeout: const Duration(seconds: 10),
+      receiveTimeout: const Duration(seconds: 30),
+      sendTimeout: const Duration(seconds: 30),
+    );
+    return dio;
+  });
 }

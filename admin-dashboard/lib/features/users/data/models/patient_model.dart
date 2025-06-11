@@ -1,4 +1,5 @@
 import '../../domain/entities/patient_entity.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class PatientModel extends PatientEntity {
   const PatientModel({
@@ -52,38 +53,87 @@ class PatientModel extends PatientEntity {
       id: json['id'] as String?,
       fullName: json['fullName'] as String? ?? '',
       email: json['email'] as String? ?? '',
-      dateOfBirth:
-          json['dateOfBirth'] != null
-              ? DateTime.parse(json['dateOfBirth'] as String)
-              : null,
+      dateOfBirth: _parseDateTime(json['dateOfBirth']),
       age: json['age'] as int?,
       gender: json['gender'] as String?,
-      phoneNumber: json['phoneNumber'] as String?,
-      address: json['address'] as String?,
+      phoneNumber: json['phoneNumber']?.toString() ?? '',
+      address: json['address']?.toString() ?? '',
       bloodType: json['bloodType'] as String?,
-      height: (json['height'] as num?)?.toDouble(),
-      weight: (json['weight'] as num?)?.toDouble(),
-      allergies:
-          json['allergies'] != null
-              ? List<String>.from(json['allergies'] as List)
-              : null,
-      chronicDiseases:
-          json['chronicDiseases'] != null
-              ? List<String>.from(json['chronicDiseases'] as List)
-              : null,
+      height: _parseDouble(json['height']),
+      weight: _parseDouble(json['weight']),
+      allergies: _parseStringList(json['allergies']),
+      chronicDiseases: _parseStringList(json['chronicDiseases']),
       antecedent: json['antecedent'] as String?,
-      emergencyContactName: json['emergencyContactName'] as String?,
-      emergencyContactPhone: json['emergencyContactPhone'] as String?,
-      accountStatus: json['accountStatus'] as bool? ?? true,
-      lastLogin:
-          json['lastLogin'] != null
-              ? DateTime.parse(json['lastLogin'] as String)
-              : null,
-      createdAt:
-          json['createdAt'] != null
-              ? DateTime.parse(json['createdAt'] as String)
-              : null,
+      emergencyContactName: _parseEmergencyContactName(json['emergencyContact']),
+      emergencyContactPhone: _parseEmergencyContactPhone(json['emergencyContact']),
+      accountStatus: _parseBool(json['accountStatus']) ?? true,
+      lastLogin: _parseDateTime(json['updatedAt']),
+      createdAt: _parseDateTime(json['createdAt']),
     );
+  }
+
+  // Helper methods to safely parse different data types
+  static DateTime? _parseDateTime(dynamic value) {
+    if (value == null) return null;
+    
+    if (value is Timestamp) {
+      return value.toDate();
+    } else if (value is String && value.isNotEmpty) {
+      try {
+        return DateTime.parse(value);
+      } catch (_) {
+        return null;
+      }
+    }
+    return null;
+  }
+
+  static double? _parseDouble(dynamic value) {
+    if (value == null) return null;
+    
+    if (value is double) return value;
+    if (value is int) return value.toDouble();
+    if (value is String && value.isNotEmpty) {
+      try {
+        return double.parse(value);
+      } catch (_) {
+        return null;
+      }
+    }
+    return null;
+  }
+
+  static bool? _parseBool(dynamic value) {
+    if (value == null) return null;
+    
+    if (value is bool) return value;
+    if (value is String) {
+      return value.toLowerCase() == 'true';
+    }
+    return null;
+  }
+
+  static List<String>? _parseStringList(dynamic value) {
+    if (value == null) return null;
+    
+    if (value is List) {
+      return value.map((item) => item.toString()).toList();
+    }
+    return null;
+  }
+
+  static String? _parseEmergencyContactName(dynamic emergencyContact) {
+    if (emergencyContact is Map<String, dynamic>) {
+      return emergencyContact['name']?.toString();
+    }
+    return null;
+  }
+
+  static String? _parseEmergencyContactPhone(dynamic emergencyContact) {
+    if (emergencyContact is Map<String, dynamic>) {
+      return emergencyContact['phoneNumber']?.toString();
+    }
+    return null;
   }
 
   Map<String, dynamic> toFirestore() {

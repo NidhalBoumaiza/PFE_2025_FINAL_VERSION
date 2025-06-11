@@ -41,6 +41,24 @@ class PatientEntity {
     this.createdAt,
   });
 
+  /// Calculates age from date of birth
+  int? get calculatedAge {
+    if (dateOfBirth == null) return age; // Fallback to stored age if no dateOfBirth
+    
+    final now = DateTime.now();
+    final birthDate = dateOfBirth!;
+    
+    int calculatedAge = now.year - birthDate.year;
+    
+    // Check if birthday hasn't occurred this year yet
+    if (now.month < birthDate.month || 
+        (now.month == birthDate.month && now.day < birthDate.day)) {
+      calculatedAge--;
+    }
+    
+    return calculatedAge >= 0 ? calculatedAge : null;
+  }
+
   PatientEntity copyWith({
     String? id,
     String? fullName,

@@ -53,8 +53,19 @@ class UsersRemoteDataSourceImpl implements UsersRemoteDataSource {
           final data = doc.data();
           print('📄 Processing patient doc ${doc.id}: ${data.keys.toList()}');
 
+          // Validate required fields for a valid patient
+          if (!_isValidPatient(data)) {
+            print('❌ Skipping invalid patient ${doc.id}: missing required fields');
+            continue;
+          }
+
           // Add the document ID to the data
           data['id'] = doc.id;
+          
+          // Construct fullName from name and lastName
+          final name = data['name']?.toString().trim() ?? '';
+          final lastName = data['lastName']?.toString().trim() ?? '';
+          data['fullName'] = '$name $lastName'.trim();
 
           final patient = PatientModel.fromFirestore(data);
           patients.add(patient);
@@ -65,7 +76,7 @@ class UsersRemoteDataSourceImpl implements UsersRemoteDataSource {
         }
       }
 
-      print('🎉 Successfully processed ${patients.length} patients');
+      print('🎉 Successfully processed ${patients.length} valid patients out of ${querySnapshot.docs.length} documents');
       return patients;
     } catch (e) {
       print('💥 Error fetching patients: $e');
@@ -89,8 +100,19 @@ class UsersRemoteDataSourceImpl implements UsersRemoteDataSource {
           final data = doc.data();
           print('📄 Processing doctor doc ${doc.id}: ${data.keys.toList()}');
 
+          // Validate required fields for a valid doctor
+          if (!_isValidDoctor(data)) {
+            print('❌ Skipping invalid doctor ${doc.id}: missing required fields');
+            continue;
+          }
+
           // Add the document ID to the data
           data['id'] = doc.id;
+          
+          // Construct fullName from name and lastName
+          final name = data['name']?.toString().trim() ?? '';
+          final lastName = data['lastName']?.toString().trim() ?? '';
+          data['fullName'] = '$name $lastName'.trim();
 
           final doctor = DoctorModel.fromFirestore(data);
           doctors.add(doctor);
@@ -103,12 +125,64 @@ class UsersRemoteDataSourceImpl implements UsersRemoteDataSource {
         }
       }
 
-      print('🎉 Successfully processed ${doctors.length} doctors');
+      print('🎉 Successfully processed ${doctors.length} valid doctors out of ${querySnapshot.docs.length} documents');
       return doctors;
     } catch (e) {
       print('💥 Error fetching doctors: $e');
       rethrow;
     }
+  }
+
+  /// Validates if a patient document has all required fields
+  bool _isValidPatient(Map<String, dynamic> data) {
+    // Check for required fields
+    final hasName = data['name'] != null && data['name'].toString().trim().isNotEmpty;
+    final hasLastName = data['lastName'] != null && data['lastName'].toString().trim().isNotEmpty;
+    final hasEmail = data['email'] != null && data['email'].toString().trim().isNotEmpty;
+    
+    // Role validation - should be 'patient' or not specified (defaults to patient)
+    final role = data['role']?.toString().toLowerCase();
+    final hasValidRole = role == null || role == 'patient';
+
+    final isValid = hasName && hasLastName && hasEmail && hasValidRole;
+    
+    if (!isValid) {
+      print('🔍 Patient validation failed:');
+      print('  - Name: ${hasName ? "✅" : "❌"} (${data['name']})');
+      print('  - LastName: ${hasLastName ? "✅" : "❌"} (${data['lastName']})');
+      print('  - Email: ${hasEmail ? "✅" : "❌"} (${data['email']})');
+      print('  - Role: ${hasValidRole ? "✅" : "❌"} (${data['role']})');
+    }
+    
+    return isValid;
+  }
+
+  /// Validates if a doctor document has all required fields
+  bool _isValidDoctor(Map<String, dynamic> data) {
+    // Check for required fields
+    final hasName = data['name'] != null && data['name'].toString().trim().isNotEmpty;
+    final hasLastName = data['lastName'] != null && data['lastName'].toString().trim().isNotEmpty;
+    final hasEmail = data['email'] != null && data['email'].toString().trim().isNotEmpty;
+    
+    // Role validation - should be 'medecin' or 'doctor'
+    final role = data['role']?.toString().toLowerCase();
+    final hasValidRole = role == 'medecin' || role == 'doctor';
+
+    // Optional but recommended fields
+    final hasSpeciality = data['speciality'] != null && data['speciality'].toString().trim().isNotEmpty;
+    
+    final isValid = hasName && hasLastName && hasEmail && hasValidRole;
+    
+    if (!isValid) {
+      print('🔍 Doctor validation failed:');
+      print('  - Name: ${hasName ? "✅" : "❌"} (${data['name']})');
+      print('  - LastName: ${hasLastName ? "✅" : "❌"} (${data['lastName']})');
+      print('  - Email: ${hasEmail ? "✅" : "❌"} (${data['email']})');
+      print('  - Role: ${hasValidRole ? "✅" : "❌"} (${data['role']})');
+      print('  - Speciality: ${hasSpeciality ? "✅" : "⚠️"} (${data['speciality']}) - Optional');
+    }
+    
+    return isValid;
   }
 
   @override
@@ -123,7 +197,19 @@ class UsersRemoteDataSourceImpl implements UsersRemoteDataSource {
       for (var doc in snapshot.docs) {
         try {
           final data = doc.data();
+          
+          // Validate required fields for a valid patient
+          if (!_isValidPatient(data)) {
+            print('❌ Skipping invalid patient ${doc.id} in stream: missing required fields');
+            continue;
+          }
+          
           data['id'] = doc.id;
+          
+          // Construct fullName from name and lastName
+          final name = data['name']?.toString().trim() ?? '';
+          final lastName = data['lastName']?.toString().trim() ?? '';
+          data['fullName'] = '$name $lastName'.trim();
 
           final patient = PatientModel.fromFirestore(data);
           patients.add(patient);
@@ -132,7 +218,7 @@ class UsersRemoteDataSourceImpl implements UsersRemoteDataSource {
         }
       }
 
-      print('✅ Patients stream processed ${patients.length} patients');
+      print('✅ Patients stream processed ${patients.length} valid patients out of ${snapshot.docs.length} documents');
       return patients;
     });
   }
@@ -149,7 +235,19 @@ class UsersRemoteDataSourceImpl implements UsersRemoteDataSource {
       for (var doc in snapshot.docs) {
         try {
           final data = doc.data();
+          
+          // Validate required fields for a valid doctor
+          if (!_isValidDoctor(data)) {
+            print('❌ Skipping invalid doctor ${doc.id} in stream: missing required fields');
+            continue;
+          }
+          
           data['id'] = doc.id;
+          
+          // Construct fullName from name and lastName
+          final name = data['name']?.toString().trim() ?? '';
+          final lastName = data['lastName']?.toString().trim() ?? '';
+          data['fullName'] = '$name $lastName'.trim();
 
           final doctor = DoctorModel.fromFirestore(data);
           doctors.add(doctor);
@@ -158,7 +256,7 @@ class UsersRemoteDataSourceImpl implements UsersRemoteDataSource {
         }
       }
 
-      print('✅ Doctors stream processed ${doctors.length} doctors');
+      print('✅ Doctors stream processed ${doctors.length} valid doctors out of ${snapshot.docs.length} documents');
       return doctors;
     });
   }
@@ -411,12 +509,15 @@ class UsersRemoteDataSourceImpl implements UsersRemoteDataSource {
       final patients = await getPatients();
       final doctors = await getDoctors();
 
+      print('📈 Found ${patients.length} patients and ${doctors.length} doctors');
+
       int activePatients = 0;
       int inactivePatients = 0;
       int activeDoctors = 0;
       int inactiveDoctors = 0;
 
-      // Count active/inactive patients based on appointments
+      // Count active/inactive patients based on appointments (threshold: 5 appointments)
+      print('🔍 Analyzing patient activity...');
       for (var patient in patients) {
         final appointmentCount = await getUserAppointmentCount(
           patient.id!,
@@ -424,12 +525,15 @@ class UsersRemoteDataSourceImpl implements UsersRemoteDataSource {
         );
         if (appointmentCount >= 5) {
           activePatients++;
+          print('✅ Active patient: ${patient.fullName} ($appointmentCount appointments)');
         } else {
           inactivePatients++;
+          print('💤 Inactive patient: ${patient.fullName} ($appointmentCount appointments)');
         }
       }
 
-      // Count active/inactive doctors based on appointments
+      // Count active/inactive doctors based on appointments (threshold: 5 appointments)
+      print('🔍 Analyzing doctor activity...');
       for (var doctor in doctors) {
         final appointmentCount = await getUserAppointmentCount(
           doctor.id!,
@@ -437,8 +541,10 @@ class UsersRemoteDataSourceImpl implements UsersRemoteDataSource {
         );
         if (appointmentCount >= 5) {
           activeDoctors++;
+          print('✅ Active doctor: ${doctor.fullName} ($appointmentCount appointments)');
         } else {
           inactiveDoctors++;
+          print('💤 Inactive doctor: ${doctor.fullName} ($appointmentCount appointments)');
         }
       }
 
@@ -454,7 +560,13 @@ class UsersRemoteDataSourceImpl implements UsersRemoteDataSource {
         'totalInactiveUsers': inactivePatients + inactiveDoctors,
       };
 
-      print('📈 Statistics calculated: $stats');
+      print('📈 Final Statistics:');
+      print('   👥 Total Users: ${stats['totalUsers']}');
+      print('   👤 Total Patients: ${stats['totalPatients']} (Active: $activePatients, Inactive: $inactivePatients)');
+      print('   👨‍⚕️ Total Doctors: ${stats['totalDoctors']} (Active: $activeDoctors, Inactive: $inactiveDoctors)');
+      print('   ✅ Total Active: ${stats['totalActiveUsers']}');
+      print('   💤 Total Inactive: ${stats['totalInactiveUsers']}');
+      
       return stats;
     } catch (e) {
       print('💥 Error calculating user statistics: $e');

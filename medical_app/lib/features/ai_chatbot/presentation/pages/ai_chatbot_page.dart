@@ -7,11 +7,13 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:medical_app/core/utils/app_colors.dart';
+import 'package:get_it/get_it.dart';
 import '../bloc/ai_chatbot_bloc.dart';
 import '../bloc/ai_chatbot_event.dart';
 import '../bloc/ai_chatbot_state.dart';
 import '../widgets/chat_message_widget.dart';
 import '../widgets/attachment_bottom_sheet.dart';
+import '../../data/datasources/ai_chatbot_remote_datasource.dart';
 
 class AiChatbotPage extends StatefulWidget {
   const AiChatbotPage({super.key});
@@ -47,11 +49,35 @@ class _AiChatbotPageState extends State<AiChatbotPage> {
   }
 
   void _sendTextMessage() {
-    final message = _messageController.text.trim();
-    if (message.isNotEmpty) {
-      context.read<AiChatbotBloc>().add(SendTextMessageEvent(message: message));
-      _messageController.clear();
-      _scrollToBottom();
+    try {
+      final message = _messageController.text.trim();
+      print('=== UI TEXT MESSAGE DEBUG ===');
+      print('Message to send: "$message"');
+      
+      if (message.isNotEmpty) {
+        print('Message is not empty, dispatching SendTextMessageEvent...');
+        context.read<AiChatbotBloc>().add(SendTextMessageEvent(message: message));
+        print('Event dispatched successfully');
+        
+        _messageController.clear();
+        print('Message controller cleared');
+        
+        _scrollToBottom();
+        print('Scroll to bottom called');
+      } else {
+        print('Message is empty, not sending');
+      }
+    } catch (e, stackTrace) {
+      print('=== UI TEXT MESSAGE ERROR ===');
+      print('Error: $e');
+      print('Stack trace: $stackTrace');
+      
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error sending message: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
     }
   }
 
@@ -69,76 +95,207 @@ class _AiChatbotPageState extends State<AiChatbotPage> {
   }
 
   void _handleImageSelection() async {
-    final ImagePicker picker = ImagePicker();
-    final XFile? image = await picker.pickImage(
-      source: ImageSource.gallery,
-      imageQuality: 80,
-    );
+    try {
+      print('=== UI IMAGE SELECTION DEBUG ===');
+      print('Starting image selection...');
+      
+      final ImagePicker picker = ImagePicker();
+      final XFile? image = await picker.pickImage(
+        source: ImageSource.gallery,
+        imageQuality: 80,
+      );
 
-    if (image != null) {
-      _showImagePromptDialog(File(image.path));
+      if (image != null) {
+        print('Image selected: ${image.path}');
+        _showImagePromptDialog(File(image.path));
+      } else {
+        print('No image selected');
+      }
+    } catch (e, stackTrace) {
+      print('=== UI IMAGE SELECTION ERROR ===');
+      print('Error: $e');
+      print('Stack trace: $stackTrace');
+      
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error selecting image: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
     }
   }
 
   void _showImagePromptDialog(File imageFile) {
-    final TextEditingController promptController = TextEditingController();
+    try {
+      print('=== UI IMAGE DIALOG DEBUG ===');
+      print('Showing image prompt dialog for: ${imageFile.path}');
+      
+      final TextEditingController promptController = TextEditingController();
 
-    showDialog(
-      context: context,
-      builder:
-          (context) => AlertDialog(
-        title: Text('Ajouter une instruction pour l\'image'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text('Entrez une instruction pour l\'analyse de l\'image'),
-            const SizedBox(height: 16),
-            TextField(
-              controller: promptController,
-              decoration: InputDecoration(
-                hintText: 'Décrivez ce que vous voulez analyser',
-                border: const OutlineInputBorder(),
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: Text('Ajouter une instruction pour l\'image'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text('Entrez une instruction pour l\'analyse de l\'image'),
+              const SizedBox(height: 16),
+              TextField(
+                controller: promptController,
+                decoration: InputDecoration(
+                  hintText: 'Décrivez ce que vous voulez analyser',
+                  border: const OutlineInputBorder(),
+                ),
+                maxLines: 3,
               ),
-              maxLines: 3,
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                print('Image dialog cancelled');
+                Navigator.pop(context);
+              },
+              child: Text('Annuler'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                try {
+                  final prompt = promptController.text.trim();
+                  print('Image analysis requested with prompt: "$prompt"');
+                  
+                  if (prompt.isNotEmpty) {
+                    print('Dispatching SendImageMessageEvent...');
+                    context.read<AiChatbotBloc>().add(
+                      SendImageMessageEvent(
+                        imageFile: imageFile,
+                        taskPrompt: prompt,
+                      ),
+                    );
+                    print('Image event dispatched successfully');
+                    
+                    Navigator.pop(context);
+                    _scrollToBottom();
+                  } else {
+                    print('Prompt is empty, not sending');
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('Veuillez entrer une instruction'),
+                        backgroundColor: Colors.orange,
+                      ),
+                    );
+                  }
+                } catch (e, stackTrace) {
+                  print('=== UI IMAGE DIALOG ERROR ===');
+                  print('Error: $e');
+                  print('Stack trace: $stackTrace');
+                  
+                  Navigator.pop(context);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Error sending image: $e'),
+                      backgroundColor: Colors.red,
+                    ),
+                  );
+                }
+              },
+              child: Text('Analyser'),
             ),
           ],
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text('Annuler'),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              final prompt = promptController.text.trim();
-              if (prompt.isNotEmpty) {
-                context.read<AiChatbotBloc>().add(
-                  SendImageMessageEvent(
-                    imageFile: imageFile,
-                    taskPrompt: prompt,
-                  ),
-                );
-                Navigator.pop(context);
-                _scrollToBottom();
-              }
-            },
-            child: Text('Analyser'),
-          ),
-        ],
-      ),
-    );
+      );
+    } catch (e, stackTrace) {
+      print('=== UI IMAGE DIALOG SETUP ERROR ===');
+      print('Error: $e');
+      print('Stack trace: $stackTrace');
+      
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error opening image dialog: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
 
   void _handlePdfSelection() async {
-    FilePickerResult? result = await FilePicker.platform.pickFiles(
-      type: FileType.custom,
-      allowedExtensions: ['pdf'],
-    );
+    try {
+      print('=== UI PDF SELECTION DEBUG ===');
+      print('Starting PDF selection...');
+      
+      FilePickerResult? result = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['pdf'],
+      );
 
-    if (result != null && result.files.single.path != null) {
-      final file = File(result.files.single.path!);
-      context.read<AiChatbotBloc>().add(SendPdfMessageEvent(pdfFile: file));
-      _scrollToBottom();
+      if (result != null && result.files.single.path != null) {
+        final file = File(result.files.single.path!);
+        print('PDF selected: ${file.path}');
+        print('PDF file exists: ${await file.exists()}');
+        
+        print('Dispatching SendPdfMessageEvent...');
+        context.read<AiChatbotBloc>().add(SendPdfMessageEvent(pdfFile: file));
+        print('PDF event dispatched successfully');
+        
+        _scrollToBottom();
+      } else {
+        print('No PDF selected or path is null');
+      }
+    } catch (e, stackTrace) {
+      print('=== UI PDF SELECTION ERROR ===');
+      print('Error: $e');
+      print('Stack trace: $stackTrace');
+      
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error selecting PDF: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
+  void _testServerConnection() async {
+    try {
+      print('=== TESTING SERVER CONNECTION ===');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Testing server connection...'),
+          backgroundColor: Colors.blue,
+        ),
+      );
+
+      final dataSource = GetIt.instance<AiChatbotRemoteDataSource>();
+      final isHealthy = await dataSource.checkServerHealth();
+      
+      if (isHealthy) {
+        print('Server connection successful');
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('✅ Flask server is running and responding!'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      } else {
+        print('Server connection failed');
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('❌ Flask server is not responding. Check if it\'s running on port 5000.'),
+            backgroundColor: Colors.red,
+            duration: Duration(seconds: 5),
+          ),
+        );
+      }
+    } catch (e) {
+      print('Server connection error: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('❌ Connection failed: $e'),
+          backgroundColor: Colors.red,
+          duration: Duration(seconds: 5),
+        ),
+      );
     }
   }
 
@@ -166,6 +323,11 @@ class _AiChatbotPageState extends State<AiChatbotPage> {
         ),
         actions: [
           IconButton(
+            icon: const Icon(Icons.wifi_outlined, color: Colors.white),
+            onPressed: _testServerConnection,
+            tooltip: 'Test server connection',
+          ),
+          IconButton(
             icon: const Icon(Icons.clear_all, color: Colors.white),
             onPressed: () {
               context.read<AiChatbotBloc>().add(const ClearChatEvent());
@@ -179,18 +341,33 @@ class _AiChatbotPageState extends State<AiChatbotPage> {
           Expanded(
             child: BlocConsumer<AiChatbotBloc, AiChatbotState>(
               listener: (context, state) {
+                print('=== UI BLOC LISTENER DEBUG ===');
+                print('State received: ${state.runtimeType}');
+                
                 if (state is AiChatbotError) {
+                  print('Error state: ${state.message}');
+                  print('Messages count: ${state.messages.length}');
+                  
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       content: Text(state.message),
                       backgroundColor: Colors.red,
                     ),
                   );
+                } else if (state is AiChatbotLoaded) {
+                  print('Loaded state - Messages: ${state.messages.length}, Loading: ${state.isLoading}');
+                } else if (state is AiChatbotInitial) {
+                  print('Initial state');
                 }
+                
                 _scrollToBottom();
               },
               builder: (context, state) {
+                print('=== UI BLOC BUILDER DEBUG ===');
+                print('Building with state: ${state.runtimeType}');
+                
                 if (state is AiChatbotInitial) {
+                  print('Building welcome screen (initial)');
                   return _buildWelcomeScreen();
                 }
 
@@ -200,24 +377,32 @@ class _AiChatbotPageState extends State<AiChatbotPage> {
                       ? state.messages
                       : (state as AiChatbotError).messages;
                   final isLoading = state is AiChatbotLoaded && state.isLoading;
+                  
+                  print('Messages count: ${messages.length}');
+                  print('Is loading: $isLoading');
 
                   if (messages.isEmpty) {
+                    print('Building welcome screen (empty messages)');
                     return _buildWelcomeScreen();
                   }
 
+                  print('Building chat list with ${messages.length} messages');
                   return ListView.builder(
                     controller: _scrollController,
                     padding: EdgeInsets.all(16.w),
                     itemCount: messages.length + (isLoading ? 1 : 0),
                     itemBuilder: (context, index) {
                       if (index == messages.length && isLoading) {
+                        print('Building loading message at index $index');
                         return _buildLoadingMessage();
                       }
+                      print('Building message at index $index: ${messages[index].content.substring(0, messages[index].content.length.clamp(0, 50))}...');
                       return ChatMessageWidget(message: messages[index]);
                     },
                   );
                 }
 
+                print('Building loading indicator (fallback)');
                 return const Center(child: CircularProgressIndicator());
               },
             ),

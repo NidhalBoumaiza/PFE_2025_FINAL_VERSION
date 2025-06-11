@@ -63,7 +63,7 @@ class _NotificationsPatientState extends State<NotificationsPatient>
         if (mounted) {
           ScaffoldMessenger.of(
             context,
-          ).showSnackBar(SnackBar(content: Text('error_invalid_user_data'.tr)));
+          ).showSnackBar(SnackBar(content: Text('error_user_not_found'.tr)));
         }
       }
     } catch (e) {
@@ -100,7 +100,7 @@ class _NotificationsPatientState extends State<NotificationsPatient>
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('Error: User not found'),
+              content: Text('error_user_not_found'.tr),
               backgroundColor: Colors.red,
             ),
           );
@@ -112,7 +112,7 @@ class _NotificationsPatientState extends State<NotificationsPatient>
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Error loading notifications: ${e.toString()}'),
+            content: Text('error_loading_notifications'.tr),
             backgroundColor: Colors.red,
           ),
         );
@@ -131,7 +131,7 @@ class _NotificationsPatientState extends State<NotificationsPatient>
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('Error: User not found'),
+              content: Text('error_user_not_found'.tr),
               backgroundColor: Colors.red,
             ),
           );
@@ -143,7 +143,7 @@ class _NotificationsPatientState extends State<NotificationsPatient>
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              'Error marking notifications as read: ${e.toString()}',
+              'error_marking_notifications_read'.tr,
             ),
             backgroundColor: Colors.red,
           ),

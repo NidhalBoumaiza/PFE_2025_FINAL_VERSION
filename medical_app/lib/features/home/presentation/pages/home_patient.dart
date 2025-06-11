@@ -1,4 +1,7 @@
 import 'dart:convert';
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -8,26 +11,34 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:medical_app/core/utils/app_colors.dart';
 import 'package:medical_app/core/utils/navigation_with_transition.dart';
 import 'package:medical_app/cubit/theme_cubit/theme_cubit.dart';
-import 'package:medical_app/features/dashboard/presentation/pages/dashboard_patient.dart';
+import 'package:medical_app/features/authentication/data/data%20sources/auth_local_data_source.dart';
+import 'package:medical_app/features/authentication/data/models/user_model.dart';
+import 'package:medical_app/features/authentication/presentation/pages/login_screen.dart';
 import 'package:medical_app/features/localisation/presentation/pages/pharmacie_page.dart';
+import 'package:medical_app/features/notifications/presentation/pages/notifications_patient.dart';
 import 'package:medical_app/features/profile/presentation/pages/ProfilPatient.dart';
-import 'package:medical_app/features/secours/presentation/pages/secours_screen.dart';
+import 'package:medical_app/features/rendez_vous/presentation/pages/RendezVousPatient.dart';
 import 'package:medical_app/features/settings/presentation/pages/settings_patient.dart';
 import 'package:medical_app/widgets/theme_cubit_switch.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../../../authentication/presentation/pages/login_screen.dart';
-import '../../../messagerie/presentation/pages/conversations_list_screen.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:medical_app/features/messagerie/presentation/pages/conversations_list_screen.dart';
+import 'package:medical_app/features/notifications/presentation/widgets/notification_badge.dart';
+import 'package:medical_app/features/secours/presentation/pages/secours_screen.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:medical_app/core/widgets/location_activation_screen.dart';
+import 'package:medical_app/features/ai_chatbot/presentation/pages/ai_chatbot_page.dart';
+import 'package:medical_app/features/ai_chatbot/presentation/bloc/ai_chatbot_bloc.dart';
+import 'package:get_it/get_it.dart';
+import '../../../dashboard/presentation/pages/dashboard_patient.dart';
 import '../../../profile/presentation/pages/blocs/BLoC update profile/update_user_bloc.dart';
 import '../../../rendez_vous/presentation/pages/appointments_patients.dart';
-import 'package:medical_app/features/notifications/presentation/widgets/notification_badge.dart';
 import '../../../messagerie/presentation/blocs/conversation BLoC/conversations_bloc.dart';
 import '../../../messagerie/presentation/blocs/conversation BLoC/conversations_state.dart';
 import '../../../messagerie/presentation/blocs/conversation BLoC/conversations_event.dart';
 import 'package:medical_app/core/services/location_service.dart';
 import 'dart:async';
 import 'package:medical_app/core/widgets/location_indicator.dart';
-import 'package:medical_app/core/widgets/location_activation_screen.dart';
-import 'package:medical_app/features/ai_chatbot/presentation/pages/ai_chatbot_page.dart';
 
 class HomePatient extends StatefulWidget {
   const HomePatient({super.key});
@@ -854,6 +865,9 @@ class _HomePatientState extends State<HomePatient> {
           ),
           floatingActionButton: FloatingActionButton(
             onPressed: () {
+              print('=== NAVIGATION TO AI CHATBOT DEBUG ===');
+              print('Navigating to AiChatbotPage...');
+              
               Navigator.push(
                 context,
                 MaterialPageRoute(

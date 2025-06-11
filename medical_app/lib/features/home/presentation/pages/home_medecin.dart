@@ -26,6 +26,8 @@ import '../../../messagerie/presentation/blocs/conversation BLoC/conversations_s
 import '../../../messagerie/presentation/blocs/conversation BLoC/conversations_event.dart';
 import '../../../secours/presentation/pages/secours_screen.dart';
 import 'package:medical_app/features/ai_chatbot/presentation/pages/ai_chatbot_page.dart';
+import 'package:medical_app/features/ai_chatbot/presentation/bloc/ai_chatbot_bloc.dart';
+import 'package:get_it/get_it.dart';
 
 class HomeMedecin extends StatefulWidget {
   const HomeMedecin({super.key});
@@ -388,6 +390,9 @@ class _HomeMedecinState extends State<HomeMedecin> {
         drawer: _buildDrawer(isDarkMode, theme),
         floatingActionButton: FloatingActionButton(
           onPressed: () {
+            print('=== NAVIGATION TO AI CHATBOT DEBUG ===');
+            print('Navigating to AiChatbotPage...');
+            
             Navigator.push(
               context,
               MaterialPageRoute(

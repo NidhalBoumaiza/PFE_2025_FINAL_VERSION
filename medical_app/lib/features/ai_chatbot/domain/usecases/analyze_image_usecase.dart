@@ -7,6 +7,22 @@ class AnalyzeImageUseCase {
   AnalyzeImageUseCase({required this.repository});
 
   Future<String> call(File imageFile, String prompt) async {
-    return await repository.analyzeImage(imageFile, prompt);
+    try {
+      print('=== USE CASE IMAGE ANALYSIS DEBUG ===');
+      print('Image file path: ${imageFile.path}');
+      print('Prompt: $prompt');
+      print('Calling repository.analyzeImage...');
+      
+      final result = await repository.analyzeImage(imageFile, prompt);
+      
+      print('Use case received result: $result');
+      return result;
+    } catch (e, stackTrace) {
+      print('=== USE CASE IMAGE ANALYSIS EXCEPTION ===');
+      print('Exception type: ${e.runtimeType}');
+      print('Exception message: $e');
+      print('Stack trace: $stackTrace');
+      rethrow;
+    }
   }
 } 
