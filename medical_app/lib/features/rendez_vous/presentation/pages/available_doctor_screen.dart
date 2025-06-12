@@ -120,16 +120,14 @@ class _AvailableDoctorsScreenState extends State<AvailableDoctorsScreen> {
       builder:
           (context) => AlertDialog(
             title: Text(
-              'confirm_consultation'.tr,
+              'Confirmer la consultation',
               style: GoogleFonts.raleway(
                 fontWeight: FontWeight.bold,
                 color: theme.textTheme.titleLarge?.color,
               ),
             ),
             content: Text(
-              'confirm_consultation_with_doctor'.tr
-                  .replaceAll('{0}', '${doctor.name} ${doctor.lastName}')
-                  .replaceAll('{1}', formattedDate),
+              'Confirmer la consultation avec Dr. ${doctor.name} ${doctor.lastName} le $formattedDate ?',
               style: GoogleFonts.raleway(
                 color: theme.textTheme.bodyMedium?.color,
               ),
@@ -142,7 +140,7 @@ class _AvailableDoctorsScreenState extends State<AvailableDoctorsScreen> {
               TextButton(
                 onPressed: () => Navigator.pop(context, false),
                 child: Text(
-                  'cancel'.tr,
+                  'Annuler',
                   style: GoogleFonts.raleway(
                     color: theme.textTheme.bodyMedium?.color?.withOpacity(0.8),
                   ),
@@ -158,7 +156,7 @@ class _AvailableDoctorsScreenState extends State<AvailableDoctorsScreen> {
                 ),
                 onPressed: () => Navigator.pop(context, true),
                 child: Text(
-                  'confirm'.tr,
+                  'Confirmer',
                   style: GoogleFonts.raleway(fontWeight: FontWeight.w600),
                 ),
               ),
@@ -206,7 +204,7 @@ class _AvailableDoctorsScreenState extends State<AvailableDoctorsScreen> {
                   ),
                   SizedBox(height: 24.h),
                   Text(
-                    'search_range'.tr,
+                    'Rayon de recherche',
                     style: GoogleFonts.raleway(
                       fontSize: 20.sp,
                       fontWeight: FontWeight.bold,
@@ -218,7 +216,7 @@ class _AvailableDoctorsScreenState extends State<AvailableDoctorsScreen> {
                       Icon(Icons.location_on, color: AppColors.primaryColor),
                       SizedBox(width: 8.w),
                       Text(
-                        'search_radius'.tr,
+                        'Rayon de recherche',
                         style: GoogleFonts.raleway(fontSize: 16.sp),
                       ),
                       Spacer(),
@@ -287,7 +285,7 @@ class _AvailableDoctorsScreenState extends State<AvailableDoctorsScreen> {
                           SizedBox(width: 8.w),
                           Expanded(
                             child: Text(
-                              'location_not_available_search_all'.tr,
+                              'Localisation non disponible, recherche dans toute la région',
                               style: GoogleFonts.raleway(fontSize: 14.sp),
                             ),
                           ),
@@ -309,7 +307,7 @@ class _AvailableDoctorsScreenState extends State<AvailableDoctorsScreen> {
                             ),
                           ),
                           child: Text(
-                            'cancel'.tr,
+                            'Annuler',
                             style: GoogleFonts.raleway(fontSize: 16.sp),
                           ),
                         ),
@@ -333,7 +331,7 @@ class _AvailableDoctorsScreenState extends State<AvailableDoctorsScreen> {
                             ),
                           ),
                           child: Text(
-                            'apply'.tr,
+                            'Appliquer',
                             style: GoogleFonts.raleway(
                               fontSize: 16.sp,
                               fontWeight: FontWeight.w600,
@@ -362,7 +360,7 @@ class _AvailableDoctorsScreenState extends State<AvailableDoctorsScreen> {
       backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
         title: Text(
-          'available_doctors'.tr,
+          'Médecins disponibles',
           style: GoogleFonts.raleway(
             fontSize: 18.sp,
             fontWeight: FontWeight.bold,
@@ -379,7 +377,7 @@ class _AvailableDoctorsScreenState extends State<AvailableDoctorsScreen> {
           IconButton(
             icon: Icon(Icons.tune, color: Colors.white),
             onPressed: _showRangeSelector,
-            tooltip: 'search_range'.tr,
+            tooltip: 'Rayon de recherche',
           ),
         ],
       ),
@@ -434,11 +432,8 @@ class _AvailableDoctorsScreenState extends State<AvailableDoctorsScreen> {
                       Expanded(
                         child: Text(
                           _userLatitude != null && _userLongitude != null
-                              ? 'search_within_radius'.tr.replaceAll(
-                                '{radius}',
-                                '${_searchRadius.toInt()}',
-                              )
-                              : 'searching_all_doctors'.tr,
+                              ? 'Recherche dans un rayon de ${_searchRadius.toInt()} km'
+                              : 'Recherche de tous les médecins',
                           style: GoogleFonts.raleway(
                             fontSize: 12.sp,
                             color: AppColors.primaryColor,
@@ -449,7 +444,7 @@ class _AvailableDoctorsScreenState extends State<AvailableDoctorsScreen> {
                         GestureDetector(
                           onTap: _showRangeSelector,
                           child: Text(
-                            'change'.tr,
+                            'Modifier',
                             style: GoogleFonts.raleway(
                               fontSize: 12.sp,
                               color: AppColors.primaryColor,
@@ -477,7 +472,7 @@ class _AvailableDoctorsScreenState extends State<AvailableDoctorsScreen> {
                           ),
                           SizedBox(height: 16.h),
                           Text(
-                            'getting_location'.tr,
+                            'Obtention de la localisation',
                             style: GoogleFonts.raleway(fontSize: 16.sp),
                           ),
                         ],
@@ -517,7 +512,7 @@ class _AvailableDoctorsScreenState extends State<AvailableDoctorsScreen> {
                                       ),
                                       SizedBox(height: 16),
                                       Text(
-                                        'creating_appointment'.tr,
+                                        'Création du rendez-vous',
                                         style: GoogleFonts.raleway(
                                           fontSize: 16.sp,
                                           fontWeight: FontWeight.w600,
@@ -541,7 +536,7 @@ class _AvailableDoctorsScreenState extends State<AvailableDoctorsScreen> {
 
                           showSuccessSnackBar(
                             context,
-                            'consultation_request_sent'.tr,
+                            'Demande de consultation envoyée',
                           );
                         } else if (state is DoctorsLoaded) {
                           for (var doctor in state.doctors) {
@@ -578,7 +573,7 @@ class _AvailableDoctorsScreenState extends State<AvailableDoctorsScreen> {
                                     ),
                                     SizedBox(height: 16.h),
                                     Text(
-                                      'no_available_doctors'.tr,
+                                      'Aucun médecin disponible',
                                       textAlign: TextAlign.center,
                                       style: GoogleFonts.raleway(
                                         fontSize: 16.sp,
@@ -708,7 +703,7 @@ class _AvailableDoctorsScreenState extends State<AvailableDoctorsScreen> {
                   OutlinedButton.icon(
                     icon: Icon(Icons.info_outline, size: 18.sp),
                     label: Text(
-                      "view_profile".tr,
+                      "Voir le profil",
                       style: GoogleFonts.raleway(fontSize: 14.sp),
                     ),
                     style: OutlinedButton.styleFrom(
@@ -725,7 +720,7 @@ class _AvailableDoctorsScreenState extends State<AvailableDoctorsScreen> {
                     child: ElevatedButton.icon(
                       icon: Icon(Icons.calendar_today, size: 18.sp),
                       label: Text(
-                        "select".tr,
+                        "Sélectionner",
                         style: GoogleFonts.raleway(
                           fontSize: 14.sp,
                           fontWeight: FontWeight.w600,

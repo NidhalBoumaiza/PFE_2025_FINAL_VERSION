@@ -58,7 +58,7 @@ class _SettingsPatientState extends State<SettingsPatient> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          "settings".tr,
+          "Paramètres",
           style: GoogleFonts.raleway(
             fontSize: 18,
             fontWeight: FontWeight.bold,
@@ -79,22 +79,22 @@ class _SettingsPatientState extends State<SettingsPatient> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildSectionTitle("appearance".tr),
+            _buildSectionTitle("Apparence"),
             const SizedBox(height: 8),
             const ThemeCubitSwitch(),
 
             const SizedBox(height: 24),
-            _buildSectionTitle("notifications".tr),
+            _buildSectionTitle("Notifications"),
             const SizedBox(height: 8),
             _buildNotificationSettings(),
 
             const SizedBox(height: 24),
-            _buildSectionTitle("account".tr),
+            _buildSectionTitle("Compte"),
             const SizedBox(height: 8),
             _buildAccountSettings(),
 
             const SizedBox(height: 24),
-            _buildSectionTitle("about".tr),
+            _buildSectionTitle("À propos"),
             const SizedBox(height: 8),
             _buildAboutCard(),
           ],
@@ -123,21 +123,21 @@ class _SettingsPatientState extends State<SettingsPatient> {
         child: Column(
           children: [
             _buildSwitchSetting(
-              title: "appointments".tr,
+              title: "Rendez-vous",
               icon: Icons.calendar_today,
               value: _appointmentNotifications,
               settingKey: 'appointment_notifications',
             ),
             const Divider(height: 1),
             _buildSwitchSetting(
-              title: "messages".tr,
+              title: "Messages",
               icon: Icons.message,
               value: _messageNotifications,
               settingKey: 'message_notifications',
             ),
             const Divider(height: 1),
             _buildSwitchSetting(
-              title: "prescriptions".tr,
+              title: "Ordonnances",
               icon: Icons.description,
               value: _prescriptionNotifications,
               settingKey: 'prescription_notifications',
@@ -190,8 +190,8 @@ class _SettingsPatientState extends State<SettingsPatient> {
                   SnackBar(
                     content: Text(
                       val
-                          ? '$title ${"notifications".tr} ${"enabled".tr}'
-                          : '$title ${"notifications".tr} ${"disabled".tr}',
+                          ? '$title Notifications activées'
+                          : '$title Notifications désactivées',
                     ),
                     duration: const Duration(seconds: 2),
                     backgroundColor: AppColors.primaryColor,
@@ -215,11 +215,11 @@ class _SettingsPatientState extends State<SettingsPatient> {
           ListTile(
             leading: const Icon(Icons.edit, color: AppColors.primaryColor),
             title: Text(
-              "edit_profile".tr,
+              "Modifier le profil",
               style: GoogleFonts.raleway(fontSize: 14),
             ),
             subtitle: Text(
-              "update_your_personal_information".tr,
+              "Mettre à jour vos informations personnelles",
               style: GoogleFonts.raleway(
                 fontSize: 12,
                 color:
@@ -291,7 +291,7 @@ class _SettingsPatientState extends State<SettingsPatient> {
                   // Show success message
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                      content: Text('profile_updated_successfully'.tr),
+                      content: Text('Profil mis à jour avec succès'),
                       backgroundColor: AppColors.primaryColor,
                     ),
                   );
@@ -299,7 +299,7 @@ class _SettingsPatientState extends State<SettingsPatient> {
               } catch (e) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
-                    content: Text("failed_to_load_profile".tr),
+                    content: Text("Échec du chargement du profil"),
                     backgroundColor: Colors.red,
                   ),
                 );
@@ -313,11 +313,11 @@ class _SettingsPatientState extends State<SettingsPatient> {
               color: AppColors.primaryColor,
             ),
             title: Text(
-              "change_password".tr,
+              "Changer le mot de passe",
               style: GoogleFonts.raleway(fontSize: 14),
             ),
             subtitle: Text(
-              "update_your_password".tr,
+              "Mettre à jour votre mot de passe",
               style: GoogleFonts.raleway(
                 fontSize: 12,
                 color:
@@ -344,11 +344,11 @@ class _SettingsPatientState extends State<SettingsPatient> {
           ListTile(
             leading: const Icon(Icons.logout, color: Colors.red),
             title: Text(
-              "logout".tr,
+              "Déconnexion",
               style: GoogleFonts.raleway(fontSize: 14, color: Colors.red),
             ),
             subtitle: Text(
-              "sign_out_of_your_account".tr,
+              "Se déconnecter de votre compte",
               style: GoogleFonts.raleway(
                 fontSize: 12,
                 color:
@@ -370,11 +370,11 @@ class _SettingsPatientState extends State<SettingsPatient> {
           ListTile(
             leading: const Icon(Icons.delete_forever, color: Colors.red),
             title: Text(
-              "delete_account".tr,
+              "Supprimer le compte",
               style: GoogleFonts.raleway(fontSize: 14, color: Colors.red),
             ),
             subtitle: Text(
-              "delete_account_warning".tr,
+              "Cette action supprimera définitivement votre compte et toutes vos données.",
               style: GoogleFonts.raleway(
                 fontSize: 12,
                 color:
@@ -407,7 +407,7 @@ class _SettingsPatientState extends State<SettingsPatient> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              "app_name_version".tr,
+              "MediLink v1.0.0",
               style: GoogleFonts.raleway(
                 fontWeight: FontWeight.bold,
                 fontSize: 14,
@@ -415,7 +415,7 @@ class _SettingsPatientState extends State<SettingsPatient> {
             ),
             const SizedBox(height: 8),
             Text(
-              "copyright".tr,
+              "© 2025 Medical App. Tous droits réservés.",
               style: GoogleFonts.raleway(
                 fontSize: 12,
                 color:
@@ -435,19 +435,19 @@ class _SettingsPatientState extends State<SettingsPatient> {
       context: context,
       builder:
           (context) => AlertDialog(
-            title: Text("logout".tr),
-            content: Text("logout_confirmation".tr),
+            title: Text("Déconnexion"),
+            content: Text("Êtes-vous sûr de vouloir vous déconnecter ?"),
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(context),
-                child: Text("cancel".tr),
+                child: Text("Annuler"),
               ),
               TextButton(
                 onPressed: () {
                   // Logout logic
-                  ScaffoldMessenger.of(
-                    context,
-                  ).showSnackBar(SnackBar(content: Text("logout_success".tr)));
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text("Déconnexion réussie")),
+                  );
                   // Redirect to login screen
                   Navigator.pushReplacement(
                     context,
@@ -456,7 +456,7 @@ class _SettingsPatientState extends State<SettingsPatient> {
                     ),
                   );
                 },
-                child: Text("logout".tr),
+                child: Text("Déconnexion"),
               ),
             ],
           ),
@@ -477,7 +477,7 @@ class _SettingsPatientState extends State<SettingsPatient> {
                   Navigator.of(context).pop(); // Close dialog
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                      content: Text('account_deleted_successfully'.tr),
+                      content: Text('Compte supprimé avec succès'),
                       backgroundColor: Colors.green,
                     ),
                   );
@@ -504,7 +504,7 @@ class _SettingsPatientState extends State<SettingsPatient> {
                       const Icon(Icons.warning, color: Colors.red),
                       const SizedBox(width: 8),
                       Text(
-                        'delete_account'.tr,
+                        'Supprimer le compte',
                         style: GoogleFonts.raleway(
                           fontWeight: FontWeight.bold,
                           color: Colors.red,
@@ -517,7 +517,7 @@ class _SettingsPatientState extends State<SettingsPatient> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'delete_account_description'.tr,
+                        'Cette action supprimera définitivement votre compte et toutes vos données.',
                         style: GoogleFonts.raleway(
                           fontSize: 14,
                           color:
@@ -528,7 +528,7 @@ class _SettingsPatientState extends State<SettingsPatient> {
                       ),
                       const SizedBox(height: 16),
                       Text(
-                        'confirm_password_to_delete'.tr,
+                        'Confirmez votre mot de passe pour supprimer',
                         style: GoogleFonts.raleway(
                           fontWeight: FontWeight.w600,
                           fontSize: 14,
@@ -543,7 +543,7 @@ class _SettingsPatientState extends State<SettingsPatient> {
                         controller: passwordController,
                         obscureText: true,
                         decoration: InputDecoration(
-                          hintText: 'enter_password'.tr,
+                          hintText: 'Entrez votre mot de passe',
                           border: const OutlineInputBorder(),
                           prefixIcon: const Icon(Icons.lock),
                         ),
@@ -556,7 +556,7 @@ class _SettingsPatientState extends State<SettingsPatient> {
                           state is DeleteAccountLoading
                               ? null
                               : () => Navigator.of(context).pop(),
-                      child: Text('cancel'.tr, style: GoogleFonts.raleway()),
+                      child: Text('Annuler', style: GoogleFonts.raleway()),
                     ),
                     ElevatedButton(
                       onPressed:
@@ -566,7 +566,9 @@ class _SettingsPatientState extends State<SettingsPatient> {
                                 if (passwordController.text.isEmpty) {
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     SnackBar(
-                                      content: Text('enter_password'.tr),
+                                      content: Text(
+                                        'Entrez votre mot de passe',
+                                      ),
                                       backgroundColor: Colors.red,
                                     ),
                                   );
@@ -579,10 +581,10 @@ class _SettingsPatientState extends State<SettingsPatient> {
                                   builder:
                                       (context) => AlertDialog(
                                         title: Text(
-                                          'confirm_delete_account'.tr,
+                                          'Confirmer la suppression du compte',
                                         ),
                                         content: Text(
-                                          'delete_account_warning'.tr,
+                                          'Attention : cette action supprimera définitivement votre compte et toutes vos données.',
                                           style: TextStyle(
                                             color:
                                                 Theme.of(context).brightness ==
@@ -597,7 +599,7 @@ class _SettingsPatientState extends State<SettingsPatient> {
                                                 () => Navigator.of(
                                                   context,
                                                 ).pop(false),
-                                            child: Text('cancel'.tr),
+                                            child: Text('Annuler'),
                                           ),
                                           ElevatedButton(
                                             style: ElevatedButton.styleFrom(
@@ -608,7 +610,7 @@ class _SettingsPatientState extends State<SettingsPatient> {
                                                   context,
                                                 ).pop(true),
                                             child: Text(
-                                              'delete'.tr,
+                                              'Supprimer',
                                               style: const TextStyle(
                                                 color: Colors.white,
                                               ),
@@ -635,7 +637,7 @@ class _SettingsPatientState extends State<SettingsPatient> {
                                     ScaffoldMessenger.of(context).showSnackBar(
                                       SnackBar(
                                         content: Text(
-                                          'delete_account_error'.tr,
+                                          'Erreur lors de la suppression du compte',
                                         ),
                                         backgroundColor: Colors.red,
                                       ),
@@ -659,7 +661,7 @@ class _SettingsPatientState extends State<SettingsPatient> {
                                 ),
                               )
                               : Text(
-                                'delete'.tr,
+                                'Supprimer',
                                 style: const TextStyle(color: Colors.white),
                               ),
                     ),

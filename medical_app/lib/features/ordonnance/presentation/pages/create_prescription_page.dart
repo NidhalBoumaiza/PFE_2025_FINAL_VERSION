@@ -75,7 +75,10 @@ class _CreatePrescriptionPageState extends State<CreatePrescriptionPage> {
     if (_medicationNameController.text.isEmpty ||
         _dosageController.text.isEmpty ||
         _instructionsController.text.isEmpty) {
-      showWarningSnackBar(context, 'fill_all_medication_fields'.tr);
+      showWarningSnackBar(
+        context,
+        'Veuillez remplir tous les champs du médicament',
+      );
       return;
     }
 
@@ -118,7 +121,7 @@ class _CreatePrescriptionPageState extends State<CreatePrescriptionPage> {
 
   Future<void> _savePrescription() async {
     if (_medications.isEmpty) {
-      showWarningSnackBar(context, 'add_at_least_one_medication'.tr);
+      showWarningSnackBar(context, 'Ajoutez au moins un médicament');
       return;
     }
 
@@ -162,14 +165,14 @@ class _CreatePrescriptionPageState extends State<CreatePrescriptionPage> {
       showSuccessSnackBar(
         context,
         _isEditing
-            ? 'prescription_updated_success'.tr
-            : 'prescription_saved_success'.tr,
+            ? 'Ordonnance mise à jour avec succès'
+            : 'Ordonnance sauvegardée avec succès',
       );
 
       Navigator.pop(context, true);
     } catch (e) {
       print('Error saving prescription: $e');
-      showErrorSnackBar(context, '${'save_error'.tr}: $e');
+      showErrorSnackBar(context, 'Erreur de sauvegarde: $e');
     } finally {
       setState(() {
         _isSaving = false;
@@ -182,7 +185,7 @@ class _CreatePrescriptionPageState extends State<CreatePrescriptionPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          _isEditing ? 'edit_prescription'.tr : 'new_prescription'.tr,
+          _isEditing ? 'Modifier l\'ordonnance' : 'Nouvelle ordonnance',
           style: GoogleFonts.raleway(
             fontWeight: FontWeight.bold,
             fontSize: 18.sp,

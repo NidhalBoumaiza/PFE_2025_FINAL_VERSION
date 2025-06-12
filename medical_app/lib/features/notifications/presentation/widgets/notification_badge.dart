@@ -143,7 +143,7 @@ class _NotificationBadgeState extends State<NotificationBadge>
     // Show a snackbar to confirm the button is being pressed
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('Notification badge pressed!'),
+        content: Text('Badge de notification pressé !'),
         duration: Duration(seconds: 1),
       ),
     );

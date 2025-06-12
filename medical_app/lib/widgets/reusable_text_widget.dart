@@ -23,7 +23,7 @@ class ReusableTextWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Text(
-      text.tr, // Translated title
+      text, // Translated title
       style: GoogleFonts.raleway(
         fontSize: textSize.sp,
         fontWeight: fontWeight ?? FontWeight.w200,

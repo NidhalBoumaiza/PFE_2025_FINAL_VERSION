@@ -19,24 +19,29 @@ class _QuizScreenState extends State<QuizScreen> {
   // Sample quiz questions related to first aid
   final List<Map<String, dynamic>> _questions = [
     {
-      'question': 'cpr_frequency_question'.tr,
+      'question':
+          'À quelle fréquence faut-il effectuer les compressions thoraciques lors d\'une RCP ?',
       'answers': [
-        {'text': 'cpr_frequency_answer1'.tr, 'isCorrect': false},
-        {'text': 'cpr_frequency_answer2'.tr, 'isCorrect': true},
+        {'text': '60-80 compressions par minute', 'isCorrect': false},
+        {'text': '100-120 compressions par minute', 'isCorrect': true},
       ],
     },
     {
-      'question': 'bleeding_question'.tr,
+      'question': 'Que faire en premier en cas de saignement important ?',
       'answers': [
-        {'text': 'bleeding_answer1'.tr, 'isCorrect': false},
-        {'text': 'bleeding_answer2'.tr, 'isCorrect': true},
+        {'text': 'Nettoyer la plaie avec de l\'alcool', 'isCorrect': false},
+        {
+          'text': 'Appliquer une pression directe sur la plaie',
+          'isCorrect': true,
+        },
       ],
     },
     {
-      'question': 'choking_question'.tr,
+      'question':
+          'Quelle est la première action à effectuer en cas d\'étouffement ?',
       'answers': [
-        {'text': 'choking_answer1'.tr, 'isCorrect': true},
-        {'text': 'choking_answer2'.tr, 'isCorrect': false},
+        {'text': 'Effectuer la manœuvre de Heimlich', 'isCorrect': true},
+        {'text': 'Donner de l\'eau à boire', 'isCorrect': false},
       ],
     },
   ];
@@ -76,7 +81,7 @@ class _QuizScreenState extends State<QuizScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          "${'quiz'.tr} - ${widget.videoTitle}",
+          "Quiz - ${widget.videoTitle}",
           style: theme.textTheme.titleLarge?.copyWith(
             color: Colors.white,
             fontWeight: FontWeight.bold,
@@ -122,7 +127,7 @@ class _QuizScreenState extends State<QuizScreen> {
               ),
               const SizedBox(height: 16),
               Text(
-                "${'question'.tr} ${_currentQuestionIndex + 1}/${_questions.length}",
+                "Question ${_currentQuestionIndex + 1}/${_questions.length}",
                 style: theme.textTheme.bodyMedium?.copyWith(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
@@ -308,8 +313,8 @@ class _QuizScreenState extends State<QuizScreen> {
                                   child: Text(
                                     _currentQuestionIndex ==
                                             _questions.length - 1
-                                        ? "finish".tr
-                                        : "next".tr,
+                                        ? "Terminer"
+                                        : "Suivant",
                                     style: theme.textTheme.labelLarge?.copyWith(
                                       fontSize: 18,
                                       color: Colors.white,

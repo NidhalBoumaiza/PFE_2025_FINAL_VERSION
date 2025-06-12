@@ -239,45 +239,45 @@ class _ProfilMedecinState extends State<ProfilMedecin> {
   // Translate specialty based on the value from the database
   String _translateSpecialty(String? specialty) {
     if (specialty == null || specialty.isEmpty) {
-      return 'not_specified'.tr;
+      return 'Non spécifié';
     }
 
     // Convert specialty to lowercase for case-insensitive matching
     final specialtyLower = specialty.toLowerCase();
 
-    // Map of common specialties to their translation keys
-    final Map<String, String> specialtyTranslationKeys = {
-      'cardiology': 'cardiologist',
-      'cardiologie': 'cardiologist',
-      'dermatology': 'dermatologist',
-      'dermatologie': 'dermatologist',
-      'neurology': 'neurologist',
-      'neurologie': 'neurologist',
-      'pediatrics': 'pediatrician',
-      'pédiatrie': 'pediatrician',
-      'orthopedics': 'orthopedic',
-      'orthopédie': 'orthopedic',
-      'general': 'general_practitioner',
-      'généraliste': 'general_practitioner',
-      'psychology': 'psychologist',
-      'psychologie': 'psychologist',
-      'gynecology': 'gynecologist',
-      'gynécologie': 'gynecologist',
-      'ophthalmology': 'ophthalmologist',
-      'ophtalmologie': 'ophthalmologist',
-      'dentistry': 'dentist',
-      'dentisterie': 'dentist',
-      'pulmonology': 'pulmonologist',
-      'pneumologie': 'pulmonologist',
-      'nutrition': 'nutritionist',
-      'esthétique': 'aesthetic_doctor',
-      'aesthetic': 'aesthetic_doctor',
+    // Map of common specialties to their French translations
+    final Map<String, String> specialtyTranslations = {
+      'cardiology': 'Cardiologue',
+      'cardiologie': 'Cardiologue',
+      'dermatology': 'Dermatologue',
+      'dermatologie': 'Dermatologue',
+      'neurology': 'Neurologue',
+      'neurologie': 'Neurologue',
+      'pediatrics': 'Pédiatre',
+      'pédiatrie': 'Pédiatre',
+      'orthopedics': 'Orthopédiste',
+      'orthopédie': 'Orthopédiste',
+      'general': 'Médecin généraliste',
+      'généraliste': 'Médecin généraliste',
+      'psychology': 'Psychologue',
+      'psychologie': 'Psychologue',
+      'gynecology': 'Gynécologue',
+      'gynécologie': 'Gynécologue',
+      'ophthalmology': 'Ophtalmologue',
+      'ophtalmologie': 'Ophtalmologue',
+      'dentistry': 'Dentiste',
+      'dentisterie': 'Dentiste',
+      'pulmonology': 'Pneumologue',
+      'pneumologie': 'Pneumologue',
+      'nutrition': 'Nutritionniste',
+      'esthétique': 'Médecin esthétique',
+      'aesthetic': 'Médecin esthétique',
     };
 
     // Try to find a matching key in our map
-    for (final entry in specialtyTranslationKeys.entries) {
+    for (final entry in specialtyTranslations.entries) {
       if (specialtyLower.contains(entry.key)) {
-        return entry.value.tr;
+        return entry.value;
       }
     }
 
@@ -288,16 +288,16 @@ class _ProfilMedecinState extends State<ProfilMedecin> {
   void _showLogoutDialog() {
     Get.dialog(
       AlertDialog(
-        title: Text('logout'.tr, style: GoogleFonts.raleway(fontSize: 22.sp)),
+        title: Text('Déconnexion', style: GoogleFonts.raleway(fontSize: 22.sp)),
         content: Text(
-          'confirm_logout'.tr,
+          'Êtes-vous sûr de vouloir vous déconnecter ?',
           style: GoogleFonts.raleway(fontSize: 18.sp),
         ),
         actions: [
           TextButton(
             onPressed: Get.back,
             child: Text(
-              'cancel'.tr,
+              'Annuler',
               style: GoogleFonts.raleway(fontSize: 16.sp),
             ),
           ),
@@ -312,7 +312,7 @@ class _ProfilMedecinState extends State<ProfilMedecin> {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
                     content: Text(
-                      "logout_success".tr,
+                      "Déconnexion réussie",
                       style: GoogleFonts.raleway(fontSize: 16.sp),
                     ),
                   ),
@@ -325,12 +325,12 @@ class _ProfilMedecinState extends State<ProfilMedecin> {
               } catch (e) {
                 showErrorSnackBar(
                   context,
-                  'logout_error'.tr.replaceAll('{0}', e.toString()),
+                  'Erreur lors de la déconnexion : ${e.toString()}',
                 );
               }
             },
             child: Text(
-              'logout'.tr,
+              'Déconnexion',
               style: GoogleFonts.raleway(fontSize: 16.sp, color: Colors.red),
             ),
           ),
@@ -340,7 +340,7 @@ class _ProfilMedecinState extends State<ProfilMedecin> {
   }
 
   void _changeProfilePicture() {
-    Get.snackbar('info'.tr, 'change_profile_picture_message'.tr);
+    Get.snackbar('Info', 'Fonctionnalité de changement de photo de profil à venir');
   }
 
   void _showAppointmentDurationDialog() {
@@ -353,7 +353,7 @@ class _ProfilMedecinState extends State<ProfilMedecin> {
           builder: (context, setState) {
             return AlertDialog(
               title: Text(
-                'consultation_duration_label'.tr,
+                'Durée de consultation',
                 style: GoogleFonts.raleway(
                   fontWeight: FontWeight.bold,
                   fontSize: 20.sp,
@@ -363,7 +363,7 @@ class _ProfilMedecinState extends State<ProfilMedecin> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
-                    'choose_consultation_duration'.tr,
+                    'Choisissez la durée de consultation',
                     style: GoogleFonts.raleway(
                       fontSize: 16.sp,
                       color: Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black87,
@@ -374,7 +374,7 @@ class _ProfilMedecinState extends State<ProfilMedecin> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Text(
-                        '${'duration_label'.tr}: ',
+                        'Durée : ',
                         style: GoogleFonts.raleway(
                           fontSize: 16.sp,
                           fontWeight: FontWeight.w600,
@@ -387,7 +387,7 @@ class _ProfilMedecinState extends State<ProfilMedecin> {
                               return DropdownMenuItem<int>(
                                 value: value,
                                 child: Text(
-                                  'duration_minutes'.trParams({'minutes': value.toString()}),
+                                  '$value minutes',
                                   style: GoogleFonts.raleway(
                                     fontSize: 16.sp,
                                     color: Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black87,
@@ -414,7 +414,7 @@ class _ProfilMedecinState extends State<ProfilMedecin> {
                     Navigator.of(context).pop();
                   },
                   child: Text(
-                    'cancel'.tr,
+                    'Annuler',
                     style: GoogleFonts.raleway(
                       color: Colors.grey,
                       fontSize: 16.sp,
@@ -458,18 +458,18 @@ class _ProfilMedecinState extends State<ProfilMedecin> {
                         // Show success message
                         showSuccessSnackBar(
                           context,
-                          'consultation_duration_updated'.tr,
+                          'Durée de consultation mise à jour',
                         );
                       }
                     } catch (e) {
                       // Show error message
-                      showErrorSnackBar(context, 'update_error'.tr + ': $e');
+                      showErrorSnackBar(context, 'Erreur de mise à jour : $e');
                     }
                     // Close dialog
                     Navigator.of(context).pop();
                   },
                   child: Text(
-                    'confirm'.tr,
+                    'Confirmer',
                     style: GoogleFonts.raleway(
                       color: AppColors.primaryColor,
                       fontWeight: FontWeight.bold,
@@ -491,7 +491,7 @@ class _ProfilMedecinState extends State<ProfilMedecin> {
       child: Scaffold(
         appBar: AppBar(
           title: Text(
-            'profile'.tr,
+            'Profil',
             style: GoogleFonts.raleway(
               fontSize: 18.sp,
               fontWeight: FontWeight.bold,
@@ -522,7 +522,7 @@ class _ProfilMedecinState extends State<ProfilMedecin> {
               setState(() {
                 _medecin = state.user as MedecinEntity;
               });
-              showSuccessSnackBar(context, 'profile_saved_successfully'.tr);
+              showSuccessSnackBar(context, 'Profil sauvegardé avec succès');
             } else if (state is UpdateUserFailure) {
               showErrorSnackBar(context, state.message);
             }
@@ -624,7 +624,7 @@ class _ProfilMedecinState extends State<ProfilMedecin> {
                                   child: TextField(
                                     controller: _nameController,
                                     decoration: InputDecoration(
-                                      labelText: 'name_label'.tr,
+                                      labelText: 'Nom',
                                       border: OutlineInputBorder(
                                         borderRadius: BorderRadius.circular(12),
                                       ),
@@ -641,7 +641,7 @@ class _ProfilMedecinState extends State<ProfilMedecin> {
                                   child: TextField(
                                     controller: _lastNameController,
                                     decoration: InputDecoration(
-                                      labelText: 'first_name_label'.tr,
+                                      labelText: 'Prénom',
                                       border: OutlineInputBorder(
                                         borderRadius: BorderRadius.circular(12),
                                       ),
@@ -655,7 +655,7 @@ class _ProfilMedecinState extends State<ProfilMedecin> {
                               ],
                             ) :
                             Text(
-                              '${'doctor_prefix'.tr} ${_medecin!.name} ${_medecin!.lastName}',
+                              'Dr. ${_medecin!.name} ${_medecin!.lastName}',
                               style: GoogleFonts.raleway(
                                 fontSize: 20.sp,
                                 fontWeight: FontWeight.bold,
@@ -687,7 +687,7 @@ class _ProfilMedecinState extends State<ProfilMedecin> {
                       ),
                       SizedBox(height: 20.h),
                       Text(
-                        'personal_information'.tr,
+                        'Informations personnelles',
                         style: GoogleFonts.raleway(
                           fontSize: 16.sp,
                           fontWeight: FontWeight.bold,
@@ -696,21 +696,21 @@ class _ProfilMedecinState extends State<ProfilMedecin> {
                       ),
                       SizedBox(height: 12.h),
                       _buildInfoTile(
-                        'phone_number_label'.tr,
+                        'Numéro de téléphone',
                         _medecin!.phoneNumber,
                       ),
-                      _buildInfoTile('gender'.tr, _medecin!.gender),
+                      _buildInfoTile('Sexe', _medecin!.gender),
                       _buildInfoTile(
-                        'date_of_birth_label'.tr,
+                        'Date de naissance',
                         _medecin!.dateOfBirth
                                 ?.toIso8601String()
                                 .split('T')
                                 .first ??
-                            'not_specified'.tr,
+                            'Non spécifié',
                       ),
                       SizedBox(height: 20.h),
                       Text(
-                        'professional_information'.tr,
+                        'Informations professionnelles',
                         style: GoogleFonts.raleway(
                           fontSize: 16.sp,
                           fontWeight: FontWeight.bold,
@@ -719,26 +719,26 @@ class _ProfilMedecinState extends State<ProfilMedecin> {
                       ),
                       SizedBox(height: 12.h),
                       _buildInfoTile(
-                        'specialty_label'.tr,
+                        'Spécialité',
                         _translateSpecialty(_medecin!.speciality),
                       ),
                       _buildInfoTile(
-                        'license_number_label'.tr,
-                        _medecin!.numLicence ?? 'not_specified'.tr,
+                        'Numéro de licence',
+                        _medecin!.numLicence ?? 'Non spécifié',
                       ),
                       _buildInfoTile(
-                        'consultation_duration_label'.tr,
-                        'consultation_duration_value'.trParams({'duration': _medecin!.appointmentDuration.toString()}),
+                        'Durée de consultation',
+                        '${_medecin!.appointmentDuration} minutes',
                       ),
                       if (_medecin?.consultationFee != null)
                         _buildInfoTile(
-                          'consultation_fee_label'.tr,
-                          'consultation_fee_value'.trParams({'fee': _medecin!.consultationFee.toString()}),
+                          'Tarif de consultation',
+                          '${_medecin!.consultationFee} DH',
                         ),
                       if (_medecin?.address != null &&
                           _medecin!.address!.isNotEmpty)
                         _buildInfoTile(
-                          'address'.tr,
+                          'Adresse',
                           _medecin!.address!.values
                               .where(
                                 (value) => value != null && value.isNotEmpty,
@@ -749,7 +749,7 @@ class _ProfilMedecinState extends State<ProfilMedecin> {
                       if (_medecin?.education != null &&
                           _medecin!.education!.isNotEmpty) ...[
                         Text(
-                          'education'.tr,
+                          'Formation',
                           style: GoogleFonts.raleway(
                             fontSize: 16.sp,
                             fontWeight: FontWeight.bold,
@@ -810,7 +810,7 @@ class _ProfilMedecinState extends State<ProfilMedecin> {
                           _medecin!.experience!.isNotEmpty) ...[
                         SizedBox(height: 20.h),
                         Text(
-                          'experience'.tr,
+                          'Expérience',
                           style: GoogleFonts.raleway(
                             fontSize: 16.sp,
                             fontWeight: FontWeight.bold,
@@ -882,7 +882,7 @@ class _ProfilMedecinState extends State<ProfilMedecin> {
                             ),
                           ),
                           child: Text(
-                            'save'.tr,
+                            'Sauvegarder',
                             style: GoogleFonts.raleway(
                               fontSize: 16.sp,
                               fontWeight: FontWeight.bold,
@@ -909,7 +909,7 @@ class _ProfilMedecinState extends State<ProfilMedecin> {
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 Text(
-                                  'modify_consultation_duration'.tr,
+                                  'Modifier la durée de consultation',
                                   style: GoogleFonts.raleway(
                                     fontSize: 14.sp,
                                     fontWeight: FontWeight.bold,
@@ -942,13 +942,13 @@ class _ProfilMedecinState extends State<ProfilMedecin> {
       Widget? customWidget;
       
       switch (label) {
-        case String l when l == 'phone_number_label'.tr:
+        case 'Numéro de téléphone':
           controller = _phoneController;
           break;
-        case String l when l == 'gender'.tr:
+        case 'Sexe':
           customWidget = DropdownButton<String>(
             value: _selectedGender,
-            items: ['male'.tr, 'female'.tr].map((String value) {
+            items: ['Homme', 'Femme'].map((String value) {
               return DropdownMenuItem<String>(
                 value: value,
                 child: Text(value),
@@ -966,11 +966,11 @@ class _ProfilMedecinState extends State<ProfilMedecin> {
             dropdownColor: Theme.of(context).cardColor,
           );
           break;
-        case String l when l == 'date_of_birth_label'.tr:
+        case 'Date de naissance':
           customWidget = InkWell(
             onTap: () => _selectDate(context),
             child: Text(
-              _selectedDate?.toIso8601String().split('T').first ?? 'not_specified'.tr,
+              _selectedDate?.toIso8601String().split('T').first ?? 'Non spécifié',
               style: GoogleFonts.raleway(
                 fontSize: 14.sp,
                 color: Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black87,
@@ -978,13 +978,13 @@ class _ProfilMedecinState extends State<ProfilMedecin> {
             ),
           );
           break;
-        case String l when l == 'specialty_label'.tr:
+        case 'Spécialité':
           controller = _specialityController;
           break;
-        case String l when l == 'license_number_label'.tr:
+        case 'Numéro de licence':
           controller = _licenseController;
           break;
-        case String l when l == 'consultation_fee_label'.tr:
+        case 'Tarif de consultation':
           controller = _consultationFeeController;
           break;
       }

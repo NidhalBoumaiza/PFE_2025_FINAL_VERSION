@@ -118,7 +118,7 @@ class _AppointmentsPatientsState extends State<AppointmentsPatients> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              'error_loading_user_data'.tr,
+              'Erreur lors du chargement des données utilisateur',
               style: GoogleFonts.raleway(),
             ),
             backgroundColor: Colors.red,
@@ -191,14 +191,14 @@ class _AppointmentsPatientsState extends State<AppointmentsPatients> {
       builder:
           (context) => AlertDialog(
             title: Text(
-              "confirm_cancellation".tr,
+              "Confirmer l'annulation",
               style: GoogleFonts.raleway(
                 fontWeight: FontWeight.bold,
                 fontSize: 16.sp,
               ),
             ),
             content: Text(
-              "want_to_cancel_appointment".tr,
+              "Êtes-vous sûr de vouloir annuler ce rendez-vous ?",
               style: GoogleFonts.raleway(fontSize: 14.sp),
             ),
             shape: RoundedRectangleBorder(
@@ -208,7 +208,7 @@ class _AppointmentsPatientsState extends State<AppointmentsPatients> {
               TextButton(
                 onPressed: () => Navigator.pop(context),
                 child: Text(
-                  "no".tr,
+                  "Non",
                   style: GoogleFonts.raleway(
                     fontSize: 14.sp,
                     color: Colors.grey,
@@ -242,7 +242,7 @@ class _AppointmentsPatientsState extends State<AppointmentsPatients> {
                   Navigator.pop(context);
                 },
                 child: Text(
-                  "yes".tr,
+                  "Oui",
                   style: GoogleFonts.raleway(
                     fontSize: 14.sp,
                     color: Colors.red,
@@ -362,7 +362,7 @@ class _AppointmentsPatientsState extends State<AppointmentsPatients> {
     if (currentUser == null || currentUser!.id == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('login_required_for_appointment'.tr),
+          content: Text('Connexion requise pour prendre rendez-vous'),
           backgroundColor: Colors.red,
         ),
       );
@@ -419,14 +419,14 @@ class _AppointmentsPatientsState extends State<AppointmentsPatients> {
             context: context,
             builder:
                 (context) => AlertDialog(
-                  title: Text('medical_record_required_title'.tr),
+                  title: Text('Dossier médical requis'),
                   content: Text(
-                    'medical_record_required_message'.tr,
+                    'Vous devez créer un dossier médical avant de prendre rendez-vous.',
                   ),
                   actions: [
                     TextButton(
                       onPressed: () => Navigator.pop(context),
-                      child: Text('cancel'.tr),
+                      child: Text('Annuler'),
                     ),
                     ElevatedButton(
                       onPressed: () {
@@ -442,7 +442,7 @@ class _AppointmentsPatientsState extends State<AppointmentsPatients> {
                           ),
                         );
                       },
-                      child: Text('create_medical_record'.tr),
+                      child: Text('Créer un dossier médical'),
                     ),
                   ],
                 ),
@@ -479,7 +479,7 @@ class _AppointmentsPatientsState extends State<AppointmentsPatients> {
           widget.showAppBar
               ? AppBar(
                 title: Text(
-                  "my_appointments".tr,
+                  "Mes rendez-vous",
                   style: GoogleFonts.poppins(
                     fontSize: 18.sp,
                     fontWeight: FontWeight.bold,
@@ -491,17 +491,17 @@ class _AppointmentsPatientsState extends State<AppointmentsPatients> {
                 actions: [
                   IconButton(
                     icon: Icon(Icons.calendar_today, color: Colors.white),
-                    tooltip: "filter_by_date".tr,
+                    tooltip: "Filtrer par date",
                     onPressed: _toggleCalendar,
                   ),
                   IconButton(
                     icon: Icon(Icons.add, color: Colors.white),
-                    tooltip: "add_appointment".tr,
+                    tooltip: "Ajouter un rendez-vous",
                     onPressed: _addAppointment,
                   ),
                   IconButton(
                     icon: Icon(Icons.refresh, color: Colors.white),
-                    tooltip: "refresh".tr,
+                    tooltip: "Actualiser",
                     onPressed: () {
                       if (currentUser != null && currentUser!.id != null) {
                         _rendezVousBloc.add(
@@ -605,8 +605,8 @@ class _AppointmentsPatientsState extends State<AppointmentsPatients> {
                 SnackBar(
                   content: Text(
                     state.status == "cancelled"
-                        ? "appointment_cancelled".tr
-                        : "appointment_status_updated".tr,
+                        ? "Rendez-vous annulé"
+                        : "Statut du rendez-vous mis à jour",
                     style: GoogleFonts.raleway(),
                   ),
                   backgroundColor: AppColors.primaryColor,
@@ -630,7 +630,7 @@ class _AppointmentsPatientsState extends State<AppointmentsPatients> {
                           ),
                           SizedBox(height: 16.h),
                           Text(
-                            "loading_appointments".tr,
+                            "Chargement des rendez-vous",
                             style: GoogleFonts.raleway(
                               fontSize: 16.sp,
                               color: Colors.grey[700],
@@ -674,7 +674,7 @@ class _AppointmentsPatientsState extends State<AppointmentsPatients> {
                                               MainAxisAlignment.spaceBetween,
                                           children: [
                                             Text(
-                                              "select_date".tr,
+                                              "Sélectionner une date",
                                               style: GoogleFonts.raleway(
                                                 fontSize: 16.sp,
                                                 fontWeight: FontWeight.bold,
@@ -696,7 +696,7 @@ class _AppointmentsPatientsState extends State<AppointmentsPatients> {
                                                       );
                                                     },
                                                     child: Text(
-                                                      "clear".tr,
+                                                      "Effacer",
                                                       style:
                                                           GoogleFonts.raleway(
                                                             color: Colors.red,
@@ -835,10 +835,10 @@ class _AppointmentsPatientsState extends State<AppointmentsPatients> {
                                             titleCentered: true,
                                           ),
                                           availableCalendarFormats: {
-                                            CalendarFormat.month: "month".tr,
+                                            CalendarFormat.month: "Mois",
                                             CalendarFormat.twoWeeks:
-                                                "two_weeks".tr,
-                                            CalendarFormat.week: "week".tr,
+                                                "2 semaines",
+                                            CalendarFormat.week: "Semaine",
                                           },
                                         ),
                                       ],
@@ -866,12 +866,7 @@ class _AppointmentsPatientsState extends State<AppointmentsPatients> {
                                 ),
                                 SizedBox(width: 8.w),
                                 Text(
-                                  "filtered_by_date".tr.replaceAll(
-                                    "{0}",
-                                    DateFormat(
-                                      'dd/MM/yyyy',
-                                    ).format(_selectedDay!),
-                                  ),
+                                  "Filtré par date : ${DateFormat('dd MMMM yyyy').format(_selectedDay!)}",
                                   style: GoogleFonts.raleway(
                                     fontSize: 14.sp,
                                     fontWeight: FontWeight.w500,
@@ -896,7 +891,7 @@ class _AppointmentsPatientsState extends State<AppointmentsPatients> {
                                       ),
                                       SizedBox(width: 4.w),
                                       Text(
-                                        "clear".tr,
+                                        "Effacer",
                                         style: GoogleFonts.raleway(
                                           fontSize: 14.sp,
                                           color: AppColors.primaryColor,
@@ -927,14 +922,8 @@ class _AppointmentsPatientsState extends State<AppointmentsPatients> {
                                         SizedBox(height: 24.h),
                                         Text(
                                           _selectedDay != null
-                                              ? "no_appointments_for_date".tr
-                                                  .replaceAll(
-                                                    "{0}",
-                                                    DateFormat(
-                                                      'dd/MM/yyyy',
-                                                    ).format(_selectedDay!),
-                                                  )
-                                              : "no_appointments_found".tr,
+                                              ? "Aucun rendez-vous pour le ${DateFormat('dd/MM/yyyy').format(_selectedDay!)}"
+                                              : "Aucun rendez-vous trouvé",
                                           style: GoogleFonts.raleway(
                                             fontSize: 18.sp,
                                             fontWeight: FontWeight.w600,
@@ -948,7 +937,7 @@ class _AppointmentsPatientsState extends State<AppointmentsPatients> {
                                             horizontal: 32.w,
                                           ),
                                           child: Text(
-                                            "tap_to_add_appointment".tr,
+                                            "Appuyez pour ajouter un rendez-vous",
                                             style: GoogleFonts.raleway(
                                               fontSize: 14.sp,
                                               color: Colors.grey[600],
@@ -973,7 +962,7 @@ class _AppointmentsPatientsState extends State<AppointmentsPatients> {
                                           ),
                                           icon: Icon(Icons.add, size: 20.sp),
                                           label: Text(
-                                            "add_appointment".tr,
+                                            "Ajouter un rendez-vous",
                                             style: GoogleFonts.raleway(
                                               fontSize: 14.sp,
                                               fontWeight: FontWeight.w600,
@@ -1050,8 +1039,7 @@ class _AppointmentsPatientsState extends State<AppointmentsPatients> {
                                                                   .doctorId,
                                                               appointment
                                                                       .doctorName ??
-                                                                  "unknown_doctor"
-                                                                      .tr,
+                                                                  "unknown_doctor",
                                                               appointment
                                                                   .speciality,
                                                             ),
@@ -1076,8 +1064,7 @@ class _AppointmentsPatientsState extends State<AppointmentsPatients> {
                                                                       .doctorId,
                                                                   appointment
                                                                           .doctorName ??
-                                                                      "unknown_doctor"
-                                                                          .tr,
+                                                                      "unknown_doctor",
                                                                   appointment
                                                                       .speciality,
                                                                 ),
@@ -1085,8 +1072,7 @@ class _AppointmentsPatientsState extends State<AppointmentsPatients> {
                                                               appointment.doctorName !=
                                                                       null
                                                                   ? "Dr. ${appointment.doctorName?.split(" ").last ?? ''}"
-                                                                  : "doctor_to_assign"
-                                                                      .tr,
+                                                                  : "Médecin à assigner",
                                                               style: GoogleFonts.raleway(
                                                                 fontSize: 15.sp,
                                                                 fontWeight:
@@ -1202,7 +1188,7 @@ class _AppointmentsPatientsState extends State<AppointmentsPatients> {
                                                         size: 16.sp,
                                                       ),
                                                       label: Text(
-                                                        "view_details".tr,
+                                                        "Voir les détails",
                                                         style: GoogleFonts.raleway(
                                                           color:
                                                               AppColors
@@ -1258,8 +1244,7 @@ class _AppointmentsPatientsState extends State<AppointmentsPatients> {
                                                               size: 16.sp,
                                                             ),
                                                             label: Text(
-                                                              "cancel_appointment"
-                                                                  .tr,
+                                                              "Annuler le rendez-vous",
                                                               style: GoogleFonts.raleway(
                                                                 color:
                                                                     Colors.red,
@@ -1317,15 +1302,15 @@ class _AppointmentsPatientsState extends State<AppointmentsPatients> {
   String _getStatusText(String status) {
     switch (status) {
       case "accepted":
-        return "status_confirmed".tr;
+        return "Confirmé";
       case "pending":
-        return "status_pending".tr;
+        return "En attente";
       case "cancelled":
-        return "status_cancelled".tr;
+        return "Annulé";
       case "completed":
-        return "status_completed".tr;
+        return "Terminé";
       default:
-        return "status_unknown".tr;
+        return "Statut inconnu";
     }
   }
 

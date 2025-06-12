@@ -58,7 +58,7 @@ class _PasswordScreenState extends State<PasswordScreen> {
                   // Title
                   Center(
                     child: Text(
-                      "create_password_title".tr,
+                      "Créer un mot de passe",
                       style: GoogleFonts.raleway(
                         fontSize: 24.sp,
                         fontWeight: FontWeight.bold,
@@ -76,7 +76,7 @@ class _PasswordScreenState extends State<PasswordScreen> {
                       children: [
                         // Password label
                         Text(
-                          "password".tr,
+                          "Mot de passe",
                           style: GoogleFonts.raleway(
                             fontSize: 16.sp,
                             fontWeight: FontWeight.w600,
@@ -143,7 +143,7 @@ class _PasswordScreenState extends State<PasswordScreen> {
                                   width: 1,
                                 ),
                               ),
-                              hintText: "password_placeholder".tr,
+                              hintText: "Entrez votre mot de passe",
                               hintStyle: GoogleFonts.raleway(
                                 color: Colors.grey[400],
                                 fontSize: 15.sp,
@@ -169,10 +169,10 @@ class _PasswordScreenState extends State<PasswordScreen> {
                             ),
                             validator: (value) {
                               if (value == null || value.isEmpty) {
-                                return "password_required".tr;
+                                return "Le mot de passe est requis";
                               }
                               if (value.length < 6) {
-                                return "password_min_length".tr;
+                                return "Le mot de passe doit contenir au moins 6 caractères";
                               }
                               return null;
                             },
@@ -183,7 +183,7 @@ class _PasswordScreenState extends State<PasswordScreen> {
 
                         // Confirm Password label
                         Text(
-                          "confirm_password_label".tr,
+                          "Confirmer le mot de passe",
                           style: GoogleFonts.raleway(
                             fontSize: 16.sp,
                             fontWeight: FontWeight.w600,
@@ -250,7 +250,7 @@ class _PasswordScreenState extends State<PasswordScreen> {
                                   width: 1,
                                 ),
                               ),
-                              hintText: "confirm_password_placeholder".tr,
+                              hintText: "Confirmez votre mot de passe",
                               hintStyle: GoogleFonts.raleway(
                                 color: Colors.grey[400],
                                 fontSize: 15.sp,
@@ -277,10 +277,10 @@ class _PasswordScreenState extends State<PasswordScreen> {
                             ),
                             validator: (value) {
                               if (value == null || value.isEmpty) {
-                                return "confirm_password_required".tr;
+                                return "La confirmation du mot de passe est requise";
                               }
                               if (value != passwordController.text) {
-                                return "passwords_dont_match".tr;
+                                return "Les mots de passe ne correspondent pas";
                               }
                               return null;
                             },
@@ -314,7 +314,7 @@ class _PasswordScreenState extends State<PasswordScreen> {
                                   ),
                                   SizedBox(width: 10.w),
                                   Text(
-                                    "account_created".tr,
+                                    "Compte créé",
                                     style: GoogleFonts.raleway(
                                       fontWeight: FontWeight.bold,
                                     ),
@@ -322,13 +322,13 @@ class _PasswordScreenState extends State<PasswordScreen> {
                                 ],
                               ),
                               content: Text(
-                                "account_creation_success".tr,
+                                "Votre compte a été créé avec succès. Un code de vérification va être envoyé à votre email pour activer votre compte.",
                                 style: GoogleFonts.raleway(height: 1.5),
                               ),
                               actions: [
                                 TextButton(
                                   child: Text(
-                                    "continue_button".tr,
+                                    "Continuer",
                                     style: GoogleFonts.raleway(
                                       color: AppColors.primaryColor,
                                       fontWeight: FontWeight.bold,
@@ -386,7 +386,7 @@ class _PasswordScreenState extends State<PasswordScreen> {
                                         ),
                                         SizedBox(height: 24.h),
                                         Text(
-                                          "sending_verification_code".tr,
+                                          "Envoi du code de vérification...",
                                           style: GoogleFonts.raleway(
                                             fontSize: 16.sp,
                                             fontWeight: FontWeight.w500,
@@ -460,7 +460,7 @@ class _PasswordScreenState extends State<PasswordScreen> {
                                       strokeWidth: 3,
                                     )
                                     : Text(
-                                      "create_account_button".tr,
+                                      "Créer le compte",
                                       style: GoogleFonts.raleway(
                                         fontSize: 16.sp,
                                         fontWeight: FontWeight.w600,
@@ -481,7 +481,7 @@ class _PasswordScreenState extends State<PasswordScreen> {
                         Navigator.pop(context);
                       },
                       child: Text(
-                        "back_button".tr,
+                        "Retour",
                         style: GoogleFonts.raleway(
                           fontSize: 14.sp,
                           fontWeight: FontWeight.w600,

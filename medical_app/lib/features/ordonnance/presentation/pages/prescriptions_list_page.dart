@@ -53,7 +53,7 @@ class _PrescriptionsListPageState extends State<PrescriptionsListPage> {
       backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
         title: Text(
-          widget.isDoctor ? 'my_prescriptions'.tr : 'my_prescriptions'.tr,
+          widget.isDoctor ? 'Mes ordonnances' : 'Mes ordonnances',
           style: GoogleFonts.raleway(
             fontWeight: FontWeight.bold,
             fontSize: 18.sp,
@@ -80,7 +80,7 @@ class _PrescriptionsListPageState extends State<PrescriptionsListPage> {
                   Icon(Icons.error_outline, color: Colors.red, size: 60.sp),
                   SizedBox(height: 16.h),
                   Text(
-                    '${'error'.tr}: ${state.message}',
+                    'Erreur: ${state.message}',
                     style: GoogleFonts.raleway(
                       fontSize: 16.sp,
                       color: theme.textTheme.bodyMedium?.color,
@@ -91,7 +91,7 @@ class _PrescriptionsListPageState extends State<PrescriptionsListPage> {
                   ElevatedButton.icon(
                     onPressed: _loadPrescriptions,
                     icon: const Icon(Icons.refresh),
-                    label: Text('retry'.tr, style: GoogleFonts.raleway()),
+                    label: Text('Réessayer', style: GoogleFonts.raleway()),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.primaryColor,
                       foregroundColor: Colors.white,
@@ -119,7 +119,7 @@ class _PrescriptionsListPageState extends State<PrescriptionsListPage> {
                   ),
                   SizedBox(height: 16.h),
                   Text(
-                    'loading_prescriptions'.tr,
+                    'Chargement des ordonnances',
                     style: GoogleFonts.raleway(
                       fontSize: 16.sp,
                       color: theme.textTheme.bodyMedium?.color,
@@ -153,7 +153,7 @@ class _PrescriptionsListPageState extends State<PrescriptionsListPage> {
             ),
             SizedBox(height: 16.h),
             Text(
-              'no_prescriptions'.tr,
+              'Aucune ordonnance',
               style: GoogleFonts.raleway(
                 fontSize: 18.sp,
                 fontWeight: FontWeight.bold,
@@ -163,8 +163,8 @@ class _PrescriptionsListPageState extends State<PrescriptionsListPage> {
             SizedBox(height: 8.h),
             Text(
               widget.isDoctor
-                  ? 'no_prescriptions_created_yet'.tr
-                  : 'no_prescriptions_received_yet'.tr,
+                  ? 'Aucune ordonnance créée pour le moment'
+                  : 'Aucune ordonnance reçue pour le moment',
               style: GoogleFonts.raleway(
                 fontSize: 14.sp,
                 color: theme.textTheme.bodySmall?.color,
@@ -237,7 +237,7 @@ class _PrescriptionsListPageState extends State<PrescriptionsListPage> {
                   SizedBox(width: 12.w),
                   Expanded(
                     child: Text(
-                      '${'prescription_from'.tr} ${DateFormat('dd/MM/yyyy').format(prescription.date)}',
+                      'Ordonnance du ${DateFormat('dd/MM/yyyy').format(prescription.date)}',
                       style: GoogleFonts.raleway(
                         fontSize: 16.sp,
                         fontWeight: FontWeight.bold,
@@ -250,8 +250,8 @@ class _PrescriptionsListPageState extends State<PrescriptionsListPage> {
               SizedBox(height: 12.h),
               Text(
                 widget.isDoctor
-                    ? '${'patient'.tr}: ${prescription.patientName}'
-                    : '${'doctor'.tr}: Dr. ${prescription.doctorName}',
+                    ? 'Patient: ${prescription.patientName}'
+                    : 'Médecin: Dr. ${prescription.doctorName}',
                 style: GoogleFonts.raleway(
                   fontSize: 14.sp,
                   color: theme.textTheme.bodyMedium?.color,
@@ -265,7 +265,7 @@ class _PrescriptionsListPageState extends State<PrescriptionsListPage> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    '$medicationCount ${'medication'.tr}${medicationCount > 1 ? 's' : ''}',
+                    '$medicationCount médicament${medicationCount > 1 ? 's' : ''}',
                     style: GoogleFonts.raleway(
                       fontSize: 14.sp,
                       color: theme.textTheme.bodySmall?.color,
@@ -274,7 +274,7 @@ class _PrescriptionsListPageState extends State<PrescriptionsListPage> {
                   Row(
                     children: [
                       Text(
-                        'view_details'.tr,
+                        'Voir les détails',
                         style: GoogleFonts.raleway(
                           fontSize: 14.sp,
                           color: AppColors.primaryColor,
@@ -300,7 +300,7 @@ class _PrescriptionsListPageState extends State<PrescriptionsListPage> {
                       Icon(Icons.edit, size: 16.sp, color: Colors.green),
                       SizedBox(width: 4.w),
                       Text(
-                        'editable'.tr,
+                        'Modifiable',
                         style: GoogleFonts.raleway(
                           fontSize: 12.sp,
                           color: Colors.green,

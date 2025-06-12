@@ -87,7 +87,7 @@ class _PharmaciePageState extends State<PharmaciePage> {
         _showLocationActivationScreen();
       } else if (permission == LocationPermission.deniedForever) {
         print('Location permission denied forever');
-        showErrorSnackBar(context, 'location_permission_denied'.tr);
+        showErrorSnackBar(context, 'Autorisation de localisation refusée');
         setState(() {
           _isLoading = false;
           // Use default location
@@ -157,7 +157,7 @@ class _PharmaciePageState extends State<PharmaciePage> {
             _currentPosition = _defaultLocation;
             _isLoading = false;
           });
-          showErrorSnackBar(context, 'could_not_get_location'.tr);
+          showErrorSnackBar(context, 'Impossible d\'obtenir la localisation');
           _fetchNearbyPlaces();
         }
       }
@@ -168,7 +168,7 @@ class _PharmaciePageState extends State<PharmaciePage> {
           _currentPosition = _defaultLocation;
           _isLoading = false;
         });
-        showErrorSnackBar(context, 'could_not_get_location'.tr);
+        showErrorSnackBar(context, 'Impossible d\'obtenir la localisation');
         _fetchNearbyPlaces();
       }
     }
@@ -226,7 +226,7 @@ class _PharmaciePageState extends State<PharmaciePage> {
         setState(() {
           _isLoadingPlaces = false;
         });
-        showErrorSnackBar(context, 'error_fetching_places'.tr);
+        showErrorSnackBar(context, 'Erreur lors de la récupération des lieux');
       }
     }
   }
@@ -242,7 +242,7 @@ class _PharmaciePageState extends State<PharmaciePage> {
         markerId: const MarkerId('user_location'),
         position: _currentPosition!,
         icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueAzure),
-        infoWindow: InfoWindow(title: 'your_location'.tr),
+        infoWindow: InfoWindow(title: 'Votre position'),
       ),
     );
 
@@ -346,11 +346,11 @@ class _PharmaciePageState extends State<PharmaciePage> {
       if (await canLaunchUrl(url)) {
         await launchUrl(url, mode: LaunchMode.externalApplication);
       } else {
-        showErrorSnackBar(context, 'could_not_launch_maps'.tr);
+        showErrorSnackBar(context, 'Impossible d\'ouvrir Google Maps');
       }
     } catch (e) {
       print('Error launching maps: $e');
-      showErrorSnackBar(context, 'could_not_launch_maps'.tr);
+      showErrorSnackBar(context, 'Impossible d\'ouvrir Google Maps');
     }
   }
 
@@ -366,7 +366,7 @@ class _PharmaciePageState extends State<PharmaciePage> {
     if (_places.isEmpty) {
       return Center(
         child: Text(
-          'no_places_found'.tr,
+          'Aucun lieu trouvé',
           style: GoogleFonts.raleway(fontSize: 16.sp, color: Colors.grey),
         ),
       );
@@ -506,7 +506,7 @@ class _PharmaciePageState extends State<PharmaciePage> {
             width: double.infinity,
             child: ElevatedButton.icon(
               icon: Icon(Icons.directions),
-              label: Text('get_directions'.tr),
+              label: Text('Obtenir l\'itinéraire'),
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primaryColor,
                 foregroundColor: Colors.white,
@@ -532,7 +532,7 @@ class _PharmaciePageState extends State<PharmaciePage> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          _currentType == PlaceType.hospital ? 'hospitals'.tr : 'pharmacies'.tr,
+          _currentType == PlaceType.hospital ? 'Hôpitaux' : 'Pharmacies',
           style: GoogleFonts.raleway(fontWeight: FontWeight.bold),
         ),
         backgroundColor: AppColors.primaryColor,
@@ -563,7 +563,7 @@ class _PharmaciePageState extends State<PharmaciePage> {
                     ),
                     SizedBox(height: 16.h),
                     Text(
-                      'getting_location'.tr,
+                      'Obtention de la localisation',
                       style: GoogleFonts.raleway(fontSize: 16.sp),
                     ),
                   ],
@@ -700,7 +700,7 @@ class _PharmaciePageState extends State<PharmaciePage> {
                                     ),
                                     SizedBox(width: 8.w),
                                     Text(
-                                      'hospitals'.tr,
+                                      'Hôpitaux',
                                       style: GoogleFonts.raleway(
                                         color:
                                             _currentType == PlaceType.hospital
@@ -748,7 +748,7 @@ class _PharmaciePageState extends State<PharmaciePage> {
                                     ),
                                     SizedBox(width: 8.w),
                                     Text(
-                                      'pharmacies'.tr,
+                                      'Pharmacies',
                                       style: GoogleFonts.raleway(
                                         color:
                                             _currentType == PlaceType.pharmacy
@@ -848,7 +848,7 @@ class _PharmaciePageState extends State<PharmaciePage> {
                               ),
                               SizedBox(width: 12.w),
                               Text(
-                                'loading_places'.tr,
+                                'Chargement des lieux',
                                 style: GoogleFonts.raleway(fontSize: 14.sp),
                               ),
                             ],
@@ -896,8 +896,8 @@ class _PharmaciePageState extends State<PharmaciePage> {
                     SizedBox(width: 8.w),
                     Text(
                       _currentType == PlaceType.hospital
-                          ? 'nearby_hospitals'.tr
-                          : 'nearby_pharmacies'.tr,
+                          ? 'Hôpitaux à proximité'
+                          : 'Pharmacies à proximité',
                       style: GoogleFonts.raleway(
                         fontSize: 18.sp,
                         fontWeight: FontWeight.bold,
@@ -905,7 +905,7 @@ class _PharmaciePageState extends State<PharmaciePage> {
                     ),
                     const Spacer(),
                     Text(
-                      '${_places.length} ' + 'found'.tr,
+                      '${_places.length} ' + 'trouvé(s)',
                       style: GoogleFonts.raleway(
                         fontSize: 14.sp,
                         color: Colors.grey[600],

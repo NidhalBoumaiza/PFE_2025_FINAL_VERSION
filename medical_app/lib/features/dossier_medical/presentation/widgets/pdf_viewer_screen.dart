@@ -43,13 +43,13 @@ class _PDFViewerScreenState extends State<PDFViewerScreen> {
         });
       } else {
         throw Exception(
-          '${"failed_to_download_pdf".tr}: ${response.statusCode}',
+          'Échec du téléchargement du PDF: ${response.statusCode}',
         );
       }
     } catch (e) {
       print('Error downloading PDF: $e');
       setState(() {
-        error = '${"failed_to_load_pdf".tr}: $e';
+        error = 'Échec du chargement du PDF: $e';
         isLoading = false;
       });
     }
@@ -81,11 +81,11 @@ class _PDFViewerScreenState extends State<PDFViewerScreen> {
                 onError: (error) {
                   print('PDFView error: $error');
                   setState(() {
-                    error = '${"failed_to_render_pdf".tr}: $error';
+                    error = 'Échec du rendu du PDF: $error';
                   });
                 },
               )
-              : Center(child: Text('failed_to_load_pdf'.tr)),
+              : Center(child: Text('Échec du chargement du PDF')),
     );
   }
 }

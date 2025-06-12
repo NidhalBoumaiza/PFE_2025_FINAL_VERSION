@@ -63,7 +63,7 @@ class _NotificationsPatientState extends State<NotificationsPatient>
         if (mounted) {
           ScaffoldMessenger.of(
             context,
-          ).showSnackBar(SnackBar(content: Text('error_user_not_found'.tr)));
+          ).showSnackBar(SnackBar(content: Text('Utilisateur non trouvé')));
         }
       }
     } catch (e) {
@@ -71,9 +71,11 @@ class _NotificationsPatientState extends State<NotificationsPatient>
         _isLoading = false;
       });
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('error_loading_user_data'.tr)));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Erreur lors du chargement des données utilisateur'),
+          ),
+        );
       }
     }
   }
@@ -100,7 +102,7 @@ class _NotificationsPatientState extends State<NotificationsPatient>
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('error_user_not_found'.tr),
+              content: Text('Utilisateur non trouvé'),
               backgroundColor: Colors.red,
             ),
           );
@@ -112,7 +114,7 @@ class _NotificationsPatientState extends State<NotificationsPatient>
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('error_loading_notifications'.tr),
+            content: Text('Erreur lors du chargement des notifications'),
             backgroundColor: Colors.red,
           ),
         );
@@ -131,7 +133,9 @@ class _NotificationsPatientState extends State<NotificationsPatient>
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('error_user_not_found'.tr),
+              content: Text(
+                'Erreur lors du marquage des notifications comme lues',
+              ),
               backgroundColor: Colors.red,
             ),
           );
@@ -143,7 +147,7 @@ class _NotificationsPatientState extends State<NotificationsPatient>
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              'error_marking_notifications_read'.tr,
+              'Erreur lors du marquage des notifications comme lues',
             ),
             backgroundColor: Colors.red,
           ),
@@ -166,9 +170,9 @@ class _NotificationsPatientState extends State<NotificationsPatient>
           setState(() {
             _isLoading = false;
           });
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(SnackBar(content: Text('loading_timeout'.tr)));
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Délai d\'attente de chargement')),
+          );
         }
       });
     }
@@ -190,9 +194,9 @@ class _NotificationsPatientState extends State<NotificationsPatient>
         setState(() {
           _isLoading = false;
         });
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('error_refreshing'.tr)));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Erreur lors de l\'actualisation')),
+        );
       }
     }
 
@@ -210,7 +214,7 @@ class _NotificationsPatientState extends State<NotificationsPatient>
       backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
         title: Text(
-          'notifications'.tr,
+          'Notifications',
           style: GoogleFonts.raleway(
             fontSize: 18,
             fontWeight: FontWeight.bold,
@@ -229,7 +233,9 @@ class _NotificationsPatientState extends State<NotificationsPatient>
                 );
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
-                    content: Text('all_notifications_marked_as_read'.tr),
+                    content: Text(
+                      'Toutes les notifications ont été marquées comme lues',
+                    ),
                   ),
                 );
               }
@@ -317,7 +323,7 @@ class _NotificationsPatientState extends State<NotificationsPatient>
                                   ),
                                   SizedBox(height: 16.h),
                                   Text(
-                                    'no_notifications'.tr,
+                                    'Aucune notification',
                                     style: GoogleFonts.raleway(
                                       fontSize: 16.sp,
                                       color: theme.textTheme.bodyMedium?.color,
@@ -370,7 +376,7 @@ class _NotificationsPatientState extends State<NotificationsPatient>
                           ElevatedButton.icon(
                             onPressed: _refreshNotifications,
                             icon: Icon(Icons.refresh),
-                            label: Text('retry'.tr),
+                            label: Text('Réessayer'),
                             style: ElevatedButton.styleFrom(
                               backgroundColor: AppColors.primaryColor,
                               foregroundColor: Colors.white,
@@ -397,7 +403,7 @@ class _NotificationsPatientState extends State<NotificationsPatient>
                 CircularProgressIndicator(color: AppColors.primaryColor),
                 SizedBox(height: 16.h),
                 Text(
-                  'loading_notifications'.tr,
+                  'Chargement des notifications',
                   style: GoogleFonts.raleway(
                     fontSize: 16.sp,
                     color: theme.textTheme.bodyMedium?.color,
@@ -420,13 +426,13 @@ class _NotificationsPatientState extends State<NotificationsPatient>
       padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
       child: Row(
         children: [
-          _buildFilterChip('all', 'all'.tr),
+          _buildFilterChip('all', 'Tout'),
           SizedBox(width: 10.w),
-          _buildFilterChip('appointment', 'appointments'.tr),
+          _buildFilterChip('appointment', 'Rendez-vous'),
           SizedBox(width: 10.w),
-          _buildFilterChip('prescription', 'prescriptions'.tr),
+          _buildFilterChip('prescription', 'Ordonnances'),
           SizedBox(width: 10.w),
-          _buildFilterChip('rating', 'ratings'.tr),
+          _buildFilterChip('rating', 'Évaluations'),
         ],
       ),
     );
@@ -503,7 +509,7 @@ class _NotificationsPatientState extends State<NotificationsPatient>
             ),
             const SizedBox(height: 16),
             Text(
-              'no_notifications'.tr,
+              'Aucune notification',
               style: GoogleFonts.raleway(
                 fontSize: 14,
                 color: theme.textTheme.bodyMedium?.color,
@@ -560,24 +566,21 @@ class _NotificationsPatientState extends State<NotificationsPatient>
             return AlertDialog(
               backgroundColor: theme.cardColor,
               title: Text(
-                'delete_notification'.tr,
+                'Supprimer la notification',
                 style: TextStyle(color: theme.textTheme.titleLarge?.color),
               ),
               content: Text(
-                'confirm_delete_notification'.tr,
+                'Êtes-vous sûr de vouloir supprimer cette notification ?',
                 style: TextStyle(color: theme.textTheme.bodyMedium?.color),
               ),
               actions: <Widget>[
                 TextButton(
                   onPressed: () => Navigator.of(context).pop(false),
-                  child: Text(
-                    'cancel'.tr,
-                    style: TextStyle(color: Colors.grey),
-                  ),
+                  child: Text('Annuler', style: TextStyle(color: Colors.grey)),
                 ),
                 TextButton(
                   onPressed: () => Navigator.of(context).pop(true),
-                  child: Text('delete'.tr, style: TextStyle(color: Colors.red)),
+                  child: Text('Supprimer', style: TextStyle(color: Colors.red)),
                 ),
               ],
             );
@@ -590,7 +593,7 @@ class _NotificationsPatientState extends State<NotificationsPatient>
         );
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(SnackBar(content: Text('notification_deleted'.tr)));
+        ).showSnackBar(SnackBar(content: Text('Notification supprimée')));
       },
       child: InkWell(
         onTap: () {
@@ -701,7 +704,7 @@ class _NotificationsPatientState extends State<NotificationsPatient>
                                         ),
                                       ),
                                       child: Text(
-                                        'new'.tr,
+                                        'Nouveau',
                                         style: GoogleFonts.raleway(
                                           fontSize: 8.sp,
                                           fontWeight: FontWeight.bold,
@@ -809,67 +812,67 @@ class _NotificationsPatientState extends State<NotificationsPatient>
     switch (type) {
       case NotificationType.newAppointment:
         icon = Icons.calendar_today_rounded;
-        label = 'appointment'.tr;
+        label = 'Rendez-vous';
         break;
       case NotificationType.appointmentAccepted:
         icon = Icons.check_circle_rounded;
-        label = 'accepted'.tr;
+        label = 'Accepté';
         break;
       case NotificationType.appointmentRejected:
         icon = Icons.cancel_rounded;
-        label = 'rejected'.tr;
+        label = 'Rejeté';
         break;
       case NotificationType.appointmentCanceled:
         icon = Icons.event_busy_rounded;
-        label = 'canceled'.tr;
+        label = 'Annulé';
         break;
       case NotificationType.appointmentAssigned:
         icon = Icons.assignment_ind_rounded;
-        label = 'assigned'.tr;
+        label = 'Assigné';
         break;
       case NotificationType.appointmentReminder:
         icon = Icons.alarm_rounded;
-        label = 'reminder'.tr;
+        label = 'Rappel';
         break;
       case NotificationType.newRating:
         icon = Icons.star_rounded;
-        label = 'rating'.tr;
+        label = 'Évaluation';
         break;
       case NotificationType.newPrescription:
         icon = Icons.medical_services_rounded;
-        label = 'prescription'.tr;
+        label = 'Ordonnance';
         break;
       case NotificationType.prescriptionUpdated:
         icon = Icons.update_rounded;
-        label = 'updated'.tr;
+        label = 'Mis à jour';
         break;
       case NotificationType.prescriptionRefilled:
         icon = Icons.refresh_rounded;
-        label = 'refilled'.tr;
+        label = 'Renouvelé';
         break;
       case NotificationType.prescriptionCanceled:
         icon = Icons.block_rounded;
-        label = 'canceled'.tr;
+        label = 'Annulé';
         break;
       case NotificationType.newMessage:
         icon = Icons.message_rounded;
-        label = 'message'.tr;
+        label = 'Message';
         break;
       case NotificationType.dossierUpdate:
         icon = Icons.folder_rounded;
-        label = 'dossier'.tr;
+        label = 'Dossier';
         break;
       case NotificationType.medicationReminder:
         icon = Icons.medication_rounded;
-        label = 'medication'.tr;
+        label = 'Médicament';
         break;
       case NotificationType.emergencyAlert:
         icon = Icons.emergency_rounded;
-        label = 'emergency'.tr;
+        label = 'Urgence';
         break;
       default:
         icon = Icons.notifications_rounded;
-        label = 'notification'.tr;
+        label = 'Notification';
     }
 
     return Container(
@@ -1038,37 +1041,37 @@ class _NotificationsPatientState extends State<NotificationsPatient>
   String _getNotificationTypeLabel(NotificationType type) {
     switch (type) {
       case NotificationType.newAppointment:
-        return 'new_appointment'.tr;
+        return 'Nouveau rendez-vous';
       case NotificationType.appointmentAccepted:
-        return 'accepted'.tr;
+        return 'Accepté';
       case NotificationType.appointmentRejected:
-        return 'rejected'.tr;
+        return 'Rejeté';
       case NotificationType.appointmentCanceled:
-        return 'canceled'.tr;
+        return 'Annulé';
       case NotificationType.appointmentAssigned:
-        return 'assigned'.tr;
+        return 'Assigné';
       case NotificationType.appointmentReminder:
-        return 'reminder'.tr;
+        return 'Rappel';
       case NotificationType.newRating:
-        return 'rating'.tr;
+        return 'Évaluation';
       case NotificationType.newPrescription:
-        return 'prescription'.tr;
+        return 'Ordonnance';
       case NotificationType.prescriptionUpdated:
-        return 'updated'.tr;
+        return 'Mis à jour';
       case NotificationType.prescriptionRefilled:
-        return 'refilled'.tr;
+        return 'Renouvelé';
       case NotificationType.prescriptionCanceled:
-        return 'canceled'.tr;
+        return 'Annulé';
       case NotificationType.newMessage:
-        return 'message'.tr;
+        return 'Message';
       case NotificationType.dossierUpdate:
-        return 'dossier_update'.tr;
+        return 'Mise à jour du dossier';
       case NotificationType.medicationReminder:
-        return 'medication'.tr;
+        return 'Médicament';
       case NotificationType.emergencyAlert:
-        return 'emergency'.tr;
+        return 'Urgence';
       default:
-        return 'notification'.tr;
+        return 'Notification';
     }
   }
 }

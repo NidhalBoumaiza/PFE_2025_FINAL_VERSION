@@ -42,7 +42,10 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
         _userEmail = user.email;
       });
     } catch (e) {
-      showErrorSnackBar(context, 'error_loading_user_data'.tr);
+      showErrorSnackBar(
+        context,
+        'Erreur lors du chargement des données utilisateur',
+      );
     }
   }
 
@@ -82,7 +85,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(
-                'password_update_success'.tr,
+                'Mot de passe mis à jour avec succès',
                 style: GoogleFonts.raleway(),
               ),
               backgroundColor: Colors.green,
@@ -93,18 +96,24 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
           // Return to previous screen
           Navigator.pop(context);
         } else {
-          showErrorSnackBar(context, 'user_not_found'.tr);
+          showErrorSnackBar(context, 'Utilisateur non trouvé');
         }
       } catch (e) {
         // Handle different error types
         if (e is FirebaseAuthException) {
           if (e.code == 'wrong-password') {
-            showErrorSnackBar(context, 'current_password_incorrect'.tr);
+            showErrorSnackBar(context, 'Mot de passe actuel incorrect');
           } else {
-            showErrorSnackBar(context, 'password_update_error'.tr);
+            showErrorSnackBar(
+              context,
+              'Erreur lors de la mise à jour du mot de passe',
+            );
           }
         } else {
-          showErrorSnackBar(context, 'password_update_error'.tr);
+          showErrorSnackBar(
+            context,
+            'Erreur lors de la mise à jour du mot de passe',
+          );
         }
       } finally {
         setState(() {
@@ -119,7 +128,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          'change_password'.tr,
+          'Changer le mot de passe',
           style: GoogleFonts.raleway(
             color: Colors.white,
             fontWeight: FontWeight.bold,
@@ -187,7 +196,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                           SizedBox(height: 20.h),
                           Center(
                             child: Text(
-                              'update_password'.tr,
+                              'Mettre à jour le mot de passe',
                               style: GoogleFonts.raleway(
                                 fontSize: 22.sp,
                                 fontWeight: FontWeight.bold,
@@ -198,7 +207,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                           SizedBox(height: 10.h),
                           Center(
                             child: Text(
-                              'enter_current_and_new_password'.tr,
+                              'Entrez votre mot de passe actuel et votre nouveau mot de passe',
                               style: GoogleFonts.raleway(
                                 fontSize: 14.sp,
                                 color: Colors.grey[600],
@@ -211,7 +220,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                           // Current Password
                           _buildPasswordField(
                             controller: _currentPasswordController,
-                            label: 'current_password'.tr,
+                            label: 'Mot de passe actuel',
                             isObscured: _isCurrentPasswordObscured,
                             toggleObscured: () {
                               setState(() {
@@ -221,7 +230,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                             },
                             validator: (value) {
                               if (value == null || value.isEmpty) {
-                                return 'current_password_required'.tr;
+                                return 'Le mot de passe actuel est requis';
                               }
                               return null;
                             },
@@ -232,7 +241,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                           // New Password
                           _buildPasswordField(
                             controller: _newPasswordController,
-                            label: 'new_password'.tr,
+                            label: 'Nouveau mot de passe',
                             isObscured: _isNewPasswordObscured,
                             toggleObscured: () {
                               setState(() {
@@ -242,10 +251,10 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                             },
                             validator: (value) {
                               if (value == null || value.isEmpty) {
-                                return 'new_password_required'.tr;
+                                return 'Le nouveau mot de passe est requis';
                               }
                               if (value.length < 6) {
-                                return 'password_min_length'.tr;
+                                return 'Le mot de passe doit contenir au moins 6 caractères';
                               }
                               return null;
                             },
@@ -256,7 +265,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                           // Confirm New Password
                           _buildPasswordField(
                             controller: _confirmPasswordController,
-                            label: 'confirm_new_password'.tr,
+                            label: 'Confirmer le nouveau mot de passe',
                             isObscured: _isConfirmPasswordObscured,
                             toggleObscured: () {
                               setState(() {
@@ -266,10 +275,10 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                             },
                             validator: (value) {
                               if (value == null || value.isEmpty) {
-                                return 'confirm_new_password_required'.tr;
+                                return 'La confirmation du nouveau mot de passe est requise';
                               }
                               if (value != _newPasswordController.text) {
-                                return 'passwords_dont_match'.tr;
+                                return 'Les mots de passe ne correspondent pas';
                               }
                               return null;
                             },
@@ -297,7 +306,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                                         color: Colors.white,
                                       )
                                       : Text(
-                                        'update_password'.tr,
+                                        'Mettre à jour le mot de passe',
                                         style: GoogleFonts.raleway(
                                           fontSize: 16.sp,
                                           fontWeight: FontWeight.bold,
@@ -325,7 +334,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                               ),
                               onPressed: () => Navigator.pop(context),
                               child: Text(
-                                'cancel'.tr,
+                                'Annuler',
                                 style: GoogleFonts.raleway(
                                   fontSize: 16.sp,
                                   fontWeight: FontWeight.bold,
@@ -386,11 +395,11 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
               filled: true,
               fillColor: Colors.white,
               hintText:
-                  label == 'current_password'.tr
-                      ? 'current_password_placeholder'.tr
-                      : label == 'new_password'.tr
-                      ? 'new_password_placeholder'.tr
-                      : 'confirm_password_placeholder'.tr,
+                  label == 'Mot de passe actuel'
+                      ? 'Entrez votre mot de passe actuel'
+                      : label == 'Nouveau mot de passe'
+                      ? 'Entrez votre nouveau mot de passe'
+                      : 'Confirmez votre nouveau mot de passe',
               hintStyle: GoogleFonts.raleway(
                 color: Colors.grey[400],
                 fontSize: 15.sp,

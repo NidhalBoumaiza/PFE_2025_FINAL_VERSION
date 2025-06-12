@@ -33,17 +33,17 @@ class _DashboardpatientState extends State<Dashboardpatient> {
   final List<Map<String, dynamic>> searchItems = [
     {
       'icon': FontAwesomeIcons.userDoctor,
-      'text': 'doctors'.tr,
+      'text': 'Médecins',
       'color': AppColors.primaryColor,
     },
     {
       'icon': FontAwesomeIcons.prescriptionBottleMedical,
-      'text': 'pharmacies'.tr,
+      'text': 'Pharmacies',
       'color': Colors.green,
     },
     {
       'icon': FontAwesomeIcons.hospital,
-      'text': 'hospitals'.tr,
+      'text': 'Hôpitaux',
       'color': Colors.redAccent,
     },
   ];
@@ -54,22 +54,22 @@ class _DashboardpatientState extends State<Dashboardpatient> {
   final List<Map<String, dynamic>> firstAidVideos = [
     {
       'image': 'assets/images/cpr1.jpg',
-      'text': 'resuscitation'.tr,
+      'text': 'Réanimation',
       'videoUrl': 'https://example.com/fainting_video',
     },
     {
       'image': 'assets/images/choking.jpg',
-      'text': 'choking'.tr,
+      'text': 'Étouffement',
       'videoUrl': 'https://example.com/choking_video',
     },
     {
       'image': 'assets/images/bleeding2.jpg',
-      'text': 'bleeding'.tr,
+      'text': 'Saignement',
       'videoUrl': 'https://example.com/bleeding_video',
     },
     {
       'image': 'assets/images/brulure.jpg',
-      'text': 'burns'.tr,
+      'text': 'Brûlures',
       'videoUrl': 'https://example.com/burns_video',
     },
   ];
@@ -155,7 +155,7 @@ class _DashboardpatientState extends State<Dashboardpatient> {
             children: [
               // "Que cherchez-vous ?" Section
               Text(
-                'what_are_you_looking_for'.tr,
+                'Que cherchez-vous ?',
                 style: TextStyle(
                   fontSize: 26,
                   fontWeight: FontWeight.bold,
@@ -180,7 +180,7 @@ class _DashboardpatientState extends State<Dashboardpatient> {
                           onTap: () {
                             final itemText =
                                 searchItems[index]["text"] as String;
-                            if (itemText == 'doctors'.tr) {
+                            if (itemText == 'Médecins') {
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
@@ -190,7 +190,7 @@ class _DashboardpatientState extends State<Dashboardpatient> {
                                       ),
                                 ),
                               );
-                            } else if (itemText == 'pharmacies'.tr) {
+                            } else if (itemText == 'Pharmacies') {
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
@@ -200,7 +200,7 @@ class _DashboardpatientState extends State<Dashboardpatient> {
                                       ),
                                 ),
                               );
-                            } else if (itemText == 'hospitals'.tr) {
+                            } else if (itemText == 'Hôpitaux') {
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
@@ -254,7 +254,7 @@ class _DashboardpatientState extends State<Dashboardpatient> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    'specialties'.tr,
+                    'Spécialités',
                     style: TextStyle(
                       fontSize: 26,
                       fontWeight: FontWeight.bold,
@@ -274,7 +274,7 @@ class _DashboardpatientState extends State<Dashboardpatient> {
                       );
                     },
                     child: Text(
-                      'see_all'.tr,
+                      'Voir tout',
                       style: const TextStyle(
                         fontSize: 25,
                         color: AppColors.primaryColor,
@@ -365,7 +365,7 @@ class _DashboardpatientState extends State<Dashboardpatient> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    'first_aid'.tr,
+                    'Premiers secours',
                     style: TextStyle(
                       fontSize: 26,
                       fontWeight: FontWeight.bold,
@@ -382,7 +382,7 @@ class _DashboardpatientState extends State<Dashboardpatient> {
                       );
                     },
                     child: Text(
-                      'see_all'.tr,
+                      'Voir tout',
                       style: const TextStyle(
                         fontSize: 25,
                         color: AppColors.primaryColor,

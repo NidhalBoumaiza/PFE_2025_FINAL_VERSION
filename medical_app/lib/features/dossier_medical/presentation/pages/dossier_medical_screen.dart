@@ -47,7 +47,7 @@ class _DossierMedicalScreenState extends State<DossierMedicalScreen> {
     } catch (e) {
       print('Error getting DossierMedicalBloc: $e');
       SnackBarMessage().showErrorSnackBar(
-        message: 'error_loading_records'.tr + ': $e',
+        message: 'Erreur lors du chargement des dossiers' + ': $e',
         context: context,
       );
     }
@@ -114,11 +114,11 @@ class _DossierMedicalScreenState extends State<DossierMedicalScreen> {
       context: context,
       builder:
           (context) => AlertDialog(
-            title: Text('document_description'.trParams({'name': fileName})),
+            title: Text('Description du document $fileName'),
             content: TextField(
               controller: controller,
               decoration: InputDecoration(
-                hintText: 'enter_description_optional'.tr,
+                hintText: 'Entrez une description (optionnel)',
                 border: const OutlineInputBorder(),
               ),
               maxLines: 3,
@@ -126,14 +126,14 @@ class _DossierMedicalScreenState extends State<DossierMedicalScreen> {
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(context),
-                child: Text('cancel'.tr),
+                child: Text('Annuler'),
               ),
               ElevatedButton(
                 onPressed: () => Navigator.pop(context, controller.text),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Theme.of(context).primaryColor,
                 ),
-                child: Text('confirm'.tr),
+                child: Text('Confirmer'),
               ),
             ],
           ),
@@ -152,7 +152,7 @@ class _DossierMedicalScreenState extends State<DossierMedicalScreen> {
               isDarkMode ? theme.scaffoldBackgroundColor : Colors.grey[50],
           appBar: AppBar(
             title: Text(
-              'medical_records'.tr,
+              'Dossier médical',
               style: GoogleFonts.raleway(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
@@ -169,7 +169,7 @@ class _DossierMedicalScreenState extends State<DossierMedicalScreen> {
               IconButton(
                 icon: const Icon(Icons.refresh, color: Colors.white),
                 onPressed: _loadDossierMedical,
-                tooltip: 'refresh'.tr,
+                tooltip: 'Actualiser',
               ),
             ],
           ),
@@ -177,32 +177,34 @@ class _DossierMedicalScreenState extends State<DossierMedicalScreen> {
             listener: (context, state) {
               if (state is FileUploadSuccess) {
                 SnackBarMessage().showSuccessSnackBar(
-                  message: 'documents_added_successfully'.tr,
+                  message: 'Documents ajoutés avec succès',
                   context: context,
                 );
               } else if (state is FileUploadError) {
                 SnackBarMessage().showErrorSnackBar(
-                  message: 'upload_error'.tr + ': ${state.message}',
+                  message: 'Erreur de téléchargement' + ': ${state.message}',
                   context: context,
                 );
               } else if (state is FileDeleteSuccess) {
                 SnackBarMessage().showSuccessSnackBar(
-                  message: 'document_deleted_successfully'.tr,
+                  message: 'Document supprimé avec succès',
                   context: context,
                 );
               } else if (state is FileDeleteError) {
                 SnackBarMessage().showErrorSnackBar(
-                  message: 'delete_error'.tr + ': ${state.message}',
+                  message: 'Erreur de suppression' + ': ${state.message}',
                   context: context,
                 );
               } else if (state is FileDescriptionUpdateSuccess) {
                 SnackBarMessage().showSuccessSnackBar(
-                  message: 'description_updated_successfully'.tr,
+                  message: 'Description mise à jour avec succès',
                   context: context,
                 );
               } else if (state is FileDescriptionUpdateError) {
                 SnackBarMessage().showErrorSnackBar(
-                  message: 'update_description_error'.tr + ': ${state.message}',
+                  message:
+                      'Erreur de mise à jour de la description' +
+                      ': ${state.message}',
                   context: context,
                 );
               }
@@ -264,7 +266,7 @@ class _DossierMedicalScreenState extends State<DossierMedicalScreen> {
                   const Icon(Icons.error_outline, size: 80, color: Colors.red),
                   const SizedBox(height: 16),
                   Text(
-                    'error'.tr + ': ${state.message}',
+                    'Erreur' + ': ${state.message}',
                     style: Theme.of(
                       context,
                     ).textTheme.bodyLarge?.copyWith(color: Colors.red),
@@ -274,7 +276,7 @@ class _DossierMedicalScreenState extends State<DossierMedicalScreen> {
                   ElevatedButton.icon(
                     onPressed: _loadDossierMedical,
                     icon: const Icon(Icons.refresh),
-                    label: Text('retry'.tr),
+                    label: Text('Réessayer'),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Theme.of(context).primaryColor,
                     ),
@@ -295,7 +297,7 @@ class _DossierMedicalScreenState extends State<DossierMedicalScreen> {
             child: ElevatedButton.icon(
               onPressed: _loadDossierMedical,
               icon: const Icon(Icons.refresh),
-              label: Text('load_medical_records'.tr),
+              label: Text('Charger le dossier médical'),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Theme.of(context).primaryColor,
               ),
@@ -309,14 +311,14 @@ class _DossierMedicalScreenState extends State<DossierMedicalScreen> {
   String _getLoadingMessage(DossierMedicalState state) {
     if (state is FileUploadLoading) {
       return state.isSingleFile
-          ? 'uploading_single_file'.tr
-          : 'uploading_multiple_files'.tr;
+          ? 'Téléchargement d\'un fichier'
+          : 'Téléchargement de plusieurs fichiers';
     } else if (state is FileDeleteLoading) {
-      return 'deleting_file'.tr;
+      return 'Suppression du fichier';
     } else if (state is FileDescriptionUpdateLoading) {
-      return 'updating_description'.tr;
+      return 'Mise à jour de la description';
     }
-    return 'loading_medical_records'.tr;
+    return 'Chargement du dossier médical';
   }
 
   Widget _buildDossierContent(
@@ -370,7 +372,7 @@ class _DossierMedicalScreenState extends State<DossierMedicalScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'medical_documents'.tr,
+                      'Documents médicaux',
                       style: GoogleFonts.raleway(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
@@ -379,9 +381,7 @@ class _DossierMedicalScreenState extends State<DossierMedicalScreen> {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      'document_count'.trParams({
-                        'count': dossier.files.length.toString(),
-                      }),
+                      '${dossier.files.length} document(s)',
                       style: GoogleFonts.raleway(
                         fontSize: 14,
                         color: isDarkMode ? Colors.white70 : Colors.grey[600],
@@ -393,7 +393,7 @@ class _DossierMedicalScreenState extends State<DossierMedicalScreen> {
               IconButton(
                 onPressed: () => _showSortOptions(),
                 icon: Icon(Icons.sort, color: AppColors.primaryColor),
-                tooltip: 'sort_documents'.tr,
+                tooltip: 'Trier les documents',
               ),
             ],
           ),
@@ -435,7 +435,7 @@ class _DossierMedicalScreenState extends State<DossierMedicalScreen> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  'sort_documents'.tr,
+                  'Trier les documents',
                   style: GoogleFonts.raleway(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
@@ -444,7 +444,7 @@ class _DossierMedicalScreenState extends State<DossierMedicalScreen> {
                 const SizedBox(height: 20),
                 ListTile(
                   leading: const Icon(Icons.access_time),
-                  title: Text('sort_by_date'.tr),
+                  title: Text('Trier par date'),
                   onTap: () {
                     Navigator.pop(context);
                     // Implement sort by date
@@ -452,7 +452,7 @@ class _DossierMedicalScreenState extends State<DossierMedicalScreen> {
                 ),
                 ListTile(
                   leading: const Icon(Icons.text_fields),
-                  title: Text('sort_by_name'.tr),
+                  title: Text('Trier par nom'),
                   onTap: () {
                     Navigator.pop(context);
                     // Implement sort by name
@@ -460,7 +460,7 @@ class _DossierMedicalScreenState extends State<DossierMedicalScreen> {
                 ),
                 ListTile(
                   leading: const Icon(Icons.category),
-                  title: Text('sort_by_type'.tr),
+                  title: Text('Trier par type'),
                   onTap: () {
                     Navigator.pop(context);
                     // Implement sort by type
@@ -502,7 +502,7 @@ class _DossierMedicalScreenState extends State<DossierMedicalScreen> {
               ),
               const SizedBox(height: 24),
               Text(
-                'no_documents_in_medical_records'.tr,
+                'Aucun document dans le dossier médical',
                 style: GoogleFonts.raleway(
                   fontSize: 18,
                   fontWeight: FontWeight.w600,
@@ -512,7 +512,7 @@ class _DossierMedicalScreenState extends State<DossierMedicalScreen> {
               ),
               const SizedBox(height: 12),
               Text(
-                'add_first_document_message'.tr,
+                'Ajoutez votre premier document pour commencer',
                 style: GoogleFonts.raleway(
                   fontSize: 14,
                   color: isDarkMode ? Colors.white54 : Colors.grey[600],
@@ -544,7 +544,7 @@ class _DossierMedicalScreenState extends State<DossierMedicalScreen> {
                     color: Colors.white,
                   ),
                   label: Text(
-                    'add_first_document'.tr,
+                    'Ajouter le premier document',
                     style: GoogleFonts.raleway(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
@@ -578,18 +578,18 @@ class _DossierMedicalScreenState extends State<DossierMedicalScreen> {
         FloatingActionButton.extended(
           onPressed: _pickAndUploadFile,
           heroTag: 'addSingleFile',
-          tooltip: 'add_document'.tr,
+          tooltip: 'Ajouter un document',
           icon: const Icon(Icons.add),
-          label: Text('single_file'.tr),
+          label: Text('Fichier unique'),
           backgroundColor: Theme.of(context).primaryColor,
         ),
         const SizedBox(width: 16),
         FloatingActionButton.extended(
           onPressed: _pickAndUploadMultipleFiles,
           heroTag: 'addMultipleFiles',
-          tooltip: 'add_multiple_documents'.tr,
+          tooltip: 'Ajouter plusieurs documents',
           icon: const Icon(Icons.add_photo_alternate),
-          label: Text('multiple_files'.tr),
+          label: Text('Plusieurs fichiers'),
           backgroundColor: Theme.of(context).primaryColor,
         ),
         const SizedBox(width: 16),
@@ -604,7 +604,7 @@ class _DossierMedicalScreenState extends State<DossierMedicalScreen> {
         FloatingActionButton(
           onPressed: _pickAndUploadFile,
           heroTag: 'addSingleFile',
-          tooltip: 'add_document'.tr,
+          tooltip: 'Ajouter un document',
           backgroundColor: Theme.of(context).primaryColor,
           child: const Icon(Icons.add),
         ),
@@ -612,7 +612,7 @@ class _DossierMedicalScreenState extends State<DossierMedicalScreen> {
         FloatingActionButton(
           onPressed: _pickAndUploadMultipleFiles,
           heroTag: 'addMultipleFiles',
-          tooltip: 'add_multiple_documents'.tr,
+          tooltip: 'Ajouter plusieurs documents',
           backgroundColor: Theme.of(context).primaryColor,
           child: const Icon(Icons.add_photo_alternate),
         ),
@@ -625,19 +625,19 @@ class _DossierMedicalScreenState extends State<DossierMedicalScreen> {
       context: context,
       builder:
           (context) => AlertDialog(
-            title: Text('delete_document'.tr),
+            title: Text('Supprimer le document'),
             content: Text(
-              'confirm_delete_document'.trParams({'name': file.displayName}),
+              'Êtes-vous sûr de vouloir supprimer le document "${file.displayName}" ?',
             ),
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(context, false),
-                child: Text('cancel'.tr),
+                child: Text('Annuler'),
               ),
               ElevatedButton(
                 onPressed: () => Navigator.pop(context, true),
                 style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-                child: Text('delete'.tr),
+                child: Text('Supprimer'),
               ),
             ],
           ),
@@ -662,11 +662,11 @@ class _DossierMedicalScreenState extends State<DossierMedicalScreen> {
       context: context,
       builder:
           (context) => AlertDialog(
-            title: Text('edit_description'.tr),
+            title: Text('Modifier la description'),
             content: TextField(
               controller: controller,
               decoration: InputDecoration(
-                hintText: 'enter_description'.tr,
+                hintText: 'Entrez une description',
                 border: const OutlineInputBorder(),
               ),
               maxLines: 3,
@@ -674,14 +674,14 @@ class _DossierMedicalScreenState extends State<DossierMedicalScreen> {
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(context),
-                child: Text('cancel'.tr),
+                child: Text('Annuler'),
               ),
               ElevatedButton(
                 onPressed: () => Navigator.pop(context, controller.text),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Theme.of(context).primaryColor,
                 ),
-                child: Text('save'.tr),
+                child: Text('Enregistrer'),
               ),
             ],
           ),

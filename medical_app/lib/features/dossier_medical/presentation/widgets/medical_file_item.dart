@@ -130,7 +130,7 @@ class MedicalFileItem extends StatelessWidget {
                               children: [
                                 const Icon(Icons.visibility, size: 20),
                                 const SizedBox(width: 12),
-                                Text('view_file'.tr),
+                                Text('Voir le fichier'),
                               ],
                             ),
                           ),
@@ -140,7 +140,7 @@ class MedicalFileItem extends StatelessWidget {
                               children: [
                                 const Icon(Icons.edit, size: 20),
                                 const SizedBox(width: 12),
-                                Text('edit_description'.tr),
+                                Text('Modifier la description'),
                               ],
                             ),
                           ),
@@ -156,7 +156,7 @@ class MedicalFileItem extends StatelessWidget {
                                   ),
                                   const SizedBox(width: 12),
                                   Text(
-                                    'delete_document'.tr,
+                                    'Supprimer le document',
                                     style: const TextStyle(color: Colors.red),
                                   ),
                                 ],
@@ -213,7 +213,7 @@ class MedicalFileItem extends StatelessWidget {
                         ),
                         const SizedBox(width: 8),
                         Text(
-                          'add_description'.tr,
+                          'Ajouter une description',
                           style: GoogleFonts.raleway(
                             fontSize: 14,
                             color: AppColors.primaryColor,
@@ -302,11 +302,11 @@ class MedicalFileItem extends StatelessWidget {
     switch (file.mimetype) {
       case 'image/jpeg':
       case 'image/png':
-        return 'image'.tr;
+        return 'Image';
       case 'application/pdf':
         return 'PDF';
       default:
-        return 'file'.tr;
+        return 'Fichier';
     }
   }
 
@@ -325,7 +325,7 @@ class MedicalFileItem extends StatelessWidget {
                 Icon(Icons.edit, color: AppColors.primaryColor),
                 const SizedBox(width: 8),
                 Text(
-                  'edit_description'.tr,
+                  'Modifier la description',
                   style: GoogleFonts.raleway(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
@@ -338,7 +338,7 @@ class MedicalFileItem extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'file_name'.tr + ': ${file.displayName}',
+                  'Nom du fichier' + ': ${file.displayName}',
                   style: GoogleFonts.raleway(
                     fontSize: 14,
                     color: Colors.grey[600],
@@ -348,7 +348,7 @@ class MedicalFileItem extends StatelessWidget {
                 TextField(
                   controller: controller,
                   decoration: InputDecoration(
-                    hintText: 'enter_description'.tr,
+                    hintText: 'Entrez une description',
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
@@ -366,7 +366,7 @@ class MedicalFileItem extends StatelessWidget {
               TextButton(
                 onPressed: () => Navigator.pop(context),
                 child: Text(
-                  'cancel'.tr,
+                  'Annuler',
                   style: TextStyle(color: Colors.grey[600]),
                 ),
               ),
@@ -384,7 +384,7 @@ class MedicalFileItem extends StatelessWidget {
                   ),
                 ),
                 child: Text(
-                  'save'.tr,
+                  'Enregistrer',
                   style: const TextStyle(color: Colors.white),
                 ),
               ),
@@ -422,15 +422,15 @@ class MedicalFileItem extends StatelessWidget {
           if (await canLaunchUrl(url)) {
             await launchUrl(url, mode: LaunchMode.externalApplication);
           } else {
-            ScaffoldMessenger.of(
-              context,
-            ).showSnackBar(SnackBar(content: Text('cannot_open_file'.tr)));
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('Impossible d\'ouvrir le fichier')),
+            );
           }
       }
     } catch (e) {
       print('Error opening file: $e');
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('${"failed_to_open_file".tr}: $e')),
+        SnackBar(content: Text('Échec de l\'ouverture du fichier: $e')),
       );
     }
   }

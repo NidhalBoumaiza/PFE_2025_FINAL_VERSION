@@ -108,7 +108,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('notifications'.tr),
+        title: Text('Notifications'),
         backgroundColor: const Color(0xFF2FA7BB),
         foregroundColor: Colors.white,
         actions: [
@@ -119,7 +119,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
                 return IconButton(
                   icon: const Icon(Icons.mark_email_read),
                   onPressed: () => _markAllAsRead(),
-                  tooltip: 'mark_all_as_read'.tr,
+                  tooltip: 'Marquer tout comme lu',
                 );
               }
               return const SizedBox.shrink();
@@ -141,7 +141,9 @@ class _NotificationsPageState extends State<NotificationsPage> {
             } else if (state is AllNotificationsMarkedAsRead) {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
-                  content: Text('all_notifications_marked_as_read'.tr),
+                  content: Text(
+                    'Toutes les notifications ont été marquées comme lues',
+                  ),
                   backgroundColor: Colors.green,
                   duration: const Duration(seconds: 2),
                 ),
@@ -167,7 +169,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
                     ),
                     const SizedBox(height: 16),
                     Text(
-                      'error_loading_notifications'.tr,
+                      'Erreur lors du chargement des notifications',
                       style: TextStyle(fontSize: 18, color: Colors.grey[600]),
                     ),
                     const SizedBox(height: 8),
@@ -183,7 +185,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
                         backgroundColor: const Color(0xFF2FA7BB),
                         foregroundColor: Colors.white,
                       ),
-                      child: Text('retry'.tr),
+                      child: Text('Réessayer'),
                     ),
                   ],
                 ),
@@ -203,7 +205,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
                       ),
                       const SizedBox(height: 16),
                       Text(
-                        'no_notifications'.tr,
+                        'Aucune notification',
                         style: TextStyle(fontSize: 18, color: Colors.grey[600]),
                       ),
                     ],
@@ -271,17 +273,19 @@ class _NotificationsPageState extends State<NotificationsPage> {
           context: context,
           builder:
               (context) => AlertDialog(
-                title: Text('delete_notification'.tr),
-                content: Text('confirm_delete_notification'.tr),
+                title: Text('Supprimer la notification'),
+                content: Text(
+                  'Êtes-vous sûr de vouloir supprimer cette notification ?',
+                ),
                 actions: [
                   TextButton(
                     onPressed: () => Navigator.of(context).pop(false),
-                    child: Text('cancel'.tr),
+                    child: Text('Annuler'),
                   ),
                   TextButton(
                     onPressed: () => Navigator.of(context).pop(true),
                     child: Text(
-                      'delete'.tr,
+                      'Supprimer',
                       style: TextStyle(color: Colors.red),
                     ),
                   ),
@@ -295,7 +299,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
         );
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('notification_deleted'.tr),
+            content: Text('Notification supprimée'),
             behavior: SnackBarBehavior.floating,
             backgroundColor: Colors.red,
           ),
@@ -566,63 +570,63 @@ class _NotificationsPageState extends State<NotificationsPage> {
     switch (type) {
       case NotificationType.newAppointment:
         icon = Icons.calendar_today_rounded;
-        label = 'appointment'.tr;
+        label = 'Rendez-vous';
         break;
       case NotificationType.appointmentAccepted:
         icon = Icons.check_circle_rounded;
-        label = 'accepted'.tr;
+        label = 'Accepté';
         break;
       case NotificationType.appointmentRejected:
         icon = Icons.cancel_rounded;
-        label = 'rejected'.tr;
+        label = 'Rejeté';
         break;
       case NotificationType.appointmentCanceled:
         icon = Icons.event_busy_rounded;
-        label = 'canceled'.tr;
+        label = 'Annulé';
         break;
       case NotificationType.appointmentAssigned:
         icon = Icons.assignment_rounded;
-        label = 'assigned'.tr;
+        label = 'Assigné';
         break;
       case NotificationType.appointmentReminder:
         icon = Icons.alarm_rounded;
-        label = 'reminder'.tr;
+        label = 'Rappel';
         break;
       case NotificationType.newRating:
         icon = Icons.star_rounded;
-        label = 'rating'.tr;
+        label = 'Évaluation';
         break;
       case NotificationType.newPrescription:
         icon = Icons.medical_services_rounded;
-        label = 'prescription'.tr;
+        label = 'Ordonnance';
         break;
       case NotificationType.prescriptionUpdated:
         icon = Icons.update_rounded;
-        label = 'updated'.tr;
+        label = 'Mis à jour';
         break;
       case NotificationType.prescriptionCanceled:
         icon = Icons.cancel_rounded;
-        label = 'canceled'.tr;
+        label = 'Annulé';
         break;
       case NotificationType.prescriptionRefilled:
         icon = Icons.refresh_rounded;
-        label = 'refilled'.tr;
+        label = 'Renouvelé';
         break;
       case NotificationType.newMessage:
         icon = Icons.message_rounded;
-        label = 'message'.tr;
+        label = 'Message';
         break;
       case NotificationType.dossierUpdate:
         icon = Icons.folder_rounded;
-        label = 'dossier'.tr;
+        label = 'Dossier';
         break;
       case NotificationType.medicationReminder:
         icon = Icons.medication_rounded;
-        label = 'medication'.tr;
+        label = 'Médicament';
         break;
       case NotificationType.emergencyAlert:
         icon = Icons.emergency_rounded;
-        label = 'emergency'.tr;
+        label = 'Urgence';
         break;
     }
 
@@ -693,7 +697,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
                   size: 18.sp,
                 ),
                 label: Text(
-                  'accept'.tr,
+                  'Accepter',
                   style: GoogleFonts.raleway(
                     color: Colors.white,
                     fontWeight: FontWeight.w600,
@@ -724,7 +728,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
                   size: 18.sp,
                 ),
                 label: Text(
-                  'reject'.tr,
+                  'Rejeter',
                   style: GoogleFonts.raleway(
                     color: Colors.white,
                     fontWeight: FontWeight.w600,
@@ -755,7 +759,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
         child: ElevatedButton.icon(
           icon: Icon(Icons.visibility, color: Colors.white, size: 18.sp),
           label: Text(
-            'view_details'.tr,
+            'Voir les détails',
             style: GoogleFonts.raleway(
               color: Colors.white,
               fontWeight: FontWeight.w600,
@@ -804,8 +808,8 @@ class _NotificationsPageState extends State<NotificationsPage> {
     final notificationBloc = context.read<NotificationBloc>();
     notificationBloc.add(
       SendNotificationEvent(
-        title: 'appointment_accepted'.tr,
-        body: 'appointment_accepted_message'.tr,
+        title: 'Rendez-vous accepté',
+        body: 'Votre rendez-vous a été accepté par le médecin',
         senderId: _currentUser.id!,
         recipientId: patientId,
         type: NotificationType.appointmentAccepted,
@@ -820,7 +824,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('appointment_accepted'.tr),
+        content: Text('Rendez-vous accepté'),
         behavior: SnackBarBehavior.floating,
         backgroundColor: Colors.green,
       ),
@@ -852,8 +856,8 @@ class _NotificationsPageState extends State<NotificationsPage> {
     final notificationBloc = context.read<NotificationBloc>();
     notificationBloc.add(
       SendNotificationEvent(
-        title: 'appointment_rejected'.tr,
-        body: 'appointment_rejected_message'.tr,
+        title: 'Rendez-vous rejeté',
+        body: 'Votre rendez-vous a été rejeté par le médecin',
         senderId: _currentUser.id!,
         recipientId: patientId,
         type: NotificationType.appointmentRejected,
@@ -868,7 +872,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('appointment_rejected'.tr),
+        content: Text('Rendez-vous rejeté'),
         behavior: SnackBarBehavior.floating,
         backgroundColor: Colors.red,
       ),
@@ -993,35 +997,35 @@ class _NotificationsPageState extends State<NotificationsPage> {
   String _getNotificationTypeLabel(NotificationType type) {
     switch (type) {
       case NotificationType.newAppointment:
-        return 'new_appointment'.tr;
+        return 'Nouveau rendez-vous';
       case NotificationType.appointmentAccepted:
-        return 'accepted'.tr;
+        return 'Accepté';
       case NotificationType.appointmentRejected:
-        return 'rejected'.tr;
+        return 'Rejeté';
       case NotificationType.appointmentCanceled:
-        return 'canceled'.tr;
+        return 'Annulé';
       case NotificationType.appointmentAssigned:
-        return 'assigned'.tr;
+        return 'Assigné';
       case NotificationType.appointmentReminder:
-        return 'reminder'.tr;
+        return 'Rappel';
       case NotificationType.newRating:
-        return 'rating'.tr;
+        return 'Évaluation';
       case NotificationType.newPrescription:
-        return 'prescription'.tr;
+        return 'Ordonnance';
       case NotificationType.prescriptionUpdated:
-        return 'updated'.tr;
+        return 'Mis à jour';
       case NotificationType.prescriptionCanceled:
-        return 'canceled'.tr;
+        return 'Annulé';
       case NotificationType.prescriptionRefilled:
-        return 'refilled'.tr;
+        return 'Renouvelé';
       case NotificationType.newMessage:
-        return 'message'.tr;
+        return 'Message';
       case NotificationType.dossierUpdate:
-        return 'dossier_update'.tr;
+        return 'Mise à jour du dossier';
       case NotificationType.medicationReminder:
-        return 'medication'.tr;
+        return 'Médicament';
       case NotificationType.emergencyAlert:
-        return 'emergency'.tr;
+        return 'Urgence';
     }
   }
 }

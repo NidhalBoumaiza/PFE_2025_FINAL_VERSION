@@ -46,46 +46,44 @@ class _RendezVousMedecinState extends State<RendezVousMedecin> {
       context: context,
       builder:
           (context) => AlertDialog(
-            title: Text('confirm_consultation'.tr),
-        content: Text(
-              'confirm_action_consultation'.tr
-                  .replaceAll('{action}', action)
-                  .replaceAll('{patient}', patientName),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-                child: Text('cancel'.tr),
+            title: Text('Confirmer la consultation'),
+            content: Text(
+              'Êtes-vous sûr de vouloir $action la consultation de $patientName ?',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: Text('Annuler'),
+              ),
+              TextButton(
+                onPressed: () => Navigator.pop(context, true),
+                child: Text('Confirmer'),
+              ),
+            ],
           ),
-          TextButton(
-            onPressed: () => Navigator.pop(context, true),
-                child: Text('confirm'.tr),
-          ),
-        ],
-      ),
     );
   }
 
   void _updateConsultationStatus(
-      String id,
-      String newStatus,
-      String patientName,
-      String patientId,
-      String doctorId,
-      String doctorName,
-      ) async {
-    final action = newStatus == 'accepted' ? 'accept'.tr : 'refuse'.tr;
+    String id,
+    String newStatus,
+    String patientName,
+    String patientId,
+    String doctorId,
+    String doctorName,
+  ) async {
+    final action = newStatus == 'accepted' ? 'accepter' : 'refuser';
     final confirmed = await _showConfirmationDialog(action, patientName);
     if (confirmed == true) {
       context.read<RendezVousBloc>().add(
         UpdateRendezVousStatus(
-        rendezVousId: id,
-        status: newStatus,
-        patientId: patientId,
-        doctorId: doctorId,
-        patientName: patientName,
-        doctorName: doctorName,
-        recipientRole: 'patient',
+          rendezVousId: id,
+          status: newStatus,
+          patientId: patientId,
+          doctorId: doctorId,
+          patientName: patientName,
+          doctorName: doctorName,
+          recipientRole: 'patient',
         ),
       );
     }
@@ -94,11 +92,11 @@ class _RendezVousMedecinState extends State<RendezVousMedecin> {
   String _translateStatus(String status) {
     switch (status) {
       case 'pending':
-        return 'pending'.tr;
+        return 'En attente';
       case 'accepted':
-        return 'accepted'.tr;
+        return 'Accepté';
       case 'refused':
-        return 'refused'.tr;
+        return 'Refusé';
       default:
         return status;
     }
@@ -110,7 +108,7 @@ class _RendezVousMedecinState extends State<RendezVousMedecin> {
       child: Scaffold(
         backgroundColor: AppColors.whiteColor,
         appBar: AppBar(
-          title: Text("consultations".tr),
+          title: Text("Consultations"),
           backgroundColor: const Color(0xFF2FA7BB),
           leading: IconButton(
             icon: const Icon(Icons.chevron_left, size: 30),
@@ -126,7 +124,7 @@ class _RendezVousMedecinState extends State<RendezVousMedecin> {
             } else if (state is RendezVousStatusUpdated) {
               showSuccessSnackBar(
                 context,
-                'consultation_updated_successfully'.tr,
+                'Consultation mise à jour avec succès',
               );
               if (doctorId != null) {
                 context.read<RendezVousBloc>().add(
@@ -158,14 +156,14 @@ class _RendezVousMedecinState extends State<RendezVousMedecin> {
                       } else if (state is RendezVousLoaded) {
                         final pendingRendezVous =
                             state.rendezVous
-                            .where((rv) => rv.status == 'pending')
-                            .toList();
+                                .where((rv) => rv.status == 'pending')
+                                .toList();
                         if (pendingRendezVous.isEmpty) {
                           return Center(
                             child: Padding(
                               padding: const EdgeInsets.all(20.0),
                               child: ReusableTextWidget(
-                                text: "no_pending_consultations".tr,
+                                text: "Aucune consultation en attente",
                                 textSize: 16,
                                 fontWeight: FontWeight.w600,
                                 color: Colors.grey,
@@ -191,52 +189,39 @@ class _RendezVousMedecinState extends State<RendezVousMedecin> {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     ReusableTextWidget(
-                                      text: "patient_label".tr.replaceAll(
-                                        '{name}',
-                                        consultation.patientName ??
-                                            'unknown'.tr,
-                                      ),
+                                      text:
+                                          "Patient : ${consultation.patientName ?? 'Inconnu'}",
                                       textSize: 16,
                                       fontWeight: FontWeight.w700,
                                       color: Colors.black,
                                     ),
                                     SizedBox(height: 8.h),
                                     ReusableTextWidget(
-                                      text: "start_time_label".tr.replaceAll(
-                                        '{time}',
-                                        consultation.startTime
-                                                ?.toLocal()
-                                                .toString()
-                                                .substring(0, 16) ??
-                                            'not_defined'.tr,
-                                      ),
+                                      text:
+                                          "Heure de début : ${consultation.startTime?.toLocal().toString().substring(0, 16) ?? 'Non définie'}",
                                       textSize: 14,
                                       fontWeight: FontWeight.w600,
                                       color: Colors.grey[700],
                                     ),
                                     SizedBox(height: 8.h),
                                     ReusableTextWidget(
-                                      text: "status_label".tr.replaceAll(
-                                        '{status}',
-                                        _translateStatus(
-                                          consultation.status ?? 'pending',
-                                        ),
-                                      ),
+                                      text:
+                                          "Statut : ${_translateStatus(consultation.status ?? 'pending')}",
                                       textSize: 14,
                                       fontWeight: FontWeight.w600,
                                       color:
                                           consultation.status == 'pending'
-                                          ? Colors.orange
+                                              ? Colors.orange
                                               : consultation.status ==
                                                   'accepted'
-                                          ? Colors.green
-                                          : Colors.red,
+                                              ? Colors.green
+                                              : Colors.red,
                                     ),
                                     if (consultation.status == 'pending') ...[
                                       SizedBox(height: 16.h),
                                       Row(
                                         mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
+                                            MainAxisAlignment.spaceBetween,
                                         children: [
                                           Expanded(
                                             child: ElevatedButton(
@@ -265,14 +250,14 @@ class _RendezVousMedecinState extends State<RendezVousMedecin> {
                                                   consultation.id ?? '',
                                                   'accepted',
                                                   consultation.patientName ??
-                                                      'unknown'.tr,
+                                                      'Inconnu',
                                                   consultation.patientId ?? '',
                                                   consultation.doctorId ?? '',
                                                   doctorName,
                                                 );
                                               },
                                               child: Text(
-                                                'accept'.tr,
+                                                'Accepter',
                                                 style: GoogleFonts.raleway(
                                                   fontSize: 14.sp,
                                                   fontWeight: FontWeight.w600,
@@ -309,14 +294,14 @@ class _RendezVousMedecinState extends State<RendezVousMedecin> {
                                                   consultation.id ?? '',
                                                   'refused',
                                                   consultation.patientName ??
-                                                      'unknown'.tr,
+                                                      'Inconnu',
                                                   consultation.patientId ?? '',
                                                   consultation.doctorId ?? '',
                                                   doctorName,
                                                 );
                                               },
                                               child: Text(
-                                                'refuse'.tr,
+                                                'Refuser',
                                                 style: GoogleFonts.raleway(
                                                   fontSize: 14.sp,
                                                   fontWeight: FontWeight.w600,

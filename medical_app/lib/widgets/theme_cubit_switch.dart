@@ -47,7 +47,7 @@ class ThemeCubitSwitch extends StatelessWidget {
                       ),
                       const SizedBox(width: 12),
                       Text(
-                        isDarkMode ? "dark_mode".tr : "light_mode".tr,
+                        isDarkMode ? "Mode sombre" : "Mode clair",
                         style: TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w500,

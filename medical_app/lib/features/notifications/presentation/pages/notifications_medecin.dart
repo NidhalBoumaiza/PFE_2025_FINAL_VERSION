@@ -56,9 +56,9 @@ class _NotificationsMedecinState extends State<NotificationsMedecin> {
           _isInitialized = true;
         });
         if (mounted) {
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(SnackBar(content: Text('error_invalid_user_data'.tr)));
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Données utilisateur invalides')),
+          );
         }
         return;
       }
@@ -75,9 +75,11 @@ class _NotificationsMedecinState extends State<NotificationsMedecin> {
         _isInitialized = true;
       });
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('error_loading_user_data'.tr)));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Erreur lors du chargement des données utilisateur'),
+          ),
+        );
       }
     }
   }
@@ -94,9 +96,9 @@ class _NotificationsMedecinState extends State<NotificationsMedecin> {
       );
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('error_refreshing'.tr)));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Erreur lors de l\'actualisation')),
+        );
       }
     }
   }
@@ -110,7 +112,7 @@ class _NotificationsMedecinState extends State<NotificationsMedecin> {
       backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
         title: Text(
-          'notifications'.tr,
+          'Notifications',
           style: GoogleFonts.raleway(
             fontSize: 18.sp,
             fontWeight: FontWeight.bold,
@@ -129,7 +131,9 @@ class _NotificationsMedecinState extends State<NotificationsMedecin> {
                 );
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
-                    content: Text('all_notifications_marked_as_read'.tr),
+                    content: Text(
+                      'Toutes les notifications ont été marquées comme lues',
+                    ),
                   ),
                 );
               }
@@ -171,7 +175,7 @@ class _NotificationsMedecinState extends State<NotificationsMedecin> {
                   CircularProgressIndicator(color: AppColors.primaryColor),
                   SizedBox(height: 16.h),
                   Text(
-                    'loading_notifications'.tr,
+                    'Chargement des notifications',
                     style: GoogleFonts.raleway(
                       fontSize: 16.sp,
                       color: theme.textTheme.bodyMedium?.color,
@@ -212,7 +216,7 @@ class _NotificationsMedecinState extends State<NotificationsMedecin> {
                                   ),
                                   SizedBox(height: 16.h),
                                   Text(
-                                    'no_notifications'.tr,
+                                    'Aucune notification',
                                     style: GoogleFonts.raleway(
                                       fontSize: 16.sp,
                                       color: theme.textTheme.bodyMedium?.color,
@@ -265,7 +269,7 @@ class _NotificationsMedecinState extends State<NotificationsMedecin> {
                           ElevatedButton.icon(
                             onPressed: _refreshNotifications,
                             icon: Icon(Icons.refresh),
-                            label: Text('retry'.tr),
+                            label: Text('Réessayer'),
                             style: ElevatedButton.styleFrom(
                               backgroundColor: AppColors.primaryColor,
                               foregroundColor: Colors.white,
@@ -292,7 +296,7 @@ class _NotificationsMedecinState extends State<NotificationsMedecin> {
                 CircularProgressIndicator(color: AppColors.primaryColor),
                 SizedBox(height: 16.h),
                 Text(
-                  'loading_notifications'.tr,
+                  'Chargement des notifications',
                   style: GoogleFonts.raleway(
                     fontSize: 16.sp,
                     color: theme.textTheme.bodyMedium?.color,
@@ -312,13 +316,13 @@ class _NotificationsMedecinState extends State<NotificationsMedecin> {
       padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
       child: Row(
         children: [
-          _buildFilterChip('all', 'all'.tr),
+          _buildFilterChip('all', 'Tout'),
           SizedBox(width: 10.w),
-          _buildFilterChip('appointment', 'appointments'.tr),
+          _buildFilterChip('appointment', 'Rendez-vous'),
           SizedBox(width: 10.w),
-          _buildFilterChip('message', 'messages'.tr),
+          _buildFilterChip('message', 'Messages'),
           SizedBox(width: 10.w),
-          _buildFilterChip('prescription', 'prescriptions'.tr),
+          _buildFilterChip('prescription', 'Ordonnances'),
         ],
       ),
     );
@@ -401,7 +405,7 @@ class _NotificationsMedecinState extends State<NotificationsMedecin> {
             ),
             SizedBox(height: 16.h),
             Text(
-              'no_notifications_found'.tr,
+              'Aucune notification trouvée',
               style: GoogleFonts.raleway(
                 fontSize: 14.sp,
                 color: theme.textTheme.bodyMedium?.color,
@@ -450,17 +454,19 @@ class _NotificationsMedecinState extends State<NotificationsMedecin> {
           context: context,
           builder:
               (context) => AlertDialog(
-                title: Text('delete_notification'.tr),
-                content: Text('confirm_delete_notification'.tr),
+                title: Text('Supprimer la notification'),
+                content: Text(
+                  'Êtes-vous sûr de vouloir supprimer cette notification ?',
+                ),
                 actions: [
                   TextButton(
                     onPressed: () => Navigator.of(context).pop(false),
-                    child: Text('cancel'.tr),
+                    child: Text('Annuler'),
                   ),
                   TextButton(
                     onPressed: () => Navigator.of(context).pop(true),
                     child: Text(
-                      'delete'.tr,
+                      'Supprimer',
                       style: const TextStyle(color: Colors.red),
                     ),
                   ),
@@ -474,7 +480,7 @@ class _NotificationsMedecinState extends State<NotificationsMedecin> {
         );
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(SnackBar(content: Text('notification_deleted'.tr)));
+        ).showSnackBar(SnackBar(content: Text('Notification supprimée')));
       },
       child: _buildNotificationCard(notification),
     );
@@ -588,7 +594,7 @@ class _NotificationsMedecinState extends State<NotificationsMedecin> {
                             padding: EdgeInsets.symmetric(vertical: 8.h),
                           ),
                           child: Text(
-                            'accept'.tr,
+                            'Accepter',
                             style: TextStyle(color: Colors.white),
                           ),
                         ),
@@ -602,7 +608,7 @@ class _NotificationsMedecinState extends State<NotificationsMedecin> {
                             padding: EdgeInsets.symmetric(vertical: 8.h),
                           ),
                           child: Text(
-                            'reject'.tr,
+                            'Refuser',
                             style: TextStyle(color: Colors.white),
                           ),
                         ),
@@ -709,7 +715,7 @@ class _NotificationsMedecinState extends State<NotificationsMedecin> {
                 children: [
                   CircularProgressIndicator(color: AppColors.primaryColor),
                   SizedBox(width: 20),
-                  Text("processing".tr, style: TextStyle(fontSize: 16)),
+                  Text("Traitement en cours", style: TextStyle(fontSize: 16)),
                 ],
               ),
             ),
@@ -743,7 +749,7 @@ class _NotificationsMedecinState extends State<NotificationsMedecin> {
 
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
-                  content: Text('${"error".tr}: $errorMessage'),
+                  content: Text('${"Erreur"}: $errorMessage'),
                   backgroundColor: Colors.red,
                 ),
               );
@@ -756,7 +762,7 @@ class _NotificationsMedecinState extends State<NotificationsMedecin> {
               // Show success message
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
-                  content: Text('appointment_accepted'.tr),
+                  content: Text('Rendez-vous accepté'),
                   backgroundColor: Colors.green,
                 ),
               );
@@ -808,7 +814,7 @@ class _NotificationsMedecinState extends State<NotificationsMedecin> {
                 children: [
                   CircularProgressIndicator(color: AppColors.primaryColor),
                   SizedBox(width: 20),
-                  Text("processing".tr, style: TextStyle(fontSize: 16)),
+                  Text("Traitement en cours", style: TextStyle(fontSize: 16)),
                 ],
               ),
             ),
@@ -842,7 +848,7 @@ class _NotificationsMedecinState extends State<NotificationsMedecin> {
 
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
-                  content: Text('${"error".tr}: $errorMessage'),
+                  content: Text('${"Erreur"}: $errorMessage'),
                   backgroundColor: Colors.red,
                 ),
               );
@@ -855,7 +861,7 @@ class _NotificationsMedecinState extends State<NotificationsMedecin> {
               // Show success message
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
-                  content: Text('appointment_rejected'.tr),
+                  content: Text('Rendez-vous refusé'),
                   backgroundColor: Colors.red,
                 ),
               );
@@ -926,7 +932,7 @@ class _NotificationsMedecinState extends State<NotificationsMedecin> {
           builder:
               (context) => Scaffold(
                 appBar: AppBar(
-                  title: Text('loading'.tr),
+                  title: Text('Chargement'),
                   backgroundColor: AppColors.primaryColor,
                 ),
                 body: Center(
@@ -935,7 +941,7 @@ class _NotificationsMedecinState extends State<NotificationsMedecin> {
                     children: [
                       CircularProgressIndicator(color: AppColors.primaryColor),
                       SizedBox(height: 16),
-                      Text('loading_appointment_details'.tr),
+                      Text('Chargement des détails du rendez-vous'),
                       blocListener,
                     ],
                   ),

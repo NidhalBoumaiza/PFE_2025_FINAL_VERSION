@@ -72,7 +72,9 @@ class _DoctorPatientsPageState extends State<DoctorPatientsPage> {
       setState(() {
         isLoading = false;
       });
-      _showErrorSnackBar("Error loading user data: $e");
+      _showErrorSnackBar(
+        "Erreur lors de la chargement des données de l'utilisateur: $e",
+      );
     }
   }
 
@@ -106,7 +108,7 @@ class _DoctorPatientsPageState extends State<DoctorPatientsPage> {
               .get();
 
       print(
-        'Found ${result.docs.length} appointments for doctor ${currentUser!.id}',
+        'Trouvé ${result.docs.length} rendez-vous pour le médecin ${currentUser!.id}',
       );
 
       // Extract unique patients
@@ -150,7 +152,7 @@ class _DoctorPatientsPageState extends State<DoctorPatientsPage> {
             } else {
               // Patient document doesn't exist, create a minimal record
               final patientName =
-                  data['patientName'] as String? ?? 'unknown_patient'.tr;
+                  data['patientName'] as String? ?? 'Patient inconnu';
               newPatients.add({
                 'id': patientId,
                 'name': patientName.split(' ').first,
@@ -166,11 +168,11 @@ class _DoctorPatientsPageState extends State<DoctorPatientsPage> {
                             .toDate()
                             .toIso8601String()
                         : DateTime.now().toIso8601String(),
-                'lastAppointmentStatus': data['status'] ?? 'unknown',
+                'lastAppointmentStatus': data['status'] ?? 'Inconnu',
               });
             }
           } catch (e) {
-            print('Error fetching patient $patientId: $e');
+            print('Erreur lors de la récupération du patient $patientId: $e');
           }
         }
       }
@@ -227,8 +229,8 @@ class _DoctorPatientsPageState extends State<DoctorPatientsPage> {
         isLoading = false;
         isLoadingMore = false;
       });
-      _showErrorSnackBar("Error loading patients: $e");
-      print("Error loading patients: $e");
+      _showErrorSnackBar("Erreur lors de la chargement des patients: $e");
+      print("Erreur lors de la chargement des patients: $e");
     }
   }
 
@@ -275,8 +277,10 @@ class _DoctorPatientsPageState extends State<DoctorPatientsPage> {
       setState(() {
         isLoadingMore = false;
       });
-      _showErrorSnackBar("Error loading more patients: $e");
-      print("Error loading more patients: $e");
+      _showErrorSnackBar(
+        "Erreur lors de la chargement des patients supplémentaires: $e",
+      );
+      print("Erreur lors de la chargement des patients supplémentaires: $e");
     }
   }
 
@@ -339,7 +343,7 @@ class _DoctorPatientsPageState extends State<DoctorPatientsPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          "my_patients".tr,
+          "Mes patients",
           style: GoogleFonts.poppins(
             fontSize: 18.sp,
             fontWeight: FontWeight.bold,
@@ -361,7 +365,7 @@ class _DoctorPatientsPageState extends State<DoctorPatientsPage> {
             child: TextField(
               controller: _searchController,
               decoration: InputDecoration(
-                hintText: 'search_patient'.tr,
+                hintText: 'Rechercher un patient',
                 hintStyle: GoogleFonts.raleway(color: Colors.grey),
                 prefixIcon: Icon(Icons.search, color: AppColors.primaryColor),
                 suffixIcon:
@@ -401,7 +405,7 @@ class _DoctorPatientsPageState extends State<DoctorPatientsPage> {
                           ),
                           SizedBox(height: 16.h),
                           Text(
-                            "loading_patients".tr,
+                            "Chargement des patients",
                             style: GoogleFonts.raleway(
                               fontSize: 16.sp,
                               color: Colors.grey[700],
@@ -430,8 +434,8 @@ class _DoctorPatientsPageState extends State<DoctorPatientsPage> {
                           SizedBox(height: 24.h),
                           Text(
                             searchQuery != null && searchQuery!.isNotEmpty
-                                ? "no_patients_found_for_search".tr
-                                : "no_patients_yet".tr,
+                                ? "Aucun patient trouvé pour cette recherche"
+                                : "Aucun patient pour le moment",
                             style: GoogleFonts.raleway(
                               fontSize: 18.sp,
                               fontWeight: FontWeight.w600,
@@ -442,8 +446,8 @@ class _DoctorPatientsPageState extends State<DoctorPatientsPage> {
                           SizedBox(height: 8.h),
                           Text(
                             searchQuery != null && searchQuery!.isNotEmpty
-                                ? "try_different_search".tr
-                                : "patients_will_appear_here".tr,
+                                ? "Essayez une recherche différente"
+                                : "Les patients apparaîtront ici",
                             style: GoogleFonts.raleway(
                               fontSize: 14.sp,
                               color: Colors.grey[600],
@@ -467,7 +471,7 @@ class _DoctorPatientsPageState extends State<DoctorPatientsPage> {
                                 ),
                                 icon: Icon(Icons.clear, size: 20.sp),
                                 label: Text(
-                                  "clear_search".tr,
+                                  "Effacer la recherche",
                                   style: GoogleFonts.raleway(
                                     fontSize: 14.sp,
                                     fontWeight: FontWeight.w600,
@@ -565,7 +569,7 @@ class _DoctorPatientsPageState extends State<DoctorPatientsPage> {
                                           children: [
                                             Text(
                                               fullName.isEmpty
-                                                  ? 'unknown_patient'.tr
+                                                  ? 'Patient inconnu'
                                                   : fullName,
                                               style: GoogleFonts.raleway(
                                                 fontSize: 16.sp,
@@ -577,7 +581,7 @@ class _DoctorPatientsPageState extends State<DoctorPatientsPage> {
                                             ),
                                             SizedBox(height: 4.h),
                                             Text(
-                                              "last_consultation".tr +
+                                              "Dernière consultation" +
                                                   ": $lastAppointmentDate",
                                               style: GoogleFonts.raleway(
                                                 fontSize: 14.sp,
@@ -645,15 +649,15 @@ class _DoctorPatientsPageState extends State<DoctorPatientsPage> {
   String _getStatusText(String status) {
     switch (status) {
       case 'pending':
-        return 'status_pending'.tr;
+        return 'En attente';
       case 'accepted':
-        return 'status_confirmed'.tr;
+        return 'Confirmé';
       case 'cancelled':
-        return 'status_cancelled'.tr;
+        return 'Annulé';
       case 'completed':
-        return 'status_completed'.tr;
+        return 'Terminé';
       default:
-        return 'status_unknown'.tr;
+        return 'Inconnu';
     }
   }
 

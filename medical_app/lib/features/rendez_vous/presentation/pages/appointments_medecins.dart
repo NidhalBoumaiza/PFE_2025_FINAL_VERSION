@@ -97,7 +97,7 @@ class _AppointmentsMedecinsState extends State<AppointmentsMedecins> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              "patient_info_unavailable".tr,
+              "Informations patient indisponibles",
               style: GoogleFonts.raleway(),
             ),
             backgroundColor: Colors.red,
@@ -150,7 +150,9 @@ class _AppointmentsMedecinsState extends State<AppointmentsMedecins> {
 
       print('After status filter: ${filteredAppointments.length} appointments');
     } else {
-      print('No status filter applied - showing all ${filteredAppointments.length} appointments');
+      print(
+        'No status filter applied - showing all ${filteredAppointments.length} appointments',
+      );
     }
   }
 
@@ -263,7 +265,7 @@ class _AppointmentsMedecinsState extends State<AppointmentsMedecins> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            "modify_time_feature_coming_soon".tr,
+            "Fonctionnalité de modification d'heure bientôt disponible",
             style: GoogleFonts.raleway(),
           ),
           backgroundColor: Colors.orange,
@@ -315,7 +317,7 @@ class _AppointmentsMedecinsState extends State<AppointmentsMedecins> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            "patient_info_unavailable".tr,
+            "Informations patient indisponibles",
             style: GoogleFonts.raleway(),
           ),
           backgroundColor: Colors.red,
@@ -380,7 +382,7 @@ class _AppointmentsMedecinsState extends State<AppointmentsMedecins> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            "error_loading_profile".trParams({'0': e.toString()}),
+            "Erreur lors du chargement du profil : ${e.toString()}",
             style: GoogleFonts.raleway(),
           ),
           backgroundColor: Colors.red,
@@ -400,7 +402,7 @@ class _AppointmentsMedecinsState extends State<AppointmentsMedecins> {
           widget.showAppBar
               ? AppBar(
                 title: Text(
-                  "appointments".tr,
+                  "Rendez-vous",
                   style: GoogleFonts.poppins(
                     fontSize: 18.sp,
                     fontWeight: FontWeight.bold,
@@ -495,8 +497,8 @@ class _AppointmentsMedecinsState extends State<AppointmentsMedecins> {
                 SnackBar(
                   content: Text(
                     state.status == 'accepted'
-                        ? "appointment_accepted".tr
-                        : "appointment_rejected".tr,
+                        ? "Rendez-vous accepté"
+                        : "Rendez-vous rejeté",
                     style: GoogleFonts.raleway(),
                   ),
                   backgroundColor:
@@ -564,7 +566,7 @@ class _AppointmentsMedecinsState extends State<AppointmentsMedecins> {
                                       MainAxisAlignment.spaceBetween,
                                   children: [
                                     Text(
-                                      "select_date".tr,
+                                      "Sélectionner une date",
                                       style: GoogleFonts.raleway(
                                         fontSize: 16.sp,
                                         fontWeight: FontWeight.bold,
@@ -583,7 +585,7 @@ class _AppointmentsMedecinsState extends State<AppointmentsMedecins> {
                                               _applyDateFilter();
                                             },
                                             child: Text(
-                                              "clear".tr,
+                                              "Effacer",
                                               style: GoogleFonts.raleway(
                                                 color: Colors.red,
                                                 fontWeight: FontWeight.w600,
@@ -704,9 +706,9 @@ class _AppointmentsMedecinsState extends State<AppointmentsMedecins> {
                                     titleCentered: true,
                                   ),
                                   availableCalendarFormats: {
-                                    CalendarFormat.month: "month".tr,
-                                    CalendarFormat.twoWeeks: "two_weeks".tr,
-                                    CalendarFormat.week: "week".tr,
+                                    CalendarFormat.month: "Mois",
+                                    CalendarFormat.twoWeeks: "2 semaines",
+                                    CalendarFormat.week: "Semaine",
                                   },
                                 ),
                               ],
@@ -736,14 +738,10 @@ class _AppointmentsMedecinsState extends State<AppointmentsMedecins> {
                         Expanded(
                           child: Text(
                             selectedDate != null
-                                ? "filtered_by_date".trParams({
-                                  '0': DateFormat(
-                                    'dd MMMM yyyy',
-                                  ).format(selectedDate!),
-                                })
+                                ? "Filtré par date : ${DateFormat('dd MMMM yyyy').format(selectedDate!)}"
                                 : statusFilter != null
-                                ? "${'filters'.tr}: ${_getStatusText(statusFilter!)}"
-                                : "filters".tr,
+                                ? "Filtres : ${_getStatusText(statusFilter!)}"
+                                : "Filtres",
                             style: GoogleFonts.raleway(
                               fontSize: 14.sp,
                               fontWeight: FontWeight.w500,
@@ -775,15 +773,15 @@ class _AppointmentsMedecinsState extends State<AppointmentsMedecins> {
                   child: ListView(
                     scrollDirection: Axis.horizontal,
                     children: [
-                      _buildFilterChip('all'.tr, null),
+                      _buildFilterChip('Tout', null),
                       SizedBox(width: 8.w),
-                      _buildFilterChip('status_pending'.tr, 'pending'),
+                      _buildFilterChip('En attente', 'pending'),
                       SizedBox(width: 8.w),
-                      _buildFilterChip('status_confirmed'.tr, 'accepted'),
+                      _buildFilterChip('Confirmé', 'accepted'),
                       SizedBox(width: 8.w),
-                      _buildFilterChip('status_completed'.tr, 'completed'),
+                      _buildFilterChip('Terminé', 'completed'),
                       SizedBox(width: 8.w),
-                      _buildFilterChip('status_cancelled'.tr, 'cancelled'),
+                      _buildFilterChip('Annulé', 'cancelled'),
                     ],
                   ),
                 ),
@@ -800,7 +798,7 @@ class _AppointmentsMedecinsState extends State<AppointmentsMedecins> {
                                 ),
                                 SizedBox(height: 16.h),
                                 Text(
-                                  "loading_appointments".tr,
+                                  "Chargement des rendez-vous",
                                   style: GoogleFonts.raleway(
                                     fontSize: 16.sp,
                                     color: Colors.grey[700],
@@ -829,16 +827,10 @@ class _AppointmentsMedecinsState extends State<AppointmentsMedecins> {
                                 SizedBox(height: 24.h),
                                 Text(
                                   selectedDate != null
-                                      ? "no_appointments_for_date".tr
-                                          .replaceAll(
-                                            "{0}",
-                                            DateFormat(
-                                              'dd/MM/yyyy',
-                                            ).format(selectedDate!),
-                                          )
+                                      ? "Aucun rendez-vous pour le ${DateFormat('dd/MM/yyyy').format(selectedDate!)}"
                                       : statusFilter != null
-                                      ? "no_appointments_found".tr
-                                      : "no_appointments_found".tr,
+                                      ? "Aucun rendez-vous trouvé"
+                                      : "Aucun rendez-vous trouvé",
                                   style: GoogleFonts.raleway(
                                     fontSize: 18.sp,
                                     fontWeight: FontWeight.w600,
@@ -848,7 +840,7 @@ class _AppointmentsMedecinsState extends State<AppointmentsMedecins> {
                                 ),
                                 SizedBox(height: 8.h),
                                 Text(
-                                  "try_refreshing_the_page".tr,
+                                  "Essayez de rafraîchir la page",
                                   style: GoogleFonts.raleway(
                                     fontSize: 14.sp,
                                     color: Colors.grey[600],
@@ -960,8 +952,7 @@ class _AppointmentsMedecinsState extends State<AppointmentsMedecins> {
                                                       child: Text(
                                                         appointment
                                                                 .patientName ??
-                                                            "unknown_patient"
-                                                                .tr,
+                                                            "Patient inconnu",
                                                         style:
                                                             GoogleFonts.raleway(
                                                               fontSize: 16.sp,
@@ -1105,7 +1096,7 @@ class _AppointmentsMedecinsState extends State<AppointmentsMedecins> {
                                                       color: Colors.blue,
                                                     ),
                                                     label: Text(
-                                                      "modify_time".tr,
+                                                      "Modifier l'heure",
                                                       style:
                                                           GoogleFonts.raleway(
                                                             fontSize: 12.sp,
@@ -1161,7 +1152,7 @@ class _AppointmentsMedecinsState extends State<AppointmentsMedecins> {
                                                                   Colors.white,
                                                             ),
                                                     label: Text(
-                                                      "accept".tr,
+                                                      "Accepter",
                                                       style:
                                                           GoogleFonts.raleway(
                                                             fontSize: 12.sp,
@@ -1200,7 +1191,7 @@ class _AppointmentsMedecinsState extends State<AppointmentsMedecins> {
                                                       color: Colors.white,
                                                     ),
                                                     label: Text(
-                                                      "reject".tr,
+                                                      "Rejeter",
                                                       style:
                                                           GoogleFonts.raleway(
                                                             fontSize: 12.sp,
@@ -1292,15 +1283,15 @@ class _AppointmentsMedecinsState extends State<AppointmentsMedecins> {
   String _getStatusText(String status) {
     switch (status) {
       case 'pending':
-        return 'status_pending'.tr;
+        return 'En attente';
       case 'accepted':
-        return 'status_confirmed'.tr;
+        return 'Confirmé';
       case 'cancelled':
-        return 'status_cancelled'.tr;
+        return 'Annulé';
       case 'completed':
-        return 'status_completed'.tr;
+        return 'Terminé';
       default:
-        return 'status_unknown'.tr;
+        return 'Statut inconnu';
     }
   }
 

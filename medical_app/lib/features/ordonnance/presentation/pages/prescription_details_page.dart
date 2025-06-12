@@ -105,7 +105,7 @@ class _PrescriptionDetailsPageState extends State<PrescriptionDetailsPage> {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(
-                'prescription_edited_success'.tr,
+                'Ordonnance modifiée avec succès',
                 style: GoogleFonts.raleway(),
               ),
               backgroundColor: Colors.green,
@@ -118,7 +118,7 @@ class _PrescriptionDetailsPageState extends State<PrescriptionDetailsPage> {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(
-                'prescription_error'.tr.replaceAll('{0}', state.message),
+                'Erreur d\'ordonnance: ${state.message}',
                 style: GoogleFonts.raleway(),
               ),
               backgroundColor: Colors.red,
@@ -129,7 +129,7 @@ class _PrescriptionDetailsPageState extends State<PrescriptionDetailsPage> {
       child: Scaffold(
         appBar: AppBar(
           title: Text(
-            'prescription_title'.tr,
+            'Ordonnance',
             style: GoogleFonts.raleway(
               fontWeight: FontWeight.bold,
               fontSize: 18.sp,
@@ -184,7 +184,7 @@ class _PrescriptionDetailsPageState extends State<PrescriptionDetailsPage> {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
-                                      'prescription_date'.tr,
+                                      'Date de l\'ordonnance',
                                       style: GoogleFonts.raleway(
                                         fontSize: 14.sp,
                                         color: Colors.grey[600],
@@ -213,7 +213,7 @@ class _PrescriptionDetailsPageState extends State<PrescriptionDetailsPage> {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
-                                      'patient'.tr,
+                                      'Patient',
                                       style: GoogleFonts.raleway(
                                         fontSize: 14.sp,
                                         color: Colors.grey[600],
@@ -234,7 +234,7 @@ class _PrescriptionDetailsPageState extends State<PrescriptionDetailsPage> {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
-                                      'doctor'.tr,
+                                      'Médecin',
                                       style: GoogleFonts.raleway(
                                         fontSize: 14.sp,
                                         color: Colors.grey[600],
@@ -261,7 +261,7 @@ class _PrescriptionDetailsPageState extends State<PrescriptionDetailsPage> {
 
                   // Medications section
                   Text(
-                    'medications'.tr,
+                    'Médicaments',
                     style: GoogleFonts.raleway(
                       fontSize: 18.sp,
                       fontWeight: FontWeight.bold,
@@ -282,7 +282,7 @@ class _PrescriptionDetailsPageState extends State<PrescriptionDetailsPage> {
 
                   // Notes section
                   Text(
-                    'notes'.tr,
+                    'Notes',
                     style: GoogleFonts.raleway(
                       fontSize: 18.sp,
                       fontWeight: FontWeight.bold,
@@ -302,7 +302,7 @@ class _PrescriptionDetailsPageState extends State<PrescriptionDetailsPage> {
                           controller: _noteController,
                           maxLines: 4,
                           decoration: InputDecoration(
-                            hintText: 'additional_notes_hint'.tr,
+                            hintText: 'Notes supplémentaires (optionnel)',
                             border: InputBorder.none,
                             hintStyle: GoogleFonts.raleway(
                               fontSize: 14.sp,
@@ -327,7 +327,7 @@ class _PrescriptionDetailsPageState extends State<PrescriptionDetailsPage> {
                         child: Text(
                           widget.prescription.note?.isNotEmpty == true
                               ? widget.prescription.note!
-                              : 'no_notes'.tr,
+                              : 'Aucune note',
                           style: GoogleFonts.raleway(
                             fontSize: 14.sp,
                             color:
@@ -365,7 +365,7 @@ class _PrescriptionDetailsPageState extends State<PrescriptionDetailsPage> {
                             },
                             icon: Icon(Icons.cancel, color: Colors.white),
                             label: Text(
-                              'cancel'.tr,
+                              'Annuler',
                               style: GoogleFonts.raleway(
                                 color: Colors.white,
                                 fontWeight: FontWeight.bold,
@@ -386,7 +386,7 @@ class _PrescriptionDetailsPageState extends State<PrescriptionDetailsPage> {
                             onPressed: _savePrescription,
                             icon: Icon(Icons.save, color: Colors.white),
                             label: Text(
-                              'save'.tr,
+                              'Sauvegarder',
                               style: GoogleFonts.raleway(
                                 color: Colors.white,
                                 fontWeight: FontWeight.bold,
@@ -453,7 +453,7 @@ class _PrescriptionDetailsPageState extends State<PrescriptionDetailsPage> {
                 Icon(Icons.medication, size: 18.sp, color: Colors.grey[600]),
                 SizedBox(width: 8.w),
                 Text(
-                  '${'dosage_label'.tr}: ',
+                  'Posologie: ',
                   style: GoogleFonts.raleway(
                     fontSize: 14.sp,
                     color: Colors.grey[700],
@@ -477,7 +477,7 @@ class _PrescriptionDetailsPageState extends State<PrescriptionDetailsPage> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        '${'instructions_label'.tr}: ',
+                        'Instructions: ',
                         style: GoogleFonts.raleway(
                           fontSize: 14.sp,
                           color: Colors.grey[700],
@@ -510,7 +510,7 @@ class _PrescriptionDetailsPageState extends State<PrescriptionDetailsPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'add_medication'.tr,
+              'Ajouter un médicament',
               style: GoogleFonts.raleway(
                 fontSize: 16.sp,
                 fontWeight: FontWeight.bold,
@@ -520,7 +520,7 @@ class _PrescriptionDetailsPageState extends State<PrescriptionDetailsPage> {
             TextFormField(
               controller: _medicationNameController,
               decoration: InputDecoration(
-                labelText: 'medication_name'.tr,
+                labelText: 'Nom du médicament',
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8.r),
                 ),
@@ -530,7 +530,7 @@ class _PrescriptionDetailsPageState extends State<PrescriptionDetailsPage> {
             TextFormField(
               controller: _dosageController,
               decoration: InputDecoration(
-                labelText: 'dosage'.tr,
+                labelText: 'Posologie',
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8.r),
                 ),
@@ -540,7 +540,7 @@ class _PrescriptionDetailsPageState extends State<PrescriptionDetailsPage> {
             TextFormField(
               controller: _instructionsController,
               decoration: InputDecoration(
-                labelText: 'instructions'.tr,
+                labelText: 'Instructions',
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8.r),
                 ),
@@ -553,7 +553,7 @@ class _PrescriptionDetailsPageState extends State<PrescriptionDetailsPage> {
                 onPressed: _addMedication,
                 icon: Icon(Icons.add, color: Colors.white),
                 label: Text(
-                  'add'.tr,
+                  'Ajouter',
                   style: GoogleFonts.raleway(
                     color: Colors.white,
                     fontWeight: FontWeight.bold,

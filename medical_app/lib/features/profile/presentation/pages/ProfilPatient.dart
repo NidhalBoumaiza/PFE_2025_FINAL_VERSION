@@ -118,18 +118,15 @@ class _ProfilePatientState extends State<ProfilePatient> {
   void _showLogoutDialog() {
     Get.dialog(
       AlertDialog(
-        title: Text('logout'.tr, style: GoogleFonts.raleway(fontSize: 22.sp)),
+        title: Text('Déconnexion', style: GoogleFonts.raleway(fontSize: 22.sp)),
         content: Text(
-          'confirm_logout'.tr,
+          'Êtes-vous sûr de vouloir vous déconnecter ?',
           style: GoogleFonts.raleway(fontSize: 18.sp),
         ),
         actions: [
           TextButton(
             onPressed: Get.back,
-            child: Text(
-              'cancel'.tr,
-              style: GoogleFonts.raleway(fontSize: 16.sp),
-            ),
+            child: Text('Annuler', style: GoogleFonts.raleway(fontSize: 16.sp)),
           ),
           TextButton(
             onPressed: () async {
@@ -142,7 +139,7 @@ class _ProfilePatientState extends State<ProfilePatient> {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
                     content: Text(
-                      "logout_success".tr,
+                      "Déconnexion réussie",
                       style: GoogleFonts.raleway(fontSize: 16.sp),
                     ),
                   ),
@@ -155,12 +152,12 @@ class _ProfilePatientState extends State<ProfilePatient> {
               } catch (e) {
                 showErrorSnackBar(
                   context,
-                  'logout_error'.tr.replaceAll('{0}', e.toString()),
+                  'Erreur lors de la déconnexion : ${e.toString()}',
                 );
               }
             },
             child: Text(
-              'logout'.tr,
+              'Déconnexion',
               style: GoogleFonts.raleway(fontSize: 16.sp, color: Colors.red),
             ),
           ),
@@ -170,7 +167,10 @@ class _ProfilePatientState extends State<ProfilePatient> {
   }
 
   void _changeProfilePicture() {
-    Get.snackbar('info'.tr, 'change_profile_picture_message'.tr);
+    Get.snackbar(
+      'Info',
+      'Fonctionnalité de changement de photo de profil à venir',
+    );
   }
 
   @override
@@ -187,7 +187,7 @@ class _ProfilePatientState extends State<ProfilePatient> {
               setState(() {
                 _patient = state.user as PatientEntity;
               });
-              showSuccessSnackBar(context, 'profile_saved_successfully'.tr);
+              showSuccessSnackBar(context, 'Profil sauvegardé avec succès');
             } else if (state is UpdateUserFailure) {
               showErrorSnackBar(context, state.message);
             }
@@ -307,7 +307,7 @@ class _ProfilePatientState extends State<ProfilePatient> {
                       Padding(
                         padding: EdgeInsets.symmetric(horizontal: 16.w),
                         child: Text(
-                          'personal_information'.tr,
+                          'Informations personnelles',
                           style: GoogleFonts.raleway(
                             fontSize: 18.sp,
                             fontWeight: FontWeight.bold,
@@ -317,50 +317,44 @@ class _ProfilePatientState extends State<ProfilePatient> {
                       ),
                       SizedBox(height: 12.h),
                       _buildInfoTile(
-                        'phone_number_label'.tr,
+                        'Numéro de téléphone',
                         _patient!.phoneNumber,
                       ),
-                      _buildInfoTile('gender'.tr, _patient!.gender),
+                      _buildInfoTile('Sexe', _patient!.gender),
                       _buildInfoTile(
-                        'date_of_birth_label'.tr,
+                        'Date de naissance',
                         _patient!.dateOfBirth
                                 ?.toIso8601String()
                                 .split('T')
                                 .first ??
-                            'not_specified'.tr,
+                            'Non spécifié',
                       ),
                       _buildInfoTile(
-                        'antecedent'.tr,
-                        _patient!.antecedent ?? 'not_specified'.tr,
+                        'Antécédent',
+                        _patient!.antecedent ?? 'Non spécifié',
                       ),
                       if (_patient?.bloodType != null)
-                        _buildInfoTile('blood_type'.tr, _patient!.bloodType!),
+                        _buildInfoTile('Groupe sanguin', _patient!.bloodType!),
                       if (_patient?.height != null)
-                        _buildInfoTile(
-                          'height'.tr,
-                          "${_patient!.height} ${'cm'.tr}",
-                        ),
+                        _buildInfoTile('Taille', "${_patient!.height} cm"),
                       if (_patient?.weight != null)
-                        _buildInfoTile(
-                          'weight'.tr,
-                          "${_patient!.weight} ${'kg'.tr}",
-                        ),
+                        _buildInfoTile('Poids', "${_patient!.weight} kg"),
                       if (_patient?.allergies != null &&
                           _patient!.allergies!.isNotEmpty)
                         _buildInfoTile(
-                          'allergies'.tr,
+                          'Allergies',
                           _patient!.allergies!.join(", "),
                         ),
                       if (_patient?.chronicDiseases != null &&
                           _patient!.chronicDiseases!.isNotEmpty)
                         _buildInfoTile(
-                          'chronic_diseases'.tr,
+                          'Maladies chroniques',
                           _patient!.chronicDiseases!.join(", "),
                         ),
                       if (_patient?.address != null &&
                           _patient!.address!.isNotEmpty)
                         _buildInfoTile(
-                          'address'.tr,
+                          'Adresse',
                           _patient!.address!.values
                               .where(
                                 (value) => value != null && value.isNotEmpty,
@@ -371,7 +365,7 @@ class _ProfilePatientState extends State<ProfilePatient> {
                       Padding(
                         padding: EdgeInsets.symmetric(horizontal: 16.w),
                         child: Text(
-                          'emergency_contact'.tr,
+                          'Contact d\'urgence',
                           style: GoogleFonts.raleway(
                             fontSize: 18.sp,
                             fontWeight: FontWeight.bold,
@@ -384,7 +378,7 @@ class _ProfilePatientState extends State<ProfilePatient> {
                           _patient!.emergencyContact!.containsKey('name') &&
                           _patient!.emergencyContact!['name'] != null)
                         _buildInfoTile(
-                          'emergency_contact_name'.tr,
+                          'Nom du contact d\'urgence',
                           _patient!.emergencyContact!['name']!,
                         ),
                       if (_patient?.emergencyContact != null &&
@@ -393,7 +387,7 @@ class _ProfilePatientState extends State<ProfilePatient> {
                           ) &&
                           _patient!.emergencyContact!['relationship'] != null)
                         _buildInfoTile(
-                          'emergency_relationship'.tr,
+                          'Relation',
                           _patient!.emergencyContact!['relationship']!,
                         ),
                       if (_patient?.emergencyContact != null &&
@@ -402,14 +396,14 @@ class _ProfilePatientState extends State<ProfilePatient> {
                           ) &&
                           _patient!.emergencyContact!['phoneNumber'] != null)
                         _buildInfoTile(
-                          'emergency_phone'.tr,
+                          'Téléphone d\'urgence',
                           _patient!.emergencyContact!['phoneNumber']!,
                         ),
                       SizedBox(height: 20.h),
                       Padding(
                         padding: EdgeInsets.symmetric(horizontal: 16.w),
                         child: Text(
-                          'settings'.tr,
+                          'Paramètres',
                           style: GoogleFonts.raleway(
                             fontSize: 18.sp,
                             fontWeight: FontWeight.bold,
@@ -447,7 +441,7 @@ class _ProfilePatientState extends State<ProfilePatient> {
                               color: AppColors.primaryColor,
                             ),
                             title: Text(
-                              'app_settings'.tr,
+                              'Paramètres de l\'application',
                               style: GoogleFonts.raleway(
                                 fontSize: 14.sp,
                                 fontWeight: FontWeight.w500,
@@ -470,7 +464,7 @@ class _ProfilePatientState extends State<ProfilePatient> {
                       Padding(
                         padding: EdgeInsets.symmetric(horizontal: 16.w),
                         child: Text(
-                          'medical_records'.tr,
+                          'Dossier médical',
                           style: GoogleFonts.raleway(
                             fontSize: 18.sp,
                             fontWeight: FontWeight.bold,
@@ -494,7 +488,7 @@ class _ProfilePatientState extends State<ProfilePatient> {
                             );
                           } else {
                             SnackBarMessage().showErrorSnackBar(
-                              message: 'medical_record_access_error'.tr,
+                              message: 'Erreur d\'accès au dossier médical',
                               context: context,
                             );
                           }
@@ -522,7 +516,7 @@ class _ProfilePatientState extends State<ProfilePatient> {
                               size: 20.sp,
                             ),
                             title: Text(
-                              'manage_medical_records'.tr,
+                              'Gérer le dossier médical',
                               style: GoogleFonts.raleway(
                                 fontSize: 14.sp,
                                 fontWeight: FontWeight.w500,
@@ -550,7 +544,7 @@ class _ProfilePatientState extends State<ProfilePatient> {
                             onPressed: _showLogoutDialog,
                             icon: Icon(Icons.logout, size: 18.sp),
                             label: Text(
-                              'logout'.tr,
+                              'Déconnexion',
                               style: GoogleFonts.raleway(
                                 fontSize: 14.sp,
                                 fontWeight: FontWeight.w600,

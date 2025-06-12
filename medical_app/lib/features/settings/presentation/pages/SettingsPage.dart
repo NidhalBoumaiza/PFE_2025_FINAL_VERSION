@@ -64,7 +64,7 @@ class _SettingsPageState extends State<SettingsPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          "settings".tr,
+          "Paramètres",
           style: GoogleFonts.raleway(
             fontSize: 18,
             fontWeight: FontWeight.bold,
@@ -85,22 +85,22 @@ class _SettingsPageState extends State<SettingsPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildSectionTitle("appearance".tr),
+            _buildSectionTitle("Apparence"),
             const SizedBox(height: 8),
             const ThemeCubitSwitch(),
 
             const SizedBox(height: 24),
-            _buildSectionTitle("notifications".tr),
+            _buildSectionTitle("Notifications"),
             const SizedBox(height: 8),
             _buildNotificationSettings(),
 
             const SizedBox(height: 24),
-            _buildSectionTitle("account".tr),
+            _buildSectionTitle("Compte"),
             const SizedBox(height: 8),
             _buildAccountSettings(),
 
             const SizedBox(height: 24),
-            _buildSectionTitle("about".tr),
+            _buildSectionTitle("À propos"),
             const SizedBox(height: 8),
             _buildAboutCard(),
           ],
@@ -132,11 +132,11 @@ class _SettingsPageState extends State<SettingsPage> {
               color: AppColors.primaryColor,
             ),
             title: Text(
-              "notification_settings".tr,
+              "Paramètres de notification",
               style: GoogleFonts.raleway(fontSize: 14),
             ),
             subtitle: Text(
-              "manage_notification_preferences".tr,
+              "Gérer vos préférences de notification",
               style: GoogleFonts.raleway(
                 fontSize: 12,
                 color:
@@ -155,12 +155,12 @@ class _SettingsPageState extends State<SettingsPage> {
                 context: context,
                 builder:
                     (context) => AlertDialog(
-                      title: Text("notification_settings".tr),
-                      content: Text("notification_settings_coming_soon".tr),
+                      title: Text("Paramètres de notification"),
+                      content: Text("Paramètres de notification bientôt disponibles"),
                       actions: [
                         TextButton(
                           onPressed: () => Navigator.pop(context),
-                          child: Text("ok".tr),
+                          child: Text("OK"),
                         ),
                       ],
                     ),
@@ -173,21 +173,21 @@ class _SettingsPageState extends State<SettingsPage> {
             child: Column(
               children: [
                 _buildSwitchSetting(
-                  title: "appointments".tr,
+                  title: "Rendez-vous",
                   icon: Icons.calendar_today,
                   value: _appointmentNotifications,
                   settingKey: 'appointment_notifications',
                 ),
                 const Divider(height: 1),
                 _buildSwitchSetting(
-                  title: "messages".tr,
+                  title: "Messages",
                   icon: Icons.message,
                   value: _messageNotifications,
                   settingKey: 'message_notifications',
                 ),
                 const Divider(height: 1),
                 _buildSwitchSetting(
-                  title: "prescriptions".tr,
+                  title: "Ordonnances",
                   icon: Icons.description,
                   value: _prescriptionNotifications,
                   settingKey: 'prescription_notifications',
@@ -222,13 +222,13 @@ class _SettingsPageState extends State<SettingsPage> {
                         color: AppColors.primaryColor,
                       ),
                       title: Text(
-                        "edit_profile".tr,
+                        "Modifier le profil",
                         style: GoogleFonts.raleway(fontSize: 14),
                       ),
                       subtitle: Text(
                         isDoctor
-                            ? "edit_profile_and_office_location".tr
-                            : "update_your_personal_information".tr,
+                            ? "Modifier le profil et la localisation du cabinet"
+                            : "Mettre à jour vos informations personnelles",
                         style: GoogleFonts.raleway(
                           fontSize: 12,
                           color:
@@ -256,7 +256,7 @@ class _SettingsPageState extends State<SettingsPage> {
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
                                 content: Text(
-                                  'profile_updated_successfully'.tr,
+                                  'Profil mis à jour avec succès',
                                 ),
                                 backgroundColor: AppColors.primaryColor,
                               ),
@@ -277,7 +277,7 @@ class _SettingsPageState extends State<SettingsPage> {
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
                                 content: Text(
-                                  'profile_updated_successfully'.tr,
+                                  'Profil mis à jour avec succès',
                                 ),
                                 backgroundColor: AppColors.primaryColor,
                               ),
@@ -287,7 +287,7 @@ class _SettingsPageState extends State<SettingsPage> {
                           // This shouldn't happen as we handle both doctors and patients above
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
-                              content: Text('error_updating_profile'.tr),
+                              content: Text('Erreur lors de la mise à jour du profil'),
                               backgroundColor: Colors.red,
                             ),
                           );
@@ -308,11 +308,11 @@ class _SettingsPageState extends State<SettingsPage> {
               color: AppColors.primaryColor,
             ),
             title: Text(
-              "change_password".tr,
+              "Changer le mot de passe",
               style: GoogleFonts.raleway(fontSize: 14),
             ),
             subtitle: Text(
-              "update_your_password".tr,
+              "Mettre à jour votre mot de passe",
               style: GoogleFonts.raleway(
                 fontSize: 12,
                 color:
@@ -339,11 +339,11 @@ class _SettingsPageState extends State<SettingsPage> {
           ListTile(
             leading: const Icon(Icons.logout, color: Colors.red),
             title: Text(
-              "logout".tr,
+              "Déconnexion",
               style: GoogleFonts.raleway(fontSize: 14, color: Colors.red),
             ),
             subtitle: Text(
-              "sign_out_of_your_account".tr,
+              "Se déconnecter de votre compte",
               style: GoogleFonts.raleway(
                 fontSize: 12,
                 color:
@@ -365,11 +365,11 @@ class _SettingsPageState extends State<SettingsPage> {
           ListTile(
             leading: const Icon(Icons.delete_forever, color: Colors.red),
             title: Text(
-              "delete_account".tr,
+              "Supprimer le compte",
               style: GoogleFonts.raleway(fontSize: 14, color: Colors.red),
             ),
             subtitle: Text(
-              "delete_account_warning".tr,
+              "Cette action supprimera définitivement votre compte et toutes vos données",
               style: GoogleFonts.raleway(
                 fontSize: 12,
                 color:
@@ -498,8 +498,8 @@ class _SettingsPageState extends State<SettingsPage> {
                   SnackBar(
                     content: Text(
                       val
-                          ? '$title ${"notifications".tr} ${"enabled".tr}'
-                          : '$title ${"notifications".tr} ${"disabled".tr}',
+                          ? '$title Notifications activées'
+                          : '$title Notifications désactivées',
                     ),
                     duration: const Duration(seconds: 2),
                     backgroundColor: AppColors.primaryColor,
@@ -524,7 +524,7 @@ class _SettingsPageState extends State<SettingsPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              "app_name_version".tr,
+              "MediLink v1.0.0",
               style: GoogleFonts.raleway(
                 fontWeight: FontWeight.bold,
                 fontSize: 14,
@@ -532,7 +532,7 @@ class _SettingsPageState extends State<SettingsPage> {
             ),
             const SizedBox(height: 8),
             Text(
-              "copyright".tr,
+              "© 2025 Medical App. Tous droits réservés.",
               style: GoogleFonts.raleway(
                 fontSize: 12,
                 color:
@@ -553,19 +553,19 @@ class _SettingsPageState extends State<SettingsPage> {
       context: context,
       builder:
           (context) => AlertDialog(
-            title: Text("logout".tr),
-            content: Text("logout_confirmation".tr),
+            title: Text("Déconnexion"),
+            content: Text("Êtes-vous sûr de vouloir vous déconnecter ?"),
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(context),
-                child: Text("cancel".tr),
+                child: Text("Annuler"),
               ),
               TextButton(
                 onPressed: () {
                   // Logout logic
                   ScaffoldMessenger.of(
                     context,
-                  ).showSnackBar(SnackBar(content: Text("logout_success".tr)));
+                  ).showSnackBar(SnackBar(content: Text("Déconnexion réussie")));
                   // Redirect to login page
                   Navigator.pushReplacement(
                     context,
@@ -574,7 +574,7 @@ class _SettingsPageState extends State<SettingsPage> {
                     ),
                   );
                 },
-                child: Text("logout".tr),
+                child: Text("Déconnexion"),
               ),
             ],
           ),
@@ -596,7 +596,7 @@ class _SettingsPageState extends State<SettingsPage> {
                   Navigator.of(context).pop(); // Close dialog
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                      content: Text("account_deleted_successfully".tr),
+                      content: Text("Compte supprimé avec succès"),
                       backgroundColor: Colors.green,
                     ),
                   );
@@ -624,7 +624,7 @@ class _SettingsPageState extends State<SettingsPage> {
                       const Icon(Icons.warning, color: Colors.red),
                       const SizedBox(width: 8),
                       Text(
-                        "delete_account".tr,
+                        "Supprimer le compte",
                         style: GoogleFonts.raleway(
                           fontWeight: FontWeight.bold,
                           color: Colors.red,
@@ -639,7 +639,7 @@ class _SettingsPageState extends State<SettingsPage> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          "delete_account_description".tr,
+                          "Cette action supprimera définitivement votre compte et toutes vos données.",
                           style: GoogleFonts.raleway(
                             fontSize: 14,
                             color:
@@ -650,7 +650,7 @@ class _SettingsPageState extends State<SettingsPage> {
                         ),
                         const SizedBox(height: 16),
                         Text(
-                          "confirm_password_to_delete".tr,
+                          "Confirmez votre mot de passe pour supprimer",
                           style: GoogleFonts.raleway(
                             fontWeight: FontWeight.w600,
                             fontSize: 14,
@@ -665,7 +665,7 @@ class _SettingsPageState extends State<SettingsPage> {
                           controller: passwordController,
                           obscureText: true,
                           decoration: InputDecoration(
-                            hintText: "enter_password".tr,
+                            hintText: "Entrez votre mot de passe",
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(8),
                             ),
@@ -673,7 +673,7 @@ class _SettingsPageState extends State<SettingsPage> {
                           ),
                           validator: (value) {
                             if (value == null || value.isEmpty) {
-                              return "enter_password".tr;
+                              return "Entrez votre mot de passe";
                             }
                             return null;
                           },
@@ -687,7 +687,7 @@ class _SettingsPageState extends State<SettingsPage> {
                           state is DeleteAccountLoading
                               ? null
                               : () => Navigator.of(context).pop(),
-                      child: Text("cancel".tr),
+                      child: Text("Annuler"),
                     ),
                     ElevatedButton(
                       onPressed:
@@ -701,10 +701,10 @@ class _SettingsPageState extends State<SettingsPage> {
                                     builder:
                                         (context) => AlertDialog(
                                           title: Text(
-                                            "confirm_delete_account".tr,
+                                            "Confirmer la suppression du compte",
                                           ),
                                           content: Text(
-                                            "delete_account_warning".tr,
+                                            "Attention : cette action supprimera définitivement votre compte et toutes vos données.",
                                             style: TextStyle(
                                               color:
                                                   Theme.of(
@@ -721,7 +721,7 @@ class _SettingsPageState extends State<SettingsPage> {
                                                   () => Navigator.of(
                                                     context,
                                                   ).pop(false),
-                                              child: Text("cancel".tr),
+                                              child: Text("Annuler"),
                                             ),
                                             ElevatedButton(
                                               onPressed:
@@ -732,7 +732,7 @@ class _SettingsPageState extends State<SettingsPage> {
                                                 backgroundColor: Colors.red,
                                                 foregroundColor: Colors.white,
                                               ),
-                                              child: Text("delete".tr),
+                                              child: Text("Supprimer"),
                                             ),
                                           ],
                                         ),
@@ -760,7 +760,7 @@ class _SettingsPageState extends State<SettingsPage> {
                                       ).showSnackBar(
                                         SnackBar(
                                           content: Text(
-                                            "delete_account_error".tr,
+                                            "Erreur lors de la suppression du compte",
                                           ),
                                           backgroundColor: Colors.red,
                                         ),
@@ -785,7 +785,7 @@ class _SettingsPageState extends State<SettingsPage> {
                                   ),
                                 ),
                               )
-                              : Text("delete".tr),
+                              : Text("Supprimer"),
                     ),
                   ],
                 );

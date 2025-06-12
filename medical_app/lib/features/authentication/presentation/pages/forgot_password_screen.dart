@@ -50,7 +50,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                   // Title
                   Center(
                     child: Text(
-                      "forgot_password_title".tr,
+                      "Mot de passe oublié",
                       style: GoogleFonts.raleway(
                         fontSize: 24.sp,
                         fontWeight: FontWeight.bold,
@@ -80,7 +80,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                       children: [
                         // Email label
                         Text(
-                          "email".tr,
+                          "Email",
                           style: GoogleFonts.raleway(
                             fontSize: 16.sp,
                             fontWeight: FontWeight.w600,
@@ -146,7 +146,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                                   width: 1,
                                 ),
                               ),
-                              hintText: "email_placeholder".tr,
+                              hintText: "Entrez votre adresse email",
                               hintStyle: GoogleFonts.raleway(
                                 color: Colors.grey[400],
                                 fontSize: 15.sp,
@@ -160,12 +160,12 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                             keyboardType: TextInputType.emailAddress,
                             validator: (value) {
                               if (value == null || value.isEmpty) {
-                                return "email_required".tr;
+                                return "L'email est requis";
                               }
                               if (!RegExp(
                                 r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
                               ).hasMatch(value)) {
-                                return "invalid_email_message".tr;
+                                return "Format d'email invalide";
                               }
                               return null;
                             },
@@ -183,7 +183,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                       if (state is ForgotPasswordSuccess) {
                         showSuccessSnackBar(
                           context,
-                          "verification_code_sent".tr,
+                          "Code de vérification envoyé",
                         );
                         navigateToAnotherScreenWithSlideTransitionFromRightToLeft(
                           context,
@@ -232,7 +232,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                                     strokeWidth: 3,
                                   )
                                   : Text(
-                                    "send_code_button".tr,
+                                    "Envoyer le code",
                                     style: GoogleFonts.raleway(
                                       fontSize: 16.sp,
                                       fontWeight: FontWeight.w600,
@@ -252,7 +252,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                         Navigator.pop(context);
                       },
                       child: Text(
-                        "back_to_login".tr,
+                        "Retour à la connexion",
                         style: GoogleFonts.raleway(
                           fontSize: 14.sp,
                           fontWeight: FontWeight.w600,

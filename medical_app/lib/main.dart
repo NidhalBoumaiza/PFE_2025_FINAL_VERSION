@@ -411,11 +411,20 @@ class _MyAppState extends State<MyApp> {
 
         if (!body.contains(senderName) && senderName != 'Unknown') {
           if (data['type'] == 'appointmentAccepted') {
-            body = 'appointment_accepted_message'.trParams({'0': senderName, '1': ''});
+            body = 'appointment_accepted_message'.trParams({
+              '0': senderName,
+              '1': '',
+            });
           } else if (data['type'] == 'appointmentRejected') {
-            body = 'appointment_rejected_message'.trParams({'0': senderName, '1': ''});
+            body = 'appointment_rejected_message'.trParams({
+              '0': senderName,
+              '1': '',
+            });
           } else if (data['type'] == 'newMessage') {
-            body = 'new_message_from'.trParams({'sender': senderName, 'message': body});
+            body = 'new_message_from'.trParams({
+              'sender': senderName,
+              'message': body,
+            });
           }
         }
 
@@ -524,7 +533,7 @@ class _MyAppState extends State<MyApp> {
             builder: (context, child) {
               return GetMaterialApp(
                 debugShowCheckedModeBanner: false,
-                title: 'medilink'.tr,
+                title: 'MediLink',
                 theme: AppThemes.lightTheme,
                 darkTheme: AppThemes.darkTheme,
                 themeMode: themeMode,

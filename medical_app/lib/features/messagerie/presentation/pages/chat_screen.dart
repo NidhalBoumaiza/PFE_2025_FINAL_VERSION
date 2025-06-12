@@ -362,7 +362,7 @@ class _ChatScreenState extends State<ChatScreen> {
                               ),
                               SizedBox(height: 16.h),
                               Text(
-                                'no_messages_yet'.tr,
+                                'Aucun message pour le moment',
                                 style: GoogleFonts.raleway(
                                   fontSize: 16.sp,
                                   color: AppColors.grey,
@@ -370,7 +370,7 @@ class _ChatScreenState extends State<ChatScreen> {
                               ),
                               SizedBox(height: 8.h),
                               Text(
-                                'start_conversation'.tr,
+                                'Commencez la conversation',
                                 style: GoogleFonts.raleway(
                                   fontSize: 14.sp,
                                   color: AppColors.grey.withOpacity(0.7),
@@ -537,7 +537,7 @@ class _ChatScreenState extends State<ChatScreen> {
                     ),
                     icon: Icon(Icons.refresh, color: Colors.white, size: 18.sp),
                     label: Text(
-                      'retry'.tr,
+                      'Réessayer',
                       style: GoogleFonts.raleway(
                         fontSize: 14.sp,
                         fontWeight: FontWeight.w600,
@@ -565,7 +565,7 @@ class _ChatScreenState extends State<ChatScreen> {
                         child: TextField(
                           controller: _messageController,
                           decoration: InputDecoration(
-                            hintText: 'type_a_message'.tr,
+                            hintText: 'Tapez un message',
                             hintStyle: GoogleFonts.raleway(
                               fontSize: 14.sp,
                               color: Colors.grey.shade600,
@@ -664,9 +664,9 @@ class _ChatScreenState extends State<ChatScreen> {
 
     String dateText;
     if (messageDate == today) {
-      dateText = "today".tr;
+      dateText = "Aujourd'hui";
     } else if (messageDate == yesterday) {
-      dateText = "yesterday".tr;
+      dateText = "Hier";
     } else {
       dateText = DateFormat('EEEE, d MMMM').format(messageTime);
     }

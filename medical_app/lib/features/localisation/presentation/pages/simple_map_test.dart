@@ -59,7 +59,7 @@ class SimpleMapTestState extends State<SimpleMapTest> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          'Simple Google Maps Test',
+          'Test simple de Google Maps',
           style: GoogleFonts.raleway(
             fontWeight: FontWeight.bold,
             color: Colors.white,
@@ -91,7 +91,7 @@ class SimpleMapTestState extends State<SimpleMapTest> {
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _goToTheLake,
-        label: const Text('Move Camera'),
+        label: const Text('Déplacer la caméra'),
         icon: const Icon(Icons.directions_boat),
         backgroundColor: AppColors.primaryColor,
       ),

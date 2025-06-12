@@ -9,10 +9,7 @@ import 'package:intl/intl.dart';
 class ChatMessageWidget extends StatelessWidget {
   final ChatMessageModel message;
 
-  const ChatMessageWidget({
-    super.key,
-    required this.message,
-  });
+  const ChatMessageWidget({super.key, required this.message});
 
   @override
   Widget build(BuildContext context) {
@@ -22,7 +19,7 @@ class ChatMessageWidget extends StatelessWidget {
     print('Content: ${message.content}');
     print('Image URL: ${message.imageUrl}');
     print('PDF URL: ${message.pdfUrl}');
-    
+
     return Padding(
       padding: EdgeInsets.symmetric(vertical: 8.h),
       child: Row(
@@ -34,11 +31,7 @@ class ChatMessageWidget extends StatelessWidget {
             CircleAvatar(
               radius: 16.r,
               backgroundColor: AppColors.primaryColor,
-              child: Icon(
-                Icons.smart_toy,
-                color: Colors.white,
-                size: 16.sp,
-              ),
+              child: Icon(Icons.smart_toy, color: Colors.white, size: 16.sp),
             ),
             SizedBox(width: 12.w),
           ],
@@ -48,9 +41,10 @@ class ChatMessageWidget extends StatelessWidget {
                 maxWidth: MediaQuery.of(context).size.width * 0.75,
               ),
               child: Column(
-                crossAxisAlignment: message.isUser
-                    ? CrossAxisAlignment.end
-                    : CrossAxisAlignment.start,
+                crossAxisAlignment:
+                    message.isUser
+                        ? CrossAxisAlignment.end
+                        : CrossAxisAlignment.start,
                 children: [
                   Container(
                     padding: EdgeInsets.symmetric(
@@ -58,16 +52,19 @@ class ChatMessageWidget extends StatelessWidget {
                       vertical: 12.h,
                     ),
                     decoration: BoxDecoration(
-                      color: message.isUser
-                          ? AppColors.primaryColor
-                          : Colors.grey[100],
+                      color:
+                          message.isUser
+                              ? AppColors.primaryColor
+                              : Colors.grey[100],
                       borderRadius: BorderRadius.circular(18.r).copyWith(
-                        bottomRight: message.isUser
-                            ? Radius.circular(4.r)
-                            : Radius.circular(18.r),
-                        bottomLeft: !message.isUser
-                            ? Radius.circular(4.r)
-                            : Radius.circular(18.r),
+                        bottomRight:
+                            message.isUser
+                                ? Radius.circular(4.r)
+                                : Radius.circular(18.r),
+                        bottomLeft:
+                            !message.isUser
+                                ? Radius.circular(4.r)
+                                : Radius.circular(18.r),
                       ),
                     ),
                     child: Column(
@@ -86,9 +83,10 @@ class ChatMessageWidget extends StatelessWidget {
                             message.content,
                             style: GoogleFonts.raleway(
                               fontSize: 14.sp,
-                              color: message.isUser
-                                  ? Colors.white
-                                  : Colors.grey[800],
+                              color:
+                                  message.isUser
+                                      ? Colors.white
+                                      : Colors.grey[800],
                               height: 1.4,
                             ),
                           ),
@@ -130,14 +128,14 @@ class ChatMessageWidget extends StatelessWidget {
       builder: (context) {
         print('=== DISPLAYING IMAGE ===');
         print('Image path: ${message.imageUrl}');
-        
+
         if (message.imageUrl == null || message.imageUrl!.isEmpty) {
           return _buildImageError('No image path provided');
         }
 
         final imageFile = File(message.imageUrl!);
         print('Image file exists: ${imageFile.existsSync()}');
-        
+
         if (!imageFile.existsSync()) {
           print('Image file does not exist at path: ${message.imageUrl}');
           return _buildImageError('Image file not found');
@@ -147,12 +145,9 @@ class ChatMessageWidget extends StatelessWidget {
           if (imageFile.existsSync()) {
             print('Image file size: ${imageFile.lengthSync()} bytes');
           }
-          
+
           return Container(
-            constraints: BoxConstraints(
-              maxWidth: 250.w,
-              maxHeight: 200.h,
-            ),
+            constraints: BoxConstraints(maxWidth: 250.w, maxHeight: 200.h),
             child: ClipRRect(
               borderRadius: BorderRadius.circular(8.r),
               child: Image.file(
@@ -193,14 +188,14 @@ class ChatMessageWidget extends StatelessWidget {
       width: 200.w,
       height: 120.h,
       decoration: BoxDecoration(
-        color: message.isUser 
-            ? Colors.white.withOpacity(0.2)
-            : Colors.grey[300],
+        color:
+            message.isUser ? Colors.white.withOpacity(0.2) : Colors.grey[300],
         borderRadius: BorderRadius.circular(8.r),
         border: Border.all(
-          color: message.isUser 
-              ? Colors.white.withOpacity(0.3)
-              : Colors.grey[400]!,
+          color:
+              message.isUser
+                  ? Colors.white.withOpacity(0.3)
+                  : Colors.grey[400]!,
         ),
       ),
       child: Column(
@@ -208,9 +203,10 @@ class ChatMessageWidget extends StatelessWidget {
         children: [
           Icon(
             Icons.image_not_supported,
-            color: message.isUser 
-                ? Colors.white.withOpacity(0.7)
-                : Colors.grey[600],
+            color:
+                message.isUser
+                    ? Colors.white.withOpacity(0.7)
+                    : Colors.grey[600],
             size: 32.sp,
           ),
           SizedBox(height: 8.h),
@@ -218,9 +214,10 @@ class ChatMessageWidget extends StatelessWidget {
             errorMessage,
             style: GoogleFonts.raleway(
               fontSize: 12.sp,
-              color: message.isUser 
-                  ? Colors.white.withOpacity(0.7)
-                  : Colors.grey[600],
+              color:
+                  message.isUser
+                      ? Colors.white.withOpacity(0.7)
+                      : Colors.grey[600],
             ),
             textAlign: TextAlign.center,
           ),
@@ -234,8 +231,8 @@ class ChatMessageWidget extends StatelessWidget {
       builder: (context) {
         print('=== DISPLAYING PDF ===');
         print('PDF path: ${message.pdfUrl}');
-        
-        String pdfName = 'PDF Document';
+
+        String pdfName = 'Document PDF';
         if (message.pdfUrl != null && message.pdfUrl!.isNotEmpty) {
           // Extract filename from path
           final fileName = message.pdfUrl!.split('/').last;
@@ -243,18 +240,20 @@ class ChatMessageWidget extends StatelessWidget {
             pdfName = fileName;
           }
         }
-        
+
         return Container(
           padding: EdgeInsets.all(12.w),
           decoration: BoxDecoration(
-            color: message.isUser
-                ? Colors.white.withOpacity(0.2)
-                : AppColors.primaryColor.withOpacity(0.1),
+            color:
+                message.isUser
+                    ? Colors.white.withOpacity(0.2)
+                    : AppColors.primaryColor.withOpacity(0.1),
             borderRadius: BorderRadius.circular(8.r),
             border: Border.all(
-              color: message.isUser
-                  ? Colors.white.withOpacity(0.3)
-                  : AppColors.primaryColor.withOpacity(0.3),
+              color:
+                  message.isUser
+                      ? Colors.white.withOpacity(0.3)
+                      : AppColors.primaryColor.withOpacity(0.3),
             ),
           ),
           child: Row(
@@ -262,9 +261,7 @@ class ChatMessageWidget extends StatelessWidget {
             children: [
               Icon(
                 Icons.picture_as_pdf,
-                color: message.isUser
-                    ? Colors.white
-                    : AppColors.primaryColor,
+                color: message.isUser ? Colors.white : AppColors.primaryColor,
                 size: 24.sp,
               ),
               SizedBox(width: 12.w),
@@ -276,9 +273,10 @@ class ChatMessageWidget extends StatelessWidget {
                       pdfName,
                       style: GoogleFonts.raleway(
                         fontSize: 14.sp,
-                        color: message.isUser
-                            ? Colors.white
-                            : AppColors.primaryColor,
+                        color:
+                            message.isUser
+                                ? Colors.white
+                                : AppColors.primaryColor,
                         fontWeight: FontWeight.w600,
                       ),
                       maxLines: 1,
@@ -286,12 +284,13 @@ class ChatMessageWidget extends StatelessWidget {
                     ),
                     SizedBox(height: 2.h),
                     Text(
-                      'PDF Document',
+                      'Document PDF',
                       style: GoogleFonts.raleway(
                         fontSize: 12.sp,
-                        color: message.isUser
-                            ? Colors.white.withOpacity(0.8)
-                            : AppColors.primaryColor.withOpacity(0.8),
+                        color:
+                            message.isUser
+                                ? Colors.white.withOpacity(0.8)
+                                : AppColors.primaryColor.withOpacity(0.8),
                       ),
                     ),
                   ],
@@ -303,4 +302,4 @@ class ChatMessageWidget extends StatelessWidget {
       },
     );
   }
-} 
+}

@@ -15,7 +15,7 @@ class LocationPickerWidget extends StatefulWidget {
     Key? key,
     this.initialLocation,
     required this.onLocationSelected,
-    this.title = 'Select Office Location',
+    this.title = 'Sélectionner l\'emplacement du cabinet',
   }) : super(key: key);
 
   @override
@@ -107,7 +107,7 @@ class _LocationPickerWidgetState extends State<LocationPickerWidget> {
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('location_access_failed'.tr),
+          content: Text('Impossible d\'accéder à la localisation'),
           backgroundColor: Colors.orange,
         ),
       );
@@ -122,11 +122,11 @@ class _LocationPickerWidgetState extends State<LocationPickerWidget> {
           position: location,
           icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueBlue),
           infoWindow: InfoWindow(
-            title: 'office_location'.tr,
+            title: 'Emplacement du cabinet',
             snippet:
                 _selectedAddress.isNotEmpty
                     ? _selectedAddress
-                    : 'selected_location'.tr,
+                    : 'Emplacement sélectionné',
           ),
         ),
       };
@@ -143,7 +143,7 @@ class _LocationPickerWidgetState extends State<LocationPickerWidget> {
       });
     } catch (e) {
       setState(() {
-        _selectedAddress = 'address_not_available'.tr;
+        _selectedAddress = 'Adresse non disponible';
       });
     }
   }
@@ -163,7 +163,7 @@ class _LocationPickerWidgetState extends State<LocationPickerWidget> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          widget.title.tr,
+          widget.title,
           style: GoogleFonts.raleway(
             fontSize: 18.sp,
             fontWeight: FontWeight.bold,
@@ -230,7 +230,7 @@ class _LocationPickerWidgetState extends State<LocationPickerWidget> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
-                      'selected_location'.tr,
+                      'Emplacement sélectionné',
                       style: GoogleFonts.raleway(
                         fontSize: 14.sp,
                         fontWeight: FontWeight.bold,
@@ -241,7 +241,7 @@ class _LocationPickerWidgetState extends State<LocationPickerWidget> {
                     Text(
                       _selectedAddress.isNotEmpty
                           ? _selectedAddress
-                          : 'tap_to_select_location'.tr,
+                          : 'Appuyez pour sélectionner un emplacement',
                       style: GoogleFonts.raleway(
                         fontSize: 12.sp,
                         color: theme.textTheme.bodyMedium?.color,
@@ -279,7 +279,7 @@ class _LocationPickerWidgetState extends State<LocationPickerWidget> {
                 elevation: 4,
               ),
               child: Text(
-                'confirm_location'.tr,
+                'Confirmer l\'emplacement',
                 style: GoogleFonts.raleway(
                   fontSize: 16.sp,
                   fontWeight: FontWeight.bold,

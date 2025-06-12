@@ -50,8 +50,8 @@ class _OfficeLocationMapWidgetState extends State<OfficeLocationMapWidget> {
               BitmapDescriptor.hueRed,
             ),
             infoWindow: InfoWindow(
-              title: 'office_location'.tr,
-              snippet: widget.address ?? 'doctor_office'.tr,
+              title: 'Emplacement du cabinet',
+              snippet: widget.address ?? 'Cabinet médical',
             ),
           ),
         };
@@ -82,7 +82,7 @@ class _OfficeLocationMapWidgetState extends State<OfficeLocationMapWidget> {
               ),
               SizedBox(height: 8.h),
               Text(
-                'office_location_not_set'.tr,
+                'Emplacement du cabinet non défini',
                 style: GoogleFonts.raleway(
                   fontSize: 14.sp,
                   color: Colors.grey.shade600,
@@ -93,7 +93,7 @@ class _OfficeLocationMapWidgetState extends State<OfficeLocationMapWidget> {
                 TextButton(
                   onPressed: widget.onTap,
                   child: Text(
-                    'set_location'.tr,
+                    'Définir l\'emplacement',
                     style: GoogleFonts.raleway(
                       fontSize: 12.sp,
                       color: AppColors.primaryColor,

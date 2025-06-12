@@ -38,7 +38,7 @@ class _AppointmentDetailsPageState extends State<AppointmentDetailsPage> {
         backgroundColor: AppColors.primaryColor,
         foregroundColor: Colors.white,
         title: Text(
-          'appointment_details'.tr,
+          'Détails du rendez-vous',
           style: GoogleFonts.raleway(
             fontSize: 18.sp,
             fontWeight: FontWeight.bold,
@@ -70,7 +70,7 @@ class _AppointmentDetailsPageState extends State<AppointmentDetailsPage> {
             if (appointment.status == 'not_found') {
               return Center(
                 child: Text(
-                  'appointment_not_found'.tr,
+                  'Rendez-vous introuvable',
                   style: GoogleFonts.raleway(fontSize: 16.sp),
                 ),
               );
@@ -87,7 +87,7 @@ class _AppointmentDetailsPageState extends State<AppointmentDetailsPage> {
           }
           return Center(
             child: Text(
-              'appointment_not_found'.tr,
+              'Rendez-vous introuvable',
               style: GoogleFonts.raleway(fontSize: 16.sp),
             ),
           );
@@ -122,7 +122,7 @@ class _AppointmentDetailsPageState extends State<AppointmentDetailsPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'appointment_info'.tr,
+              'Informations du rendez-vous',
               style: GoogleFonts.raleway(
                 fontSize: 18.sp,
                 fontWeight: FontWeight.bold,
@@ -131,21 +131,21 @@ class _AppointmentDetailsPageState extends State<AppointmentDetailsPage> {
             ),
             Divider(height: 24.h, thickness: 1),
             _buildInfoRow(
-              'patient'.tr,
-              appointment.patientName ?? 'unknown_patient'.tr,
+              'Patient',
+              appointment.patientName ?? 'Patient inconnu',
             ),
             _buildInfoRow(
-              'doctor'.tr,
-              appointment.doctorName ?? 'unknown_doctor'.tr,
+              'Médecin',
+              appointment.doctorName ?? 'Médecin inconnu',
             ),
             _buildInfoRow(
-              'date'.tr,
+              'Date',
               appointment.startTime.toString().substring(0, 10),
             ),
-            _buildInfoRow('time'.tr, _formatTime(appointment.startTime)),
+            _buildInfoRow('Heure', _formatTime(appointment.startTime)),
             _buildInfoRow(
-              'specialty'.tr,
-              appointment.speciality ?? 'general'.tr,
+              'Spécialité',
+              appointment.speciality ?? 'Généraliste',
             ),
           ],
         ),
@@ -164,23 +164,23 @@ class _AppointmentDetailsPageState extends State<AppointmentDetailsPage> {
     switch (appointment.status.toLowerCase()) {
       case 'pending':
         statusColor = Colors.orange;
-        statusText = 'status_pending'.tr;
+        statusText = 'En attente';
         break;
       case 'accepted':
         statusColor = Colors.green;
-        statusText = 'status_confirmed'.tr;
+        statusText = 'Confirmé';
         break;
       case 'rejected':
         statusColor = Colors.red;
-        statusText = 'status_cancelled'.tr;
+        statusText = 'Annulé';
         break;
       case 'completed':
         statusColor = Colors.blue;
-        statusText = 'status_completed'.tr;
+        statusText = 'Terminé';
         break;
       default:
         statusColor = Colors.grey;
-        statusText = 'status_unknown'.tr;
+        statusText = 'Statut inconnu';
     }
 
     return Card(
@@ -191,7 +191,7 @@ class _AppointmentDetailsPageState extends State<AppointmentDetailsPage> {
         child: Row(
           children: [
             Text(
-              'status'.tr,
+              'Statut',
               style: GoogleFonts.raleway(
                 fontSize: 16.sp,
                 fontWeight: FontWeight.bold,
@@ -249,7 +249,7 @@ class _AppointmentDetailsPageState extends State<AppointmentDetailsPage> {
                 ),
               ),
               child: Text(
-                'accept'.tr,
+                'Accepter',
                 style: GoogleFonts.raleway(
                   color: Colors.white,
                   fontWeight: FontWeight.bold,
@@ -282,7 +282,7 @@ class _AppointmentDetailsPageState extends State<AppointmentDetailsPage> {
                 ),
               ),
               child: Text(
-                'reject'.tr,
+                'Rejeter',
                 style: GoogleFonts.raleway(
                   color: Colors.white,
                   fontWeight: FontWeight.bold,

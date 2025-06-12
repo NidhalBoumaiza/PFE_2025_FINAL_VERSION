@@ -50,7 +50,7 @@ class _AllSpecialtiesPageState extends State<AllSpecialtiesPage> {
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
-        title: Text("specialties".tr),
+        title: Text("Spécialités"),
         backgroundColor: AppColors.primaryColor,
         leading: IconButton(
           icon: const Icon(Icons.chevron_left, size: 30),
@@ -77,7 +77,7 @@ class _AllSpecialtiesPageState extends State<AllSpecialtiesPage> {
               child: TextField(
                 style: TextStyle(color: theme.textTheme.bodyMedium?.color),
                 decoration: InputDecoration(
-                  hintText: "find_doctor_specialty".tr,
+                  hintText: "Rechercher une spécialité",
                   hintStyle: TextStyle(
                     color:
                         isDarkMode

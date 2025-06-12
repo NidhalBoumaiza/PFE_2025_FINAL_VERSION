@@ -90,7 +90,7 @@ class _SignupScreenState extends State<SignupScreen> {
       // Show friendly error message to user
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(SnackBar(content: Text("error".tr)));
+      ).showSnackBar(SnackBar(content: Text("Erreur")));
     }
   }
 
@@ -141,7 +141,7 @@ class _SignupScreenState extends State<SignupScreen> {
                         Expanded(
                           child: Center(
                             child: Text(
-                              "signup_title".tr,
+                              "S'inscrire",
                               style: GoogleFonts.raleway(
                                 fontSize: 24.sp,
                                 fontWeight: FontWeight.bold,
@@ -202,7 +202,7 @@ class _SignupScreenState extends State<SignupScreen> {
                                         ),
                                         SizedBox(width: 8.w),
                                         Text(
-                                          "patient".tr,
+                                          "Patient",
                                           style: GoogleFonts.raleway(
                                             color:
                                                 isPatient
@@ -250,7 +250,7 @@ class _SignupScreenState extends State<SignupScreen> {
                                         ),
                                         SizedBox(width: 8.w),
                                         Text(
-                                          "doctors".tr,
+                                          "Médecin",
                                           style: GoogleFonts.raleway(
                                             color:
                                                 !isPatient
@@ -283,12 +283,12 @@ class _SignupScreenState extends State<SignupScreen> {
                         // Nom field
                         _buildInputField(
                           controller: nomController,
-                          label: "name_label".tr,
-                          hint: "name_hint".tr,
+                          label: "Nom",
+                          hint: "Entrez votre nom",
                           icon: Icons.person_outline,
                           validator: (value) {
                             if (value == null || value.isEmpty) {
-                              return "name_required".tr;
+                              return "Le nom est requis";
                             }
                             return null;
                           },
@@ -299,12 +299,12 @@ class _SignupScreenState extends State<SignupScreen> {
                         // Prénom field
                         _buildInputField(
                           controller: prenomController,
-                          label: "first_name_label".tr,
-                          hint: "first_name_hint".tr,
+                          label: "Prénom",
+                          hint: "Entrez votre prénom",
                           icon: Icons.person_outline,
                           validator: (value) {
                             if (value == null || value.isEmpty) {
-                              return "first_name_required".tr;
+                              return "Le prénom est requis";
                             }
                             return null;
                           },
@@ -315,18 +315,18 @@ class _SignupScreenState extends State<SignupScreen> {
                         // Email field
                         _buildInputField(
                           controller: emailController,
-                          label: "email".tr,
-                          hint: "email_hint".tr,
+                          label: "Email",
+                          hint: "Entrez votre adresse email",
                           icon: Icons.email_outlined,
                           keyboardType: TextInputType.emailAddress,
                           validator: (value) {
                             if (value == null || value.isEmpty) {
-                              return "email_required".tr;
+                              return "L'email est requis";
                             }
                             if (!RegExp(
                               r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
                             ).hasMatch(value)) {
-                              return "invalid_email_message".tr;
+                              return "Format d'email invalide";
                             }
                             return null;
                           },
@@ -337,13 +337,13 @@ class _SignupScreenState extends State<SignupScreen> {
                         // Téléphone field
                         _buildInputField(
                           controller: numTel,
-                          label: "phone_number_label".tr,
-                          hint: "phone_number_hint".tr,
+                          label: "Numéro de téléphone",
+                          hint: "Entrez votre numéro de téléphone",
                           icon: Icons.phone_outlined,
                           keyboardType: TextInputType.phone,
                           validator: (value) {
                             if (value == null || value.isEmpty) {
-                              return "phone_number_required".tr;
+                              return "Le numéro de téléphone est requis";
                             }
                             return null;
                           },
@@ -356,7 +356,7 @@ class _SignupScreenState extends State<SignupScreen> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              "date_of_birth_label".tr,
+                              "Date de naissance",
                               style: GoogleFonts.raleway(
                                 fontSize: 16.sp,
                                 fontWeight: FontWeight.w600,
@@ -423,7 +423,8 @@ class _SignupScreenState extends State<SignupScreen> {
                                       width: 1,
                                     ),
                                   ),
-                                  hintText: "date_of_birth_hint".tr,
+                                  hintText:
+                                      "Sélectionnez votre date de naissance",
                                   hintStyle: GoogleFonts.raleway(
                                     color: Colors.grey[400],
                                     fontSize: 15.sp,
@@ -441,12 +442,11 @@ class _SignupScreenState extends State<SignupScreen> {
                                 ),
                                 validator: (value) {
                                   if (value == null || value.isEmpty) {
-                                    return "date_of_birth_required".tr;
+                                    return "La date de naissance est requise";
                                   }
                                   // Extra validation as a safety check
                                   if (!isUserAtLeast16()) {
-                                    return "You must be at least 16 years old"
-                                        .tr;
+                                    return "Vous devez avoir au moins 16 ans";
                                   }
                                   return null;
                                 },
@@ -462,7 +462,7 @@ class _SignupScreenState extends State<SignupScreen> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              "gender".tr,
+                              "Sexe",
                               style: GoogleFonts.raleway(
                                 fontSize: 16.sp,
                                 fontWeight: FontWeight.w600,
@@ -523,7 +523,7 @@ class _SignupScreenState extends State<SignupScreen> {
                                             ),
                                             SizedBox(width: 8.w),
                                             Text(
-                                              "Male".tr,
+                                              "Homme",
                                               style: GoogleFonts.raleway(
                                                 fontSize: 15.sp,
                                                 fontWeight:
@@ -578,7 +578,7 @@ class _SignupScreenState extends State<SignupScreen> {
                                             ),
                                             SizedBox(width: 8.w),
                                             Text(
-                                              "Female".tr,
+                                              "Femme",
                                               style: GoogleFonts.raleway(
                                                 fontSize: 15.sp,
                                                 fontWeight:
@@ -663,7 +663,7 @@ class _SignupScreenState extends State<SignupScreen> {
                         }
                       },
                       child: Text(
-                        "next_button".tr,
+                        "Suivant",
                         style: GoogleFonts.raleway(
                           fontSize: 16.sp,
                           fontWeight: FontWeight.w600,
@@ -681,7 +681,7 @@ class _SignupScreenState extends State<SignupScreen> {
                         Navigator.pop(context);
                       },
                       child: Text(
-                        "sign_in".tr,
+                        "Se connecter",
                         style: GoogleFonts.raleway(
                           fontSize: 14.sp,
                           fontWeight: FontWeight.w600,

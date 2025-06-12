@@ -123,7 +123,7 @@ class _DoctorProfilePageState extends State<DoctorProfilePage> {
       backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
         title: Text(
-          "doctor_profile".tr,
+          "Profil du médecin",
           style: GoogleFonts.raleway(
             fontSize: 18.sp,
             fontWeight: FontWeight.bold,
@@ -151,7 +151,7 @@ class _DoctorProfilePageState extends State<DoctorProfilePage> {
             Padding(
               padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
               child: Text(
-                "reviews".tr,
+                "Avis",
                 style: GoogleFonts.raleway(
                   fontSize: 18.sp,
                   fontWeight: FontWeight.bold,
@@ -200,7 +200,7 @@ class _DoctorProfilePageState extends State<DoctorProfilePage> {
                   padding: EdgeInsets.all(16.w),
                   child: Center(
                     child: Text(
-                      "no_reviews_available".tr,
+                      "Aucun avis disponible",
                       style: GoogleFonts.raleway(
                         fontSize: 16.sp,
                         color: Colors.grey,
@@ -228,7 +228,7 @@ class _DoctorProfilePageState extends State<DoctorProfilePage> {
               ? FloatingActionButton.extended(
                 onPressed: widget.onBookAppointment,
                 icon: Icon(Icons.calendar_today),
-                label: Text("book_appointment".tr),
+                label: Text("Prendre rendez-vous"),
                 backgroundColor: AppColors.primaryColor,
               )
               : null,
@@ -274,8 +274,7 @@ class _DoctorProfilePageState extends State<DoctorProfilePage> {
                       ),
                       SizedBox(height: 4.h),
                       Text(
-                        widget.doctor.speciality ??
-                            "specialty_not_specified".tr,
+                        widget.doctor.speciality ?? "Spécialité non spécifiée",
                         style: GoogleFonts.raleway(
                           fontSize: 16.sp,
                           color: theme.textTheme.bodyMedium?.color,
@@ -292,19 +291,16 @@ class _DoctorProfilePageState extends State<DoctorProfilePage> {
             // Contact info
             _buildInfoRow(
               Icons.phone,
-              widget.doctor.phoneNumber ?? "not_specified".tr,
+              widget.doctor.phoneNumber ?? "Non spécifié",
             ),
-            _buildInfoRow(
-              Icons.mail,
-              widget.doctor.email ?? "not_specified".tr,
-            ),
-            _buildInfoRow(Icons.location_on, "address_not_specified".tr),
+            _buildInfoRow(Icons.mail, widget.doctor.email ?? "Non spécifié"),
+            _buildInfoRow(Icons.location_on, "Adresse non spécifiée"),
 
             // Add consultation fee if available
             if (widget.doctor.consultationFee != null)
               _buildInfoRow(
                 Icons.attach_money,
-                "${widget.doctor.consultationFee} ${"currency".tr}",
+                "${widget.doctor.consultationFee} DH",
               ),
           ],
         ),
@@ -374,7 +370,7 @@ class _DoctorProfilePageState extends State<DoctorProfilePage> {
               ),
               SizedBox(height: 4.h),
               Text(
-                "$ratingCount ${"evaluations".tr}",
+                "$ratingCount évaluations",
                 style: GoogleFonts.raleway(
                   fontSize: 14.sp,
                   color: theme.textTheme.bodySmall?.color,
@@ -516,7 +512,7 @@ class _DoctorProfilePageState extends State<DoctorProfilePage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            "office_location".tr,
+            "Localisation du cabinet",
             style: GoogleFonts.raleway(
               fontSize: 18.sp,
               fontWeight: FontWeight.bold,
@@ -579,7 +575,7 @@ class _DoctorProfilePageState extends State<DoctorProfilePage> {
                             () => _openInMaps(latitude!, longitude!, address),
                         icon: Icon(Icons.directions, size: 18.sp),
                         label: Text(
-                          'get_directions'.tr,
+                          'Obtenir l\'itinéraire',
                           style: GoogleFonts.raleway(
                             fontSize: 14.sp,
                             fontWeight: FontWeight.w600,
@@ -610,7 +606,10 @@ class _DoctorProfilePageState extends State<DoctorProfilePage> {
     // For now, we'll show a snackbar
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('opening_in_maps'.tr, style: GoogleFonts.raleway()),
+        content: Text(
+          'Ouverture dans l\'application de cartes',
+          style: GoogleFonts.raleway(),
+        ),
         backgroundColor: AppColors.primaryColor,
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),

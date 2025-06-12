@@ -37,7 +37,7 @@ class VerifyCodeScreen extends StatelessWidget {
           backgroundColor: AppColors.primaryColor,
           elevation: 0,
           title: Text(
-            "verification".tr,
+            "Vérification",
             style: GoogleFonts.raleway(
               fontSize: 20.sp,
               fontWeight: FontWeight.bold,
@@ -82,8 +82,8 @@ class VerifyCodeScreen extends StatelessWidget {
                   children: [
                     Text(
                       isAccountCreation
-                          ? "verify_account".tr
-                          : "verify_identity".tr,
+                          ? "Vérifier le compte"
+                          : "Vérifier l'identité",
                       style: GoogleFonts.raleway(
                         fontSize: 24.sp,
                         fontWeight: FontWeight.bold,
@@ -96,14 +96,8 @@ class VerifyCodeScreen extends StatelessWidget {
 
                     Text(
                       isAccountCreation
-                          ? "verification_code_sent_account".tr.replaceAll(
-                            "{0}",
-                            email,
-                          )
-                          : "verification_code_sent_reset".tr.replaceAll(
-                            "{0}",
-                            email,
-                          ),
+                          ? "Un code de vérification a été envoyé à $email pour activer votre compte"
+                          : "Un code de vérification a été envoyé à $email pour réinitialiser votre mot de passe",
                       style: GoogleFonts.raleway(
                         fontSize: 14.sp,
                         color: Colors.black54,
@@ -115,7 +109,7 @@ class VerifyCodeScreen extends StatelessWidget {
                     SizedBox(height: 40.h),
 
                     Text(
-                      "enter_verification_code".tr,
+                      "Entrez le code de vérification",
                       style: GoogleFonts.raleway(
                         fontSize: 16.sp,
                         fontWeight: FontWeight.w600,
@@ -131,7 +125,7 @@ class VerifyCodeScreen extends StatelessWidget {
                         if (state is VerifyCodeSuccess) {
                           showSuccessSnackBar(
                             context,
-                            "code_verified_successfully".tr,
+                            "Code vérifié avec succès",
                           );
                           if (isAccountCreation) {
                             // For account creation, navigate to appropriate home page based on user role
@@ -270,7 +264,7 @@ class VerifyCodeScreen extends StatelessWidget {
                                     ScaffoldMessenger.of(context).showSnackBar(
                                       SnackBar(
                                         content: Text(
-                                          "please_enter_complete_code".tr,
+                                          "Veuillez entrer le code complet",
                                           style: GoogleFonts.raleway(),
                                         ),
                                         backgroundColor: Colors.amber.shade700,
@@ -278,7 +272,7 @@ class VerifyCodeScreen extends StatelessWidget {
                                     );
                                   },
                                   child: Text(
-                                    "verify_code".tr,
+                                    "Vérifier le code",
                                     style: GoogleFonts.raleway(
                                       fontSize: 16.sp,
                                       fontWeight: FontWeight.w600,
@@ -296,7 +290,7 @@ class VerifyCodeScreen extends StatelessWidget {
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   SnackBar(
                                     content: Text(
-                                      "new_code_will_be_sent".tr,
+                                      "Un nouveau code sera envoyé",
                                       style: GoogleFonts.raleway(),
                                     ),
                                     backgroundColor: Colors.green.shade600,
@@ -304,7 +298,7 @@ class VerifyCodeScreen extends StatelessWidget {
                                 );
                               },
                               child: Text(
-                                "didnt_receive_code".tr,
+                                "Vous n'avez pas reçu le code ?",
                                 style: GoogleFonts.raleway(
                                   fontSize: 14.sp,
                                   fontWeight: FontWeight.w600,

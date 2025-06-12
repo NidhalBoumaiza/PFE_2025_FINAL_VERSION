@@ -59,7 +59,7 @@ class _ProfilePictureWidgetState extends State<ProfilePictureWidget> {
         if (widget.isEditable) ...[
           const SizedBox(height: 12),
           Text(
-            widget.placeholderText ?? 'tap_to_add_photo'.tr,
+            widget.placeholderText ?? 'Appuyez pour ajouter une photo',
             style: GoogleFonts.raleway(
               fontSize: 12,
               color: theme.textTheme.bodySmall?.color,
@@ -145,7 +145,7 @@ class _ProfilePictureWidgetState extends State<ProfilePictureWidget> {
                   ),
                   const SizedBox(height: 20),
                   Text(
-                    'select_photo_source'.tr,
+                    'Sélectionner la source de la photo',
                     style: GoogleFonts.raleway(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
@@ -158,19 +158,19 @@ class _ProfilePictureWidgetState extends State<ProfilePictureWidget> {
                     children: [
                       _buildSourceOption(
                         icon: Icons.camera_alt,
-                        label: 'camera'.tr,
+                        label: 'Caméra',
                         onTap: () => _pickImage(ImageSource.camera),
                       ),
                       _buildSourceOption(
                         icon: Icons.photo_library,
-                        label: 'gallery'.tr,
+                        label: 'Galerie',
                         onTap: () => _pickImage(ImageSource.gallery),
                       ),
                       if (_selectedImage != null ||
                           widget.initialImageUrl != null)
                         _buildSourceOption(
                           icon: Icons.delete,
-                          label: 'remove'.tr,
+                          label: 'Supprimer',
                           onTap: _removeImage,
                           isDestructive: true,
                         ),
@@ -247,7 +247,7 @@ class _ProfilePictureWidgetState extends State<ProfilePictureWidget> {
         // Validate file size (max 5MB)
         final fileSize = imageFile.lengthSync();
         if (fileSize > 5 * 1024 * 1024) {
-          _showErrorSnackBar('image_too_large'.tr);
+          _showErrorSnackBar('Image trop volumineuse');
           return;
         }
 
@@ -261,7 +261,7 @@ class _ProfilePictureWidgetState extends State<ProfilePictureWidget> {
         }
       }
     } catch (e) {
-      _showErrorSnackBar('error_selecting_image'.tr);
+      _showErrorSnackBar('Erreur lors de la sélection de l\'image');
     }
   }
 

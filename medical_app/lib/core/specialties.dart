@@ -1,41 +1,41 @@
 import 'package:get/get.dart';
 
-// Translation keys for specialties
+// French specialties list
 const List<String> specialtyKeys = [
-  'dentist',
-  'pulmonologist',
-  'dermatologist',
-  'nutritionist',
-  'cardiologist',
-  'psychologist',
-  'general_practitioner',
-  'neurologist',
-  'orthopedic',
-  'gynecologist',
-  'ophthalmologist',
-  'aesthetic_doctor',
+  'Dentiste',
+  'Pneumologue',
+  'Dermatologue',
+  'Nutritionniste',
+  'Cardiologue',
+  'Psychologue',
+  'Médecin généraliste',
+  'Neurologue',
+  'Orthopédiste',
+  'Gynécologue',
+  'Ophtalmologue',
+  'Médecin esthétique',
 ];
 
 // Get translated specialties list
 List<String> getTranslatedSpecialties() {
-  return specialtyKeys.map((key) => key.tr).toList();
+  return specialtyKeys;
 }
 
 // Get specialties with images
 List<Map<String, dynamic>> getSpecialtiesWithImages() {
   return [
-    {'image': 'assets/images/dentiste.png', 'text': 'dentist'.tr},
-    {'image': 'assets/images/bebe.png', 'text': 'pediatrician'.tr},
-    {'image': 'assets/images/generaliste.png', 'text': 'generalist'.tr},
-    {'image': 'assets/images/pnmeulogue.png', 'text': 'pulmonologist'.tr},
-    {'image': 'assets/images/dermatologue.png', 'text': 'dermatologist'.tr},
-    {'image': 'assets/images/diet.png', 'text': 'nutritionist'.tr},
-    {'image': 'assets/images/cardio.png', 'text': 'cardiologist'.tr},
-    {'image': 'assets/images/psy.png', 'text': 'psychologist'.tr},
-    {'image': 'assets/images/neurologue.png', 'text': 'neurologist'.tr},
-    {'image': 'assets/images/orthopediste.png', 'text': 'orthopedic'.tr},
-    {'image': 'assets/images/gyneco.png', 'text': 'gynecologist'.tr},
-    {'image': 'assets/images/ophtalmo.png', 'text': 'ophthalmologist'.tr},
-    {'image': 'assets/images/botox.png', 'text': 'aesthetic_doctor'.tr},
+    {'image': 'assets/images/dentiste.png', 'text': 'Dentiste'},
+    {'image': 'assets/images/bebe.png', 'text': 'Pédiatre'},
+    {'image': 'assets/images/generaliste.png', 'text': 'Généraliste'},
+    {'image': 'assets/images/pnmeulogue.png', 'text': 'Pneumologue'},
+    {'image': 'assets/images/dermatologue.png', 'text': 'Dermatologue'},
+    {'image': 'assets/images/diet.png', 'text': 'Nutritionniste'},
+    {'image': 'assets/images/cardio.png', 'text': 'Cardiologue'},
+    {'image': 'assets/images/psy.png', 'text': 'Psychologue'},
+    {'image': 'assets/images/neurologue.png', 'text': 'Neurologue'},
+    {'image': 'assets/images/orthopediste.png', 'text': 'Orthopédiste'},
+    {'image': 'assets/images/gyneco.png', 'text': 'Gynécologue'},
+    {'image': 'assets/images/ophtalmo.png', 'text': 'Ophtalmologue'},
+    {'image': 'assets/images/botox.png', 'text': 'Médecin esthétique'},
   ];
 }

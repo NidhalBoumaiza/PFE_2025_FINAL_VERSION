@@ -58,9 +58,9 @@ class _EditDoctorProfilePageState extends State<EditDoctorProfilePage> {
     if (widget.doctor.location != null) {
       double? lat;
       double? lng;
-      
+
       // Handle both old format (separate lat/lng fields) and new GeoJSON format
-      if (widget.doctor.location!.containsKey('coordinates') && 
+      if (widget.doctor.location!.containsKey('coordinates') &&
           widget.doctor.location!['coordinates'] is List) {
         // New GeoJSON format: [longitude, latitude]
         final coordinates = widget.doctor.location!['coordinates'] as List;
@@ -94,7 +94,7 @@ class _EditDoctorProfilePageState extends State<EditDoctorProfilePage> {
         builder:
             (context) => LocationPickerWidget(
               initialLocation: _selectedLocation,
-              title: 'edit_office_location'.tr,
+              title: 'Modifier l\'emplacement du cabinet',
               onLocationSelected: (location, address) {
                 setState(() {
                   _selectedLocation = location;
@@ -161,8 +161,8 @@ class _EditDoctorProfilePageState extends State<EditDoctorProfilePage> {
     } catch (e) {
       // Show error message
       Get.snackbar(
-        'error'.tr,
-        'error_updating_profile'.tr,
+        'Erreur',
+        'Erreur lors de la mise à jour du profil',
         backgroundColor: Colors.red,
         colorText: Colors.white,
         snackPosition: SnackPosition.TOP,
@@ -177,7 +177,7 @@ class _EditDoctorProfilePageState extends State<EditDoctorProfilePage> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          'edit_profile'.tr,
+          'Modifier le profil',
           style: GoogleFonts.raleway(
             fontSize: 18.sp,
             fontWeight: FontWeight.bold,
@@ -195,8 +195,8 @@ class _EditDoctorProfilePageState extends State<EditDoctorProfilePage> {
           if (state is UpdateUserSuccess) {
             // Show success message
             Get.snackbar(
-              'success'.tr,
-              'profile_updated_successfully'.tr,
+              'Succès',
+              'Profil mis à jour avec succès',
               backgroundColor: Colors.green,
               colorText: Colors.white,
               snackPosition: SnackPosition.TOP,
@@ -207,7 +207,7 @@ class _EditDoctorProfilePageState extends State<EditDoctorProfilePage> {
           } else if (state is UpdateUserFailure) {
             // Show error message
             Get.snackbar(
-              'error'.tr,
+              'Erreur',
               state.message,
               backgroundColor: Colors.red,
               colorText: Colors.white,
@@ -252,7 +252,8 @@ class _EditDoctorProfilePageState extends State<EditDoctorProfilePage> {
                           ),
                         ),
                         Text(
-                          widget.doctor.speciality ?? 'specialty_not_specified'.tr,
+                          widget.doctor.speciality ??
+                              'Spécialité non spécifiée',
                           style: GoogleFonts.raleway(
                             fontSize: 16.sp,
                             color: theme.textTheme.bodyMedium?.color,
@@ -265,16 +266,16 @@ class _EditDoctorProfilePageState extends State<EditDoctorProfilePage> {
                   SizedBox(height: 32.h),
 
                   // Personal Information Section
-                  _buildSectionTitle('personal_information'.tr),
+                  _buildSectionTitle('Informations personnelles'),
                   SizedBox(height: 16.h),
 
                   _buildTextField(
                     controller: _nameController,
-                    label: 'first_name_label'.tr,
+                    label: 'Prénom',
                     icon: Icons.person_outline,
                     validator: (value) {
                       if (value == null || value.trim().isEmpty) {
-                        return 'first_name_required'.tr;
+                        return 'Le prénom est requis';
                       }
                       return null;
                     },
@@ -284,11 +285,11 @@ class _EditDoctorProfilePageState extends State<EditDoctorProfilePage> {
 
                   _buildTextField(
                     controller: _lastNameController,
-                    label: 'name_label'.tr,
+                    label: 'Nom',
                     icon: Icons.person_outline,
                     validator: (value) {
                       if (value == null || value.trim().isEmpty) {
-                        return 'name_required'.tr;
+                        return 'Le nom est requis';
                       }
                       return null;
                     },
@@ -298,12 +299,12 @@ class _EditDoctorProfilePageState extends State<EditDoctorProfilePage> {
 
                   _buildTextField(
                     controller: _phoneController,
-                    label: 'phone_number_label'.tr,
+                    label: 'Numéro de téléphone',
                     icon: Icons.phone_outlined,
                     keyboardType: TextInputType.phone,
                     validator: (value) {
                       if (value == null || value.trim().isEmpty) {
-                        return 'phone_number_required'.tr;
+                        return 'Le numéro de téléphone est requis';
                       }
                       return null;
                     },
@@ -312,19 +313,19 @@ class _EditDoctorProfilePageState extends State<EditDoctorProfilePage> {
                   SizedBox(height: 24.h),
 
                   // Professional Information Section
-                  _buildSectionTitle('professional_information'.tr),
+                  _buildSectionTitle('Informations professionnelles'),
                   SizedBox(height: 16.h),
 
                   _buildTextField(
                     controller: _consultationFeeController,
-                    label: 'consultation_fee'.tr,
+                    label: 'Tarif de consultation',
                     icon: Icons.attach_money,
                     keyboardType: TextInputType.number,
                     validator: (value) {
                       if (value != null && value.isNotEmpty) {
                         if (double.tryParse(value) == null ||
                             double.parse(value) <= 0) {
-                          return 'invalid_consultation_fee'.tr;
+                          return 'Tarif de consultation invalide';
                         }
                       }
                       return null;
@@ -335,15 +336,16 @@ class _EditDoctorProfilePageState extends State<EditDoctorProfilePage> {
 
                   _buildTextField(
                     controller: _appointmentDurationController,
-                    label: 'appointment_duration'.tr,
+                    label: 'Durée du rendez-vous',
                     icon: Icons.schedule,
                     keyboardType: TextInputType.number,
                     validator: (value) {
                       if (value == null || value.trim().isEmpty) {
-                        return 'appointment_duration_required'.tr;
+                        return 'La durée du rendez-vous est requise';
                       }
-                      if (int.tryParse(value) == null || int.parse(value) <= 0) {
-                        return 'invalid_appointment_duration'.tr;
+                      if (int.tryParse(value) == null ||
+                          int.parse(value) <= 0) {
+                        return 'Durée du rendez-vous invalide';
                       }
                       return null;
                     },
@@ -352,7 +354,7 @@ class _EditDoctorProfilePageState extends State<EditDoctorProfilePage> {
                   SizedBox(height: 24.h),
 
                   // Office Location Section
-                  _buildSectionTitle('office_location'.tr),
+                  _buildSectionTitle('Emplacement du cabinet'),
                   SizedBox(height: 16.h),
 
                   Card(
@@ -417,7 +419,7 @@ class _EditDoctorProfilePageState extends State<EditDoctorProfilePage> {
                                   ),
                                   SizedBox(height: 8.h),
                                   Text(
-                                    'tap_to_set_office_location'.tr,
+                                    'Appuyez pour définir l\'emplacement du cabinet',
                                     style: GoogleFonts.raleway(
                                       fontSize: 14.sp,
                                       color: Colors.grey[600],
@@ -442,8 +444,8 @@ class _EditDoctorProfilePageState extends State<EditDoctorProfilePage> {
                               ),
                               label: Text(
                                 _selectedLocation != null
-                                    ? 'change_location'.tr
-                                    : 'set_office_location'.tr,
+                                    ? 'Modifier l\'emplacement'
+                                    : 'Définir l\'emplacement du cabinet',
                                 style: GoogleFonts.raleway(
                                   fontSize: 14.sp,
                                   fontWeight: FontWeight.w600,
@@ -481,22 +483,23 @@ class _EditDoctorProfilePageState extends State<EditDoctorProfilePage> {
                         ),
                         elevation: 2,
                       ),
-                      child: isLoading
-                          ? SizedBox(
-                              height: 20.h,
-                              width: 20.w,
-                              child: CircularProgressIndicator(
-                                color: Colors.white,
-                                strokeWidth: 2,
+                      child:
+                          isLoading
+                              ? SizedBox(
+                                height: 20.h,
+                                width: 20.w,
+                                child: CircularProgressIndicator(
+                                  color: Colors.white,
+                                  strokeWidth: 2,
+                                ),
+                              )
+                              : Text(
+                                'Sauvegarder',
+                                style: GoogleFonts.raleway(
+                                  fontSize: 16.sp,
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
-                            )
-                          : Text(
-                              'save'.tr,
-                              style: GoogleFonts.raleway(
-                                fontSize: 16.sp,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
                     ),
                   ),
                 ],

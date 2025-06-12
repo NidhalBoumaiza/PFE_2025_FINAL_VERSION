@@ -50,8 +50,8 @@ class HomePatient extends StatefulWidget {
 class _HomePatientState extends State<HomePatient> {
   int _selectedIndex = 0;
   String userId = '';
-  String patientName = 'default_patient_name'.tr;
-  String email = 'default_email'.tr;
+  String patientName = 'Nom du patient par défaut';
+  String email = 'Email par défaut';
   DateTime? _selectedAppointmentDate;
   Timer? _locationUpdateTimer;
 
@@ -168,26 +168,25 @@ class _HomePatientState extends State<HomePatient> {
     BottomNavigationBarItem(
       icon: Icon(Icons.home_outlined, size: 22.sp),
       activeIcon: Icon(Icons.home_filled, size: 24.sp),
-      label: 'home'.tr,
+      label: 'Accueil',
     ),
     BottomNavigationBarItem(
       icon: Icon(Icons.calendar_today_outlined, size: 22.sp),
       activeIcon: Icon(Icons.calendar_today, size: 24.sp),
-      label: 'appointments'.tr,
+      label: 'Rendez-vous',
     ),
     // Message with badge
     BottomNavigationBarItem(
       icon: _buildMessageIcon(false),
       activeIcon: _buildMessageIcon(true),
-      label: 'messages'.tr,
+      label: 'Messages',
     ),
     BottomNavigationBarItem(
       icon: Icon(Icons.person_outline, size: 22.sp),
       activeIcon: Icon(Icons.person, size: 24.sp),
-      label: 'profile'.tr,
+      label: 'Profil',
     ),
   ];
-
 
   // Widget to display message icon with badge for unread messages
   Widget _buildMessageIcon(bool isActive) {
@@ -307,10 +306,10 @@ class _HomePatientState extends State<HomePatient> {
   void _logout() {
     Get.dialog(
       AlertDialog(
-        title: Text('logout'.tr),
-        content: Text('confirm_logout'.tr),
+        title: Text('Déconnexion'),
+        content: Text('Êtes-vous sûr de vouloir vous déconnecter ?'),
         actions: [
-          TextButton(onPressed: Get.back, child: Text('cancel'.tr)),
+          TextButton(onPressed: Get.back, child: Text('Annuler')),
           TextButton(
             onPressed: () async {
               try {
@@ -326,23 +325,26 @@ class _HomePatientState extends State<HomePatient> {
 
                 // Optional: show success message
                 Get.snackbar(
-                  'success'.tr,
-                  'logout_success'.tr,
+                  'Succès',
+                  'Déconnexion réussie',
                   backgroundColor: Colors.green,
                   colorText: Colors.white,
                 );
               } catch (e) {
                 // Show error message if logout fails
                 Get.snackbar(
-                  'error'.tr,
-                  'logout_error'.tr,
+                  'Erreur',
+                  'Erreur lors de la déconnexion',
                   backgroundColor: Colors.red,
                   colorText: Colors.white,
                 );
                 print("Logout error: $e");
               }
             },
-            child: Text('logout'.tr, style: const TextStyle(color: Colors.red)),
+            child: Text(
+              'Déconnexion',
+              style: const TextStyle(color: Colors.red),
+            ),
           ),
         ],
       ),
@@ -502,15 +504,15 @@ class _HomePatientState extends State<HomePatient> {
   String _getAppBarTitle() {
     switch (_selectedIndex) {
       case 0:
-        return 'medilink'.tr;
+        return 'MediLink';
       case 1:
-        return 'appointments'.tr;
+        return 'Rendez-vous';
       case 2:
-        return 'messages'.tr;
+        return 'Messages';
       case 3:
-        return 'profile'.tr;
+        return 'Profil';
       default:
-        return 'medilink'.tr;
+        return 'MediLink';
     }
   }
 
@@ -565,13 +567,13 @@ class _HomePatientState extends State<HomePatient> {
                 IconButton(
                   icon: const Icon(Icons.calendar_today, color: Colors.white),
                   onPressed: () => _selectAppointmentDate(context),
-                  tooltip: 'filter_by_date'.tr,
+                  tooltip: 'Filtrer par date',
                 ),
                 if (_selectedAppointmentDate != null)
                   IconButton(
                     icon: const Icon(Icons.clear, color: Colors.white),
                     onPressed: _resetAppointmentDateFilter,
-                    tooltip: 'reset_filter'.tr,
+                    tooltip: 'Réinitialiser le filtre',
                   ),
               ],
               NotificationBadge(iconColor: Colors.white, iconSize: 24),
@@ -867,20 +869,14 @@ class _HomePatientState extends State<HomePatient> {
             onPressed: () {
               print('=== NAVIGATION TO AI CHATBOT DEBUG ===');
               print('Navigating to AiChatbotPage...');
-              
+
               Navigator.push(
                 context,
-                MaterialPageRoute(
-                  builder: (context) => const AiChatbotPage(),
-                ),
+                MaterialPageRoute(builder: (context) => const AiChatbotPage()),
               );
             },
             backgroundColor: AppColors.primaryColor,
-            child: Icon(
-              Icons.smart_toy,
-              color: Colors.white,
-              size: 28.sp,
-            ),
+            child: Icon(Icons.smart_toy, color: Colors.white, size: 28.sp),
             tooltip: 'ai_assistant'.tr,
           ),
         ),

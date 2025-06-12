@@ -53,7 +53,7 @@ class LocationPermissionDialog extends StatelessWidget {
             ),
             SizedBox(height: 20.h),
             Text(
-              'location_permission_title'.tr,
+              'Autorisation de localisation',
               style: GoogleFonts.raleway(
                 fontSize: 18.sp,
                 fontWeight: FontWeight.bold,
@@ -63,7 +63,7 @@ class LocationPermissionDialog extends StatelessWidget {
             ),
             SizedBox(height: 12.h),
             Text(
-              'location_permission_message'.tr,
+              'Cette application a besoin d\'accéder à votre localisation pour vous offrir une meilleure expérience et trouver les médecins près de chez vous.',
               style: GoogleFonts.raleway(
                 fontSize: 14.sp,
                 color: Colors.black54,
@@ -80,7 +80,7 @@ class LocationPermissionDialog extends StatelessWidget {
                     onPermissionDenied();
                   },
                   child: Text(
-                    'deny'.tr,
+                    'Refuser',
                     style: GoogleFonts.raleway(
                       fontSize: 14.sp,
                       fontWeight: FontWeight.w500,
@@ -111,7 +111,7 @@ class LocationPermissionDialog extends StatelessWidget {
                     ),
                   ),
                   child: Text(
-                    'allow'.tr,
+                    'Autoriser',
                     style: GoogleFonts.raleway(
                       fontSize: 14.sp,
                       fontWeight: FontWeight.w600,

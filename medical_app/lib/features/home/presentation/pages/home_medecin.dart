@@ -39,8 +39,8 @@ class HomeMedecin extends StatefulWidget {
 class _HomeMedecinState extends State<HomeMedecin> {
   int selectedItem = 0;
   String userId = '';
-  String doctorName = 'default_doctor_name'.tr;
-  String email = 'default_doctor_email'.tr;
+  String doctorName = 'Nom du médecin par défaut';
+  String email = 'Email du médecin par défaut';
   DateTime? selectedAppointmentDate;
   // Add a global key for the scaffold
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
@@ -61,7 +61,7 @@ class _HomeMedecinState extends State<HomeMedecin> {
         userId = userMap['id'] as String? ?? '';
         doctorName =
             '${userMap['name'] ?? ''} ${userMap['lastName'] ?? ''}'.trim();
-        email = userMap['email'] as String? ?? 'default_doctor_email'.tr;
+        email = userMap['email'] as String? ?? 'Email du médecin par défaut';
       });
     }
   }
@@ -83,22 +83,22 @@ class _HomeMedecinState extends State<HomeMedecin> {
     BottomNavigationBarItem(
       icon: Icon(Icons.home_outlined, size: 22.sp),
       activeIcon: Icon(Icons.home_filled, size: 24.sp),
-      label: 'home'.tr,
+      label: 'Accueil',
     ),
     BottomNavigationBarItem(
       icon: Icon(Icons.calendar_today_outlined, size: 22.sp),
       activeIcon: Icon(Icons.calendar_today, size: 24.sp),
-      label: 'appointments'.tr,
+      label: 'Rendez-vous',
     ),
     BottomNavigationBarItem(
       icon: _buildMessageIcon(false),
       activeIcon: _buildMessageIcon(true),
-      label: 'messages'.tr,
+      label: 'Messages',
     ),
     BottomNavigationBarItem(
       icon: Icon(Icons.person_outline, size: 22.sp),
       activeIcon: Icon(Icons.person, size: 24.sp),
-      label: 'profile'.tr,
+      label: 'Profil',
     ),
   ];
 
@@ -177,10 +177,10 @@ class _HomeMedecinState extends State<HomeMedecin> {
   void _logout() {
     Get.dialog(
       AlertDialog(
-        title: Text('logout'.tr),
-        content: Text('confirm_logout'.tr),
+        title: Text('Déconnexion'),
+        content: Text('Êtes-vous sûr de vouloir vous déconnecter ?'),
         actions: [
-          TextButton(onPressed: Get.back, child: Text('cancel'.tr)),
+          TextButton(onPressed: Get.back, child: Text('Annuler')),
           TextButton(
             onPressed: () async {
               try {
@@ -196,23 +196,26 @@ class _HomeMedecinState extends State<HomeMedecin> {
 
                 // Optional: show success message
                 Get.snackbar(
-                  'success'.tr,
-                  'logout_success'.tr,
+                  'Succès',
+                  'Déconnexion réussie',
                   backgroundColor: Colors.green,
                   colorText: Colors.white,
                 );
               } catch (e) {
                 // Show error message if logout fails
                 Get.snackbar(
-                  'error'.tr,
-                  'logout_error'.tr,
+                  'Erreur',
+                  'Erreur lors de la déconnexion',
                   backgroundColor: Colors.red,
                   colorText: Colors.white,
                 );
                 print("Logout error: $e");
               }
             },
-            child: Text('logout'.tr, style: const TextStyle(color: Colors.red)),
+            child: Text(
+              'Déconnexion',
+              style: const TextStyle(color: Colors.red),
+            ),
           ),
         ],
       ),
@@ -264,7 +267,7 @@ class _HomeMedecinState extends State<HomeMedecin> {
           title:
               selectedItem == 0
                   ? Text(
-                    'medilink'.tr,
+                    'MediLink',
                     style: GoogleFonts.raleway(
                       fontSize: 18.sp,
                       fontWeight: FontWeight.bold,
@@ -272,7 +275,7 @@ class _HomeMedecinState extends State<HomeMedecin> {
                   )
                   : selectedItem == 1
                   ? Text(
-                    'appointments'.tr,
+                    'Rendez-vous',
                     style: GoogleFonts.raleway(
                       fontSize: 18.sp,
                       fontWeight: FontWeight.bold,
@@ -280,14 +283,14 @@ class _HomeMedecinState extends State<HomeMedecin> {
                   )
                   : selectedItem == 2
                   ? Text(
-                    'messages'.tr,
+                    'Messages',
                     style: GoogleFonts.raleway(
                       fontSize: 18.sp,
                       fontWeight: FontWeight.bold,
                     ),
                   )
                   : Text(
-                    'profile'.tr,
+                    'Profil',
                     style: GoogleFonts.raleway(
                       fontSize: 18.sp,
                       fontWeight: FontWeight.bold,
@@ -298,13 +301,13 @@ class _HomeMedecinState extends State<HomeMedecin> {
               IconButton(
                 icon: const Icon(Icons.calendar_today),
                 onPressed: () => _selectDate(context),
-                tooltip: 'filter_by_date'.tr,
+                tooltip: 'Filtrer par date',
               ),
               if (selectedAppointmentDate != null)
                 IconButton(
                   icon: const Icon(Icons.clear),
                   onPressed: _resetDateFilter,
-                  tooltip: 'reset_filter'.tr,
+                  tooltip: 'Réinitialiser le filtre',
                 ),
             ],
             // Add the notification badge
@@ -392,21 +395,15 @@ class _HomeMedecinState extends State<HomeMedecin> {
           onPressed: () {
             print('=== NAVIGATION TO AI CHATBOT DEBUG ===');
             print('Navigating to AiChatbotPage...');
-            
+
             Navigator.push(
               context,
-              MaterialPageRoute(
-                builder: (context) => const AiChatbotPage(),
-              ),
+              MaterialPageRoute(builder: (context) => const AiChatbotPage()),
             );
           },
           backgroundColor: AppColors.primaryColor,
-          child: Icon(
-            Icons.smart_toy,
-            color: Colors.white,
-            size: 28.sp,
-          ),
-          tooltip: 'ai_assistant'.tr,
+          child: Icon(Icons.smart_toy, color: Colors.white, size: 28.sp),
+          tooltip: 'Assistant IA',
         ),
       ),
     );
@@ -571,7 +568,7 @@ class _HomeMedecinState extends State<HomeMedecin> {
                   children: [
                     _buildDrawerItem(
                       icon: FontAwesomeIcons.hospital,
-                      title: 'hospitals'.tr,
+                      title: 'Hôpitaux',
                       onTap: () {
                         Navigator.pop(context);
                         navigateToAnotherScreenWithSlideTransitionFromRightToLeft(
@@ -582,7 +579,7 @@ class _HomeMedecinState extends State<HomeMedecin> {
                     ),
                     _buildDrawerItem(
                       icon: FontAwesomeIcons.kitMedical,
-                      title: 'first_aid'.tr,
+                      title: 'Premiers secours',
                       onTap: () {
                         Navigator.pop(context);
                         navigateToAnotherScreenWithSlideTransitionFromRightToLeft(
@@ -593,7 +590,7 @@ class _HomeMedecinState extends State<HomeMedecin> {
                     ),
                     _buildDrawerItem(
                       icon: FontAwesomeIcons.gear,
-                      title: 'settings'.tr,
+                      title: 'Paramètres',
                       onTap: () {
                         Navigator.pop(context);
                         navigateToAnotherScreenWithSlideTransitionFromRightToLeft(
@@ -625,9 +622,7 @@ class _HomeMedecinState extends State<HomeMedecin> {
                               ),
                               const SizedBox(width: 16),
                               Text(
-                                isDarkModeState
-                                    ? 'dark_mode'.tr
-                                    : 'light_mode'.tr,
+                                isDarkModeState ? 'Mode sombre' : 'Mode clair',
                                 style: GoogleFonts.raleway(
                                   fontSize: 14,
                                   color: Colors.white,
@@ -656,7 +651,7 @@ class _HomeMedecinState extends State<HomeMedecin> {
                 padding: EdgeInsets.symmetric(vertical: 20, horizontal: 12),
                 child: _buildDrawerItem(
                   icon: FontAwesomeIcons.rightFromBracket,
-                  title: 'logout'.tr,
+                  title: 'Déconnexion',
                   onTap: _logout,
                   color: Colors.red[50],
                 ),

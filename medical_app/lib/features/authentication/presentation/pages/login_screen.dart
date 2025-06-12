@@ -61,7 +61,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   // Title
                   Center(
                     child: Text(
-                      "sign_in".tr,
+                      "Se connecter",
                       style: GoogleFonts.raleway(
                         fontSize: 24.sp,
                         fontWeight: FontWeight.bold,
@@ -157,7 +157,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                   width: 1,
                                 ),
                               ),
-                              hintText: "email_placeholder".tr,
+                              hintText: "Entrez votre adresse email",
                               hintStyle: GoogleFonts.raleway(
                                 color: Colors.grey[400],
                                 fontSize: 15.sp,
@@ -171,12 +171,12 @@ class _LoginScreenState extends State<LoginScreen> {
                             keyboardType: TextInputType.emailAddress,
                             validator: (value) {
                               if (value == null || value.isEmpty) {
-                                return "email_required".tr;
+                                return "L'email est requis";
                               }
                               if (!RegExp(
                                 r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
                               ).hasMatch(value)) {
-                                return "invalid_email_message".tr;
+                                return "Format d'email invalide";
                               }
                               return null;
                             },
@@ -187,7 +187,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
                         // Password label
                         Text(
-                          "password".tr,
+                          "Mot de passe",
                           style: GoogleFonts.raleway(
                             fontSize: 16.sp,
                             fontWeight: FontWeight.w600,
@@ -254,7 +254,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                   width: 1,
                                 ),
                               ),
-                              hintText: "password_placeholder".tr,
+                              hintText: "Entrez votre mot de passe",
                               hintStyle: GoogleFonts.raleway(
                                 color: Colors.grey[400],
                                 fontSize: 15.sp,
@@ -280,10 +280,10 @@ class _LoginScreenState extends State<LoginScreen> {
                             ),
                             validator: (value) {
                               if (value == null || value.isEmpty) {
-                                return "password_required".tr;
+                                return "Le mot de passe est requis";
                               }
                               if (value.length < 6) {
-                                return "password_min_length".tr;
+                                return "Le mot de passe doit contenir au moins 6 caractères";
                               }
                               return null;
                             },
@@ -306,7 +306,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         );
                       },
                       child: Text(
-                        "forgot_password".tr,
+                        "Mot de passe oublié ?",
                         style: GoogleFonts.raleway(
                           fontSize: 14.sp,
                           fontWeight: FontWeight.w600,
@@ -321,7 +321,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   BlocConsumer<LoginBloc, LoginState>(
                     listener: (context, state) async {
                       if (state is LoginSuccess) {
-                        showSuccessSnackBar(context, "login_success".tr);
+                        showSuccessSnackBar(context, "Connexion réussie");
                         if (state.user.role == "medecin") {
                           navigateToAnotherScreenWithSlideTransitionFromRightToLeftPushReplacement(
                             context,
@@ -344,18 +344,16 @@ class _LoginScreenState extends State<LoginScreen> {
                             context: context,
                             builder:
                                 (ctx) => AlertDialog(
-                                  title: Text(
-                                    'account_verification_required'.tr,
-                                  ),
+                                  title: Text('Vérification du compte requise'),
                                   content: Text(
-                                    'account_not_activated_message'.tr,
+                                    'Votre compte n\'est pas encore activé. Veuillez vérifier votre email.',
                                   ),
                                   actions: [
                                     TextButton(
                                       onPressed: () {
                                         Navigator.of(ctx).pop();
                                       },
-                                      child: Text('cancel'.tr),
+                                      child: Text('Annuler'),
                                     ),
                                     TextButton(
                                       onPressed: () {
@@ -369,14 +367,14 @@ class _LoginScreenState extends State<LoginScreen> {
                                           ),
                                         );
                                       },
-                                      child: Text('verify_now'.tr),
+                                      child: Text('Vérifier maintenant'),
                                     ),
                                   ],
                                 ),
                           );
                         } else {
                           // Normal error handling
-                          showErrorSnackBar(context, state.message.tr);
+                          showErrorSnackBar(context, state.message);
                         }
                       }
                     },
@@ -416,7 +414,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                     strokeWidth: 3,
                                   )
                                   : Text(
-                                    "connect_button_text".tr,
+                                    "Se connecter",
                                     style: GoogleFonts.raleway(
                                       fontSize: 16.sp,
                                       fontWeight: FontWeight.w600,
@@ -434,7 +432,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Text(
-                        "no_account".tr,
+                        "Pas de compte ?",
                         style: GoogleFonts.raleway(
                           fontSize: 14.sp,
                           color: Colors.grey[600],
@@ -449,7 +447,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           );
                         },
                         child: Text(
-                          "sign_up".tr,
+                          "S'inscrire",
                           style: GoogleFonts.raleway(
                             fontSize: 14.sp,
                             fontWeight: FontWeight.w600,
@@ -471,7 +469,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       Padding(
                         padding: EdgeInsets.symmetric(horizontal: 16.w),
                         child: Text(
-                          "or_login_with".tr,
+                          "Ou se connecter avec",
                           style: GoogleFonts.raleway(
                             fontSize: 14.sp,
                             color: Colors.grey[600],
@@ -524,7 +522,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 );
                                 showSuccessSnackBar(
                                   context,
-                                  "login_success".tr,
+                                  "Connexion réussie",
                                 );
                                 navigateToAnotherScreenWithSlideTransitionFromRightToLeftPushReplacement(
                                   context,
@@ -539,7 +537,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         }
 
                         // Normal navigation for complete profiles
-                        showSuccessSnackBar(context, "login_success".tr);
+                        showSuccessSnackBar(context, "Connexion réussie");
                         if (state.user.role == "medecin") {
                           navigateToAnotherScreenWithSlideTransitionFromRightToLeftPushReplacement(
                             context,
@@ -584,10 +582,8 @@ class _LoginScreenState extends State<LoginScreen> {
                                   ),
                           label: Text(
                             isGoogleLoading
-                                ? "signing_in_with_google".tr.isNotEmpty
-                                    ? "signing_in_with_google".tr
-                                    : "Signing in..."
-                                : "continue_with_google".tr,
+                                ? "Connexion en cours..."
+                                : "Continuer avec Google",
                             style: GoogleFonts.raleway(
                               fontSize: 16.sp,
                               fontWeight: FontWeight.w600,

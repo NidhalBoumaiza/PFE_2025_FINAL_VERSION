@@ -131,7 +131,7 @@ class _RendezVousPatientState extends State<RendezVousPatient> {
         backgroundColor: theme.scaffoldBackgroundColor,
         appBar: AppBar(
           title: Text(
-            "medilink".tr,
+            "MediLink",
             style: GoogleFonts.raleway(
               fontWeight: FontWeight.bold,
               fontSize: 18.sp,
@@ -157,7 +157,7 @@ class _RendezVousPatientState extends State<RendezVousPatient> {
             IconButton(
               icon: Icon(Icons.calendar_today, color: Colors.white),
               onPressed: _toggleCalendar,
-              tooltip: "select_date".tr,
+              tooltip: "Sélectionner une date",
             ),
           ],
         ),
@@ -188,7 +188,7 @@ class _RendezVousPatientState extends State<RendezVousPatient> {
 
                       // Title
                       Text(
-                        "find_your_doctor".tr,
+                        "Trouvez votre médecin",
                         style: GoogleFonts.raleway(
                           fontSize: 24.sp,
                           fontWeight: FontWeight.bold,
@@ -200,7 +200,7 @@ class _RendezVousPatientState extends State<RendezVousPatient> {
 
                       // Subtitle
                       Text(
-                        "select_specialty_date".tr,
+                        "Sélectionnez une spécialité et une date",
                         style: GoogleFonts.raleway(
                           fontSize: 14.sp,
                           color: theme.textTheme.bodySmall?.color,
@@ -211,7 +211,7 @@ class _RendezVousPatientState extends State<RendezVousPatient> {
 
                       // Specialty selection
                       Text(
-                        "medical_specialty".tr,
+                        "Spécialité médicale",
                         style: GoogleFonts.raleway(
                           fontSize: 16.sp,
                           fontWeight: FontWeight.w600,
@@ -282,7 +282,7 @@ class _RendezVousPatientState extends State<RendezVousPatient> {
                                 width: 1,
                               ),
                             ),
-                            hintText: "choose_specialty".tr,
+                            hintText: "Choisir une spécialité",
                             hintStyle: GoogleFonts.raleway(
                               color:
                                   isDarkMode
@@ -330,7 +330,7 @@ class _RendezVousPatientState extends State<RendezVousPatient> {
                           },
                           validator: (value) {
                             if (value == null || value.isEmpty) {
-                              return "please_select_specialty".tr;
+                              return "Veuillez sélectionner une spécialité";
                             }
                             return null;
                           },
@@ -341,7 +341,7 @@ class _RendezVousPatientState extends State<RendezVousPatient> {
 
                       // Date and time selection
                       Text(
-                        "desired_date_time".tr,
+                        "Date et heure souhaitées",
                         style: GoogleFonts.raleway(
                           fontSize: 16.sp,
                           fontWeight: FontWeight.w600,
@@ -421,7 +421,7 @@ class _RendezVousPatientState extends State<RendezVousPatient> {
                                     width: 1,
                                   ),
                                 ),
-                                hintText: "select_date_time".tr,
+                                hintText: "Sélectionner date et heure",
                                 hintStyle: GoogleFonts.raleway(
                                   color:
                                       isDarkMode
@@ -437,7 +437,7 @@ class _RendezVousPatientState extends State<RendezVousPatient> {
                               ),
                               validator: (value) {
                                 if (value == null || value.isEmpty) {
-                                  return "please_select_date_time".tr;
+                                  return "Veuillez sélectionner une date et heure";
                                 }
                                 return null;
                               },
@@ -493,8 +493,7 @@ class _RendezVousPatientState extends State<RendezVousPatient> {
                                           } else {
                                             showErrorSnackBar(
                                               context,
-                                              "please_select_valid_date_time"
-                                                  .tr,
+                                              "Veuillez sélectionner une date et heure valides",
                                             );
                                           }
                                         }
@@ -506,7 +505,7 @@ class _RendezVousPatientState extends State<RendezVousPatient> {
                                         strokeWidth: 3,
                                       )
                                       : Text(
-                                        "search_doctor".tr,
+                                        "Rechercher un médecin",
                                         style: GoogleFonts.raleway(
                                           fontSize: 16.sp,
                                           fontWeight: FontWeight.w600,

@@ -71,9 +71,7 @@ class _ProfileCompletionScreenState extends State<ProfileCompletionScreen> {
           backgroundColor: AppColors.whiteColor,
           elevation: 0,
           title: Text(
-            "complete_profile".tr.isNotEmpty
-                ? "complete_profile".tr
-                : "Complete Your Profile",
+            "Compléter votre profil",
             style: GoogleFonts.raleway(
               fontSize: 20.sp,
               fontWeight: FontWeight.w600,
@@ -108,9 +106,7 @@ class _ProfileCompletionScreenState extends State<ProfileCompletionScreen> {
                         ),
                         SizedBox(height: 8.h),
                         Text(
-                          "welcome_google_user".tr.isNotEmpty
-                              ? "welcome_google_user".tr
-                              : "Welcome, ${widget.user.name}!",
+                          "Bienvenue, ${widget.user.name}!",
                           style: GoogleFonts.raleway(
                             fontSize: 18.sp,
                             fontWeight: FontWeight.w600,
@@ -120,9 +116,7 @@ class _ProfileCompletionScreenState extends State<ProfileCompletionScreen> {
                         ),
                         SizedBox(height: 4.h),
                         Text(
-                          "complete_profile_message".tr.isNotEmpty
-                              ? "complete_profile_message".tr
-                              : "Please complete your medical profile to get personalized care",
+                          "Veuillez compléter votre profil médical pour recevoir des soins personnalisés",
                           style: GoogleFonts.raleway(
                             fontSize: 14.sp,
                             color: Colors.grey[600],
@@ -136,30 +130,19 @@ class _ProfileCompletionScreenState extends State<ProfileCompletionScreen> {
                   SizedBox(height: 24.h),
 
                   // Phone number
-                  _buildSectionTitle(
-                    "phone_number_label".tr.isNotEmpty
-                        ? "phone_number_label".tr
-                        : "Phone Number",
-                  ),
+                  _buildSectionTitle("Numéro de téléphone"),
                   SizedBox(height: 8.h),
                   _buildTextField(
                     controller: phoneController,
-                    hintText:
-                        "phone_number_hint".tr.isNotEmpty
-                            ? "phone_number_hint".tr
-                            : "Enter phone number",
+                    hintText: "Entrez votre numéro de téléphone",
                     prefixIcon: Icons.phone_outlined,
                     keyboardType: TextInputType.phone,
                     validator: (value) {
                       if (value == null || value.isEmpty) {
-                        return "phone_number_required".tr.isNotEmpty
-                            ? "phone_number_required".tr
-                            : "Phone number is required";
+                        return "Le numéro de téléphone est requis";
                       }
                       if (value.length < 8) {
-                        return "phone_min_length".tr.isNotEmpty
-                            ? "phone_min_length".tr
-                            : "Invalid phone number";
+                        return "Numéro de téléphone invalide";
                       }
                       return null;
                     },
@@ -168,20 +151,14 @@ class _ProfileCompletionScreenState extends State<ProfileCompletionScreen> {
                   SizedBox(height: 20.h),
 
                   // Date of birth
-                  _buildSectionTitle(
-                    "date_of_birth_label".tr.isNotEmpty
-                        ? "date_of_birth_label".tr
-                        : "Date of Birth",
-                  ),
+                  _buildSectionTitle("Date de naissance"),
                   SizedBox(height: 8.h),
                   _buildDatePickerField(),
 
                   SizedBox(height: 20.h),
 
                   // Gender
-                  _buildSectionTitle(
-                    "gender".tr.isNotEmpty ? "gender".tr : "Gender",
-                  ),
+                  _buildSectionTitle("Sexe"),
                   SizedBox(height: 8.h),
                   _buildGenderDropdown(),
 
@@ -194,11 +171,7 @@ class _ProfileCompletionScreenState extends State<ProfileCompletionScreen> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            _buildSectionTitle(
-                              "height_cm".tr.isNotEmpty
-                                  ? "height_cm".tr
-                                  : "Height (cm)",
-                            ),
+                            _buildSectionTitle("Taille (cm)"),
                             SizedBox(height: 8.h),
                             _buildTextField(
                               controller: heightController,
@@ -214,11 +187,7 @@ class _ProfileCompletionScreenState extends State<ProfileCompletionScreen> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            _buildSectionTitle(
-                              "weight_kg".tr.isNotEmpty
-                                  ? "weight_kg".tr
-                                  : "Weight (kg)",
-                            ),
+                            _buildSectionTitle("Poids (kg)"),
                             SizedBox(height: 8.h),
                             _buildTextField(
                               controller: weightController,
@@ -235,29 +204,18 @@ class _ProfileCompletionScreenState extends State<ProfileCompletionScreen> {
                   SizedBox(height: 20.h),
 
                   // Blood type
-                  _buildSectionTitle(
-                    "blood_type".tr.isNotEmpty
-                        ? "blood_type".tr
-                        : "Blood Type (Optional)",
-                  ),
+                  _buildSectionTitle("Groupe sanguin (Optionnel)"),
                   SizedBox(height: 8.h),
                   _buildBloodTypeDropdown(),
 
                   SizedBox(height: 20.h),
 
                   // Medical history
-                  _buildSectionTitle(
-                    "medical_history".tr.isNotEmpty
-                        ? "medical_history".tr
-                        : "Medical History (Optional)",
-                  ),
+                  _buildSectionTitle("Antécédents médicaux (Optionnel)"),
                   SizedBox(height: 8.h),
                   _buildTextField(
                     controller: antecedentController,
-                    hintText:
-                        "antecedent_placeholder".tr.isNotEmpty
-                            ? "antecedent_placeholder".tr
-                            : "Any medical conditions, surgeries, etc.",
+                    hintText: "Conditions médicales, chirurgies, etc.",
                     prefixIcon: Icons.medical_information_outlined,
                     maxLines: 3,
                   ),
@@ -270,9 +228,7 @@ class _ProfileCompletionScreenState extends State<ProfileCompletionScreen> {
                       if (state is UpdateUserSuccess) {
                         showSuccessSnackBar(
                           context,
-                          "profile_completed_success".tr.isNotEmpty
-                              ? "profile_completed_success".tr
-                              : "Profile completed successfully!",
+                          "Profil complété avec succès !",
                         );
                         navigateToAnotherScreenWithSlideTransitionFromRightToLeftPushReplacement(
                           context,
@@ -304,9 +260,7 @@ class _ProfileCompletionScreenState extends State<ProfileCompletionScreen> {
                                     strokeWidth: 3,
                                   )
                                   : Text(
-                                    "complete_profile_button".tr.isNotEmpty
-                                        ? "complete_profile_button".tr
-                                        : "Complete Profile",
+                                    "Compléter le profil",
                                     style: GoogleFonts.raleway(
                                       fontSize: 16.sp,
                                       fontWeight: FontWeight.w600,
@@ -337,9 +291,7 @@ class _ProfileCompletionScreenState extends State<ProfileCompletionScreen> {
                         );
                       },
                       child: Text(
-                        "skip_for_now".tr.isNotEmpty
-                            ? "skip_for_now".tr
-                            : "Skip for Now",
+                        "Passer pour l'instant",
                         style: GoogleFonts.raleway(
                           fontSize: 16.sp,
                           fontWeight: FontWeight.w600,
@@ -478,9 +430,7 @@ class _ProfileCompletionScreenState extends State<ProfileCompletionScreen> {
           hintText:
               selectedDateOfBirth != null
                   ? "${selectedDateOfBirth!.day}/${selectedDateOfBirth!.month}/${selectedDateOfBirth!.year}"
-                  : "date_of_birth_hint".tr.isNotEmpty
-                  ? "date_of_birth_hint".tr
-                  : "Select date of birth",
+                  : "Sélectionnez votre date de naissance",
           hintStyle: GoogleFonts.raleway(
             color:
                 selectedDateOfBirth != null ? Colors.black87 : Colors.grey[400],
@@ -495,9 +445,7 @@ class _ProfileCompletionScreenState extends State<ProfileCompletionScreen> {
         onTap: _selectDateOfBirth,
         validator: (value) {
           if (selectedDateOfBirth == null) {
-            return "date_of_birth_required".tr.isNotEmpty
-                ? "date_of_birth_required".tr
-                : "Date of birth is required";
+            return "La date de naissance est requise";
           }
           return null;
         },
@@ -605,10 +553,7 @@ class _ProfileCompletionScreenState extends State<ProfileCompletionScreen> {
             borderRadius: BorderRadius.circular(12.r),
             borderSide: BorderSide(color: AppColors.primaryColor, width: 1),
           ),
-          hintText:
-              "blood_type_placeholder".tr.isNotEmpty
-                  ? "blood_type_placeholder".tr
-                  : "Select blood type",
+          hintText: "Sélectionnez votre groupe sanguin",
           hintStyle: GoogleFonts.raleway(
             color: Colors.grey[400],
             fontSize: 15.sp,

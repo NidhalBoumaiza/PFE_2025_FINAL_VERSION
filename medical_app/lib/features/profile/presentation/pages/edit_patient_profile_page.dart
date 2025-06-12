@@ -239,15 +239,18 @@ class _EditPatientProfilePageState extends State<EditPatientProfilePage> {
           _emergencyRelationController.text.trim().isNotEmpty ||
           _emergencyPhoneController.text.trim().isNotEmpty) {
         emergencyContact = {
-          'name': _emergencyNameController.text.trim().isNotEmpty
-              ? _emergencyNameController.text.trim()
-              : null,
-          'relationship': _emergencyRelationController.text.trim().isNotEmpty
-              ? _emergencyRelationController.text.trim()
-              : null,
-          'phoneNumber': _emergencyPhoneController.text.trim().isNotEmpty
-              ? _emergencyPhoneController.text.trim()
-              : null,
+          'name':
+              _emergencyNameController.text.trim().isNotEmpty
+                  ? _emergencyNameController.text.trim()
+                  : null,
+          'relationship':
+              _emergencyRelationController.text.trim().isNotEmpty
+                  ? _emergencyRelationController.text.trim()
+                  : null,
+          'phoneNumber':
+              _emergencyPhoneController.text.trim().isNotEmpty
+                  ? _emergencyPhoneController.text.trim()
+                  : null,
         };
       }
 
@@ -263,12 +266,14 @@ class _EditPatientProfilePageState extends State<EditPatientProfilePage> {
         dateOfBirth: dateOfBirth,
         antecedent: widget.patient.antecedent ?? '',
         bloodType: _selectedBloodType,
-        height: _heightController.text.isNotEmpty
-            ? double.tryParse(_heightController.text)
-            : null,
-        weight: _weightController.text.isNotEmpty
-            ? double.tryParse(_weightController.text)
-            : null,
+        height:
+            _heightController.text.isNotEmpty
+                ? double.tryParse(_heightController.text)
+                : null,
+        weight:
+            _weightController.text.isNotEmpty
+                ? double.tryParse(_weightController.text)
+                : null,
         allergies: allergies ?? [],
         chronicDiseases: chronicDiseases ?? [],
         emergencyContact: emergencyContact,
@@ -285,8 +290,8 @@ class _EditPatientProfilePageState extends State<EditPatientProfilePage> {
     } catch (e) {
       // Show error message
       Get.snackbar(
-        'error'.tr,
-        'error_updating_profile'.tr,
+        'Erreur',
+        'Erreur lors de la mise à jour du profil',
         backgroundColor: Colors.red,
         colorText: Colors.white,
         snackPosition: SnackPosition.TOP,
@@ -300,7 +305,7 @@ class _EditPatientProfilePageState extends State<EditPatientProfilePage> {
       backgroundColor: Colors.grey[50],
       appBar: AppBar(
         title: Text(
-          'edit_profile'.tr,
+          'Modifier le profil',
           style: GoogleFonts.raleway(
             fontWeight: FontWeight.bold,
             color: Colors.white,
@@ -318,8 +323,8 @@ class _EditPatientProfilePageState extends State<EditPatientProfilePage> {
           if (state is UpdateUserSuccess) {
             // Show success message
             Get.snackbar(
-              'success'.tr,
-              'profile_updated_successfully'.tr,
+              'Succès',
+              'Profil mis à jour avec succès',
               backgroundColor: Colors.green,
               colorText: Colors.white,
               snackPosition: SnackPosition.TOP,
@@ -330,7 +335,7 @@ class _EditPatientProfilePageState extends State<EditPatientProfilePage> {
           } else if (state is UpdateUserFailure) {
             // Show error message
             Get.snackbar(
-              'error'.tr,
+              'Erreur',
               state.message,
               backgroundColor: Colors.red,
               colorText: Colors.white,
@@ -349,7 +354,10 @@ class _EditPatientProfilePageState extends State<EditPatientProfilePage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // Personal Information Section
-                  _buildSectionHeader('personal_information'.tr, Icons.person),
+                  _buildSectionHeader(
+                    'Informations personnelles',
+                    Icons.person,
+                  ),
                   SizedBox(height: 20.h),
 
                   Row(
@@ -357,21 +365,24 @@ class _EditPatientProfilePageState extends State<EditPatientProfilePage> {
                       Expanded(
                         child: _buildTextField(
                           controller: _firstNameController,
-                          label: 'first_name_label'.tr,
+                          label: 'Prénom',
                           icon: Icons.person_outline,
                           validator:
                               (value) =>
-                                  value!.isEmpty ? 'first_name_required'.tr : null,
+                                  value!.isEmpty
+                                      ? 'Le prénom est requis'
+                                      : null,
                         ),
                       ),
                       SizedBox(width: 16.w),
                       Expanded(
                         child: _buildTextField(
                           controller: _lastNameController,
-                          label: 'name_label'.tr,
+                          label: 'Nom',
                           icon: Icons.person_outline,
                           validator:
-                              (value) => value!.isEmpty ? 'name_required'.tr : null,
+                              (value) =>
+                                  value!.isEmpty ? 'Le nom est requis' : null,
                         ),
                       ),
                     ],
@@ -380,30 +391,34 @@ class _EditPatientProfilePageState extends State<EditPatientProfilePage> {
                   SizedBox(height: 16.h),
                   _buildTextField(
                     controller: _phoneController,
-                    label: 'phone_number_label'.tr,
+                    label: 'Numéro de téléphone',
                     icon: Icons.phone,
                     keyboardType: TextInputType.phone,
                     validator:
                         (value) =>
-                            value!.isEmpty ? 'phone_number_required'.tr : null,
+                            value!.isEmpty
+                                ? 'Le numéro de téléphone est requis'
+                                : null,
                   ),
 
                   SizedBox(height: 16.h),
                   _buildTextField(
                     controller: _dateOfBirthController,
-                    label: 'date_of_birth_label'.tr,
+                    label: 'Date de naissance',
                     icon: Icons.calendar_today,
                     readOnly: true,
                     onTap: _selectDate,
                     validator:
                         (value) =>
-                            value!.isEmpty ? 'date_of_birth_required'.tr : null,
+                            value!.isEmpty
+                                ? 'La date de naissance est requise'
+                                : null,
                   ),
 
                   SizedBox(height: 16.h),
                   _buildDropdownField(
                     value: _selectedGender,
-                    label: 'gender'.tr,
+                    label: 'Sexe',
                     icon: Icons.wc,
                     items: _genders,
                     onChanged: (value) {
@@ -417,14 +432,14 @@ class _EditPatientProfilePageState extends State<EditPatientProfilePage> {
                   // Medical Information Section
                   SizedBox(height: 30.h),
                   _buildSectionHeader(
-                    'medical_information'.tr,
+                    'Informations médicales',
                     Icons.medical_services,
                   ),
                   SizedBox(height: 20.h),
 
                   _buildDropdownField(
                     value: _selectedBloodType,
-                    label: 'blood_type'.tr,
+                    label: 'Groupe sanguin',
                     icon: Icons.bloodtype,
                     items: _bloodTypes,
                     onChanged: (value) {
@@ -441,7 +456,7 @@ class _EditPatientProfilePageState extends State<EditPatientProfilePage> {
                       Expanded(
                         child: _buildTextField(
                           controller: _heightController,
-                          label: 'height'.tr,
+                          label: 'Taille',
                           icon: Icons.height,
                           keyboardType: TextInputType.number,
                           suffix: Text(
@@ -454,7 +469,7 @@ class _EditPatientProfilePageState extends State<EditPatientProfilePage> {
                       Expanded(
                         child: _buildTextField(
                           controller: _weightController,
-                          label: 'weight'.tr,
+                          label: 'Poids',
                           icon: Icons.monitor_weight,
                           keyboardType: TextInputType.number,
                           suffix: Text(
@@ -469,48 +484,49 @@ class _EditPatientProfilePageState extends State<EditPatientProfilePage> {
                   SizedBox(height: 16.h),
                   _buildTextField(
                     controller: _allergiesController,
-                    label: 'allergies'.tr,
+                    label: 'Allergies',
                     icon: Icons.warning,
-                    hintText: 'enter_allergies_hint'.tr,
+                    hintText: 'Entrez vos allergies séparées par des virgules',
                     maxLines: 2,
                   ),
 
                   SizedBox(height: 16.h),
                   _buildTextField(
                     controller: _chronicDiseasesController,
-                    label: 'chronic_diseases'.tr,
+                    label: 'Maladies chroniques',
                     icon: Icons.local_hospital,
-                    hintText: 'enter_chronic_diseases_hint'.tr,
+                    hintText:
+                        'Entrez vos maladies chroniques séparées par des virgules',
                     maxLines: 2,
                   ),
 
                   // Emergency Contact Section
                   SizedBox(height: 30.h),
-                  _buildSectionHeader('emergency_contact'.tr, Icons.emergency),
+                  _buildSectionHeader('Contact d\'urgence', Icons.emergency),
                   SizedBox(height: 20.h),
 
                   _buildTextField(
                     controller: _emergencyNameController,
-                    label: 'emergency_contact_name'.tr,
+                    label: 'Nom du contact d\'urgence',
                     icon: Icons.person,
-                    hintText: 'enter_emergency_name_hint'.tr,
+                    hintText: 'Entrez le nom du contact d\'urgence',
                   ),
 
                   SizedBox(height: 16.h),
                   _buildTextField(
                     controller: _emergencyRelationController,
-                    label: 'emergency_relationship'.tr,
+                    label: 'Relation',
                     icon: Icons.people,
-                    hintText: 'enter_emergency_relationship_hint'.tr,
+                    hintText: 'Ex: Époux/Épouse, Parent, Ami',
                   ),
 
                   SizedBox(height: 16.h),
                   _buildTextField(
                     controller: _emergencyPhoneController,
-                    label: 'emergency_phone'.tr,
+                    label: 'Téléphone d\'urgence',
                     icon: Icons.phone,
                     keyboardType: TextInputType.phone,
-                    hintText: 'enter_emergency_phone_hint'.tr,
+                    hintText: 'Entrez le numéro de téléphone d\'urgence',
                   ),
 
                   // Save Button
@@ -518,7 +534,8 @@ class _EditPatientProfilePageState extends State<EditPatientProfilePage> {
                   Container(
                     width: double.infinity,
                     child: ElevatedButton(
-                      onPressed: (_hasChanges && !isLoading) ? _saveChanges : null,
+                      onPressed:
+                          (_hasChanges && !isLoading) ? _saveChanges : null,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.primaryColor,
                         foregroundColor: Colors.white,
@@ -529,22 +546,23 @@ class _EditPatientProfilePageState extends State<EditPatientProfilePage> {
                         ),
                         elevation: 2,
                       ),
-                      child: isLoading
-                          ? SizedBox(
-                              height: 20.h,
-                              width: 20.w,
-                              child: CircularProgressIndicator(
-                                color: Colors.white,
-                                strokeWidth: 2,
+                      child:
+                          isLoading
+                              ? SizedBox(
+                                height: 20.h,
+                                width: 20.w,
+                                child: CircularProgressIndicator(
+                                  color: Colors.white,
+                                  strokeWidth: 2,
+                                ),
+                              )
+                              : Text(
+                                'Sauvegarder',
+                                style: GoogleFonts.raleway(
+                                  fontSize: 16.sp,
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
-                            )
-                          : Text(
-                              'save'.tr,
-                              style: GoogleFonts.raleway(
-                                fontSize: 16.sp,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
                     ),
                   ),
                   SizedBox(height: 20.h),

@@ -6,17 +6,14 @@ import 'package:medical_app/core/utils/app_themes.dart';
 
 class ThemeToggleSwitch extends StatelessWidget {
   final bool compact;
-  
-  const ThemeToggleSwitch({
-    Key? key,
-    this.compact = false,
-  }) : super(key: key);
+
+  const ThemeToggleSwitch({Key? key, this.compact = false}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     final themeManager = Provider.of<ThemeManager>(context);
     final isDarkMode = themeManager.isDarkMode;
-    
+
     if (compact) {
       return Switch(
         value: isDarkMode,
@@ -26,12 +23,10 @@ class ThemeToggleSwitch extends StatelessWidget {
         activeColor: AppThemes.primaryColor,
       );
     }
-    
+
     return Card(
       elevation: 1,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         child: Row(
@@ -46,11 +41,8 @@ class ThemeToggleSwitch extends StatelessWidget {
                 ),
                 const SizedBox(width: 12),
                 Text(
-                  isDarkMode ? "dark_mode".tr : "light_mode".tr,
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
-                  ),
+                  isDarkMode ? "Mode sombre" : "Mode clair",
+                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
                 ),
               ],
             ),
@@ -66,4 +58,4 @@ class ThemeToggleSwitch extends StatelessWidget {
       ),
     );
   }
-} 
+}

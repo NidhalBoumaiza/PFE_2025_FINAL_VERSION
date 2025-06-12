@@ -62,7 +62,7 @@ class AppointmentListItem extends StatelessWidget {
                   ),
                   SizedBox(height: 4.h),
                   Text(
-                    appointment.appointmentType ?? 'consultation'.tr,
+                    appointment.appointmentType ?? 'Consultation',
                     style: GoogleFonts.raleway(
                       fontSize: 13.sp,
                       color: theme.textTheme.bodySmall?.color,

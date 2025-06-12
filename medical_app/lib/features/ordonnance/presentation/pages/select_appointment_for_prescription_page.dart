@@ -76,15 +76,15 @@ class _SelectAppointmentForPrescriptionPageState
   String _getStatusText(String status) {
     switch (status) {
       case 'accepted':
-        return 'status_confirmed'.tr;
+        return 'Confirmé';
       case 'pending':
-        return 'status_pending'.tr;
+        return 'En attente';
       case 'cancelled':
-        return 'status_cancelled'.tr;
+        return 'Annulé';
       case 'completed':
-        return 'status_completed'.tr;
+        return 'Terminé';
       default:
-        return 'status_unknown'.tr;
+        return 'Statut inconnu';
     }
   }
 
@@ -158,7 +158,7 @@ class _SelectAppointmentForPrescriptionPageState
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          'select_appointment_for_prescription'.tr,
+          'Sélectionner un rendez-vous pour l\'ordonnance',
           style: GoogleFonts.raleway(
             fontWeight: FontWeight.bold,
             fontSize: 18.sp,
@@ -195,7 +195,7 @@ class _SelectAppointmentForPrescriptionPageState
                           ),
                           SizedBox(height: 16.h),
                           Text(
-                            '${'error'.tr}: ${state.message}',
+                            'Erreur: ${state.message}',
                             style: GoogleFonts.raleway(fontSize: 16.sp),
                             textAlign: TextAlign.center,
                           ),
@@ -210,7 +210,7 @@ class _SelectAppointmentForPrescriptionPageState
                             },
                             icon: Icon(Icons.refresh),
                             label: Text(
-                              'retry'.tr,
+                              'Réessayer',
                               style: GoogleFonts.raleway(),
                             ),
                             style: ElevatedButton.styleFrom(
@@ -238,7 +238,7 @@ class _SelectAppointmentForPrescriptionPageState
                           ),
                           SizedBox(height: 16.h),
                           Text(
-                            'no_eligible_appointments'.tr,
+                            'Aucun rendez-vous éligible',
                             style: GoogleFonts.raleway(
                               fontSize: 18.sp,
                               fontWeight: FontWeight.bold,
@@ -247,7 +247,7 @@ class _SelectAppointmentForPrescriptionPageState
                           ),
                           SizedBox(height: 8.h),
                           Text(
-                            'no_completed_or_past_appointments'.tr,
+                            'Aucun rendez-vous terminé ou passé disponible pour créer une ordonnance',
                             style: GoogleFonts.raleway(
                               fontSize: 14.sp,
                               color: Colors.grey[600],
@@ -267,7 +267,7 @@ class _SelectAppointmentForPrescriptionPageState
                           children: [
                             Expanded(
                               child: Text(
-                                'filter_by'.tr,
+                                'Filtrer par',
                                 style: GoogleFonts.raleway(
                                   fontSize: 16.sp,
                                   fontWeight: FontWeight.bold,
@@ -275,7 +275,7 @@ class _SelectAppointmentForPrescriptionPageState
                               ),
                             ),
                             FilterChip(
-                              label: Text('completed'.tr),
+                              label: Text('Terminés'),
                               selected: selectedFilter == 'completed',
                               onSelected: (selected) {
                                 setState(() {
@@ -294,7 +294,7 @@ class _SelectAppointmentForPrescriptionPageState
                             ),
                             SizedBox(width: 8.w),
                             FilterChip(
-                              label: Text('past_appointments'.tr),
+                              label: Text('Rendez-vous passés'),
                               selected: selectedFilter == 'accepted',
                               onSelected: (selected) {
                                 setState(() {
@@ -313,7 +313,7 @@ class _SelectAppointmentForPrescriptionPageState
                             ),
                             SizedBox(width: 8.w),
                             FilterChip(
-                              label: Text('all'.tr),
+                              label: Text('Tous'),
                               selected: selectedFilter == 'all',
                               onSelected: (selected) {
                                 setState(() {
@@ -401,7 +401,7 @@ class _SelectAppointmentForPrescriptionPageState
                   Icon(Icons.person, size: 20.sp, color: Colors.grey[600]),
                   SizedBox(width: 8.w),
                   Text(
-                    '${'patient'.tr}: ${appointment.patientName ?? 'unknown_patient'.tr}',
+                    'Patient: ${appointment.patientName ?? 'Patient inconnu'}',
                     style: GoogleFonts.raleway(
                       fontSize: 14.sp,
                       color: Colors.black87,
@@ -419,7 +419,7 @@ class _SelectAppointmentForPrescriptionPageState
                   ),
                   SizedBox(width: 8.w),
                   Text(
-                    appointment.speciality ?? 'general_consultation'.tr,
+                    appointment.speciality ?? 'Consultation générale',
                     style: GoogleFonts.raleway(
                       fontSize: 14.sp,
                       color: Colors.grey[700],
@@ -440,7 +440,7 @@ class _SelectAppointmentForPrescriptionPageState
                       color: Colors.white,
                     ),
                     label: Text(
-                      'create_prescription'.tr,
+                      'Créer une ordonnance',
                       style: GoogleFonts.raleway(
                         color: Colors.white,
                         fontWeight: FontWeight.w600,

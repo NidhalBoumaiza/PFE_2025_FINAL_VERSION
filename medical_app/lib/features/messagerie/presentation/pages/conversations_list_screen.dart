@@ -120,14 +120,14 @@ class _ConversationsScreenState extends State<ConversationsScreen> {
         );
       } else {
         setState(() {
-          _errorMessage = 'error_user_id_missing'.tr;
+          _errorMessage = 'ID utilisateur manquant';
         });
       }
     } catch (e) {
       print('Error loading user data: $e');
       setState(() {
         _isLoading = false;
-        _errorMessage = 'error_no_user_data'.tr;
+        _errorMessage = 'Aucune donnée utilisateur trouvée';
       });
     }
   }
@@ -152,7 +152,7 @@ class _ConversationsScreenState extends State<ConversationsScreen> {
             widget.showAppBar
                 ? AppBar(
                   title: Text(
-                    'messages'.tr,
+                    'Messages',
                     style: GoogleFonts.raleway(
                       fontSize: 18.sp,
                       fontWeight: FontWeight.w600,
@@ -174,7 +174,7 @@ class _ConversationsScreenState extends State<ConversationsScreen> {
               ),
               SizedBox(height: 16.h),
               Text(
-                'error_prefix'.tr + _errorMessage,
+                'Erreur: ' + _errorMessage,
                 textAlign: TextAlign.center,
                 style: GoogleFonts.raleway(
                   fontSize: 16.sp,
@@ -195,7 +195,7 @@ class _ConversationsScreenState extends State<ConversationsScreen> {
                   ),
                 ),
                 child: Text(
-                  'retry'.tr,
+                  'Réessayer',
                   style: GoogleFonts.raleway(
                     fontSize: 16.sp,
                     color: Colors.white,
@@ -214,7 +214,7 @@ class _ConversationsScreenState extends State<ConversationsScreen> {
           widget.showAppBar
               ? AppBar(
                 title: Text(
-                  'messages'.tr,
+                  'Messages',
                   style: GoogleFonts.raleway(
                     fontSize: 18.sp,
                     fontWeight: FontWeight.w600,
@@ -250,7 +250,7 @@ class _ConversationsScreenState extends State<ConversationsScreen> {
                             ),
                             SizedBox(height: 20.h),
                             Text(
-                              'no_conversations'.tr,
+                              'Aucune conversation',
                               style: GoogleFonts.raleway(
                                 fontSize: 18.sp,
                                 fontWeight: FontWeight.w600,
@@ -261,7 +261,7 @@ class _ConversationsScreenState extends State<ConversationsScreen> {
                             Padding(
                               padding: EdgeInsets.symmetric(horizontal: 32.w),
                               child: Text(
-                                "your_conversations".tr,
+                                "Vos conversations apparaîtront ici",
                                 textAlign: TextAlign.center,
                                 style: GoogleFonts.raleway(
                                   fontSize: 14.sp,
@@ -323,7 +323,7 @@ class _ConversationsScreenState extends State<ConversationsScreen> {
                               ),
                             ),
                             child: Text(
-                              'retry'.tr,
+                              'Réessayer',
                               style: GoogleFonts.raleway(
                                 fontSize: 16.sp,
                                 color: Colors.white,
@@ -344,7 +344,7 @@ class _ConversationsScreenState extends State<ConversationsScreen> {
                           ),
                           SizedBox(height: 16.h),
                           Text(
-                            'loading_conversations'.tr,
+                            'Chargement des conversations',
                             style: GoogleFonts.raleway(
                               fontSize: 16.sp,
                               color: Colors.grey.shade600,
@@ -455,7 +455,7 @@ class _ConversationsScreenState extends State<ConversationsScreen> {
                           : conversation.lastMessageType == 'file'
                           ? '📎 File'
                           : conversation.lastMessage.isEmpty
-                          ? 'no_message'.tr
+                          ? 'Aucun message'
                           : conversation.lastMessage,
                       style: GoogleFonts.raleway(
                         fontSize: 13.sp,
@@ -492,7 +492,7 @@ class _ConversationsScreenState extends State<ConversationsScreen> {
     if (messageDate == today) {
       return DateFormat('HH:mm').format(lastMessageTime);
     } else if (messageDate == yesterday) {
-      return 'yesterday'.tr;
+      return 'Hier';
     } else {
       return DateFormat('dd/MM').format(lastMessageTime);
     }

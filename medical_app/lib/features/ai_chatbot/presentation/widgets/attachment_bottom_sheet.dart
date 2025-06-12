@@ -91,9 +91,7 @@ class AttachmentBottomSheet extends StatelessWidget {
         decoration: BoxDecoration(
           color: AppColors.primaryColor.withOpacity(0.1),
           borderRadius: BorderRadius.circular(16.r),
-          border: Border.all(
-            color: AppColors.primaryColor.withOpacity(0.2),
-          ),
+          border: Border.all(color: AppColors.primaryColor.withOpacity(0.2)),
         ),
         child: Column(
           children: [
@@ -104,11 +102,7 @@ class AttachmentBottomSheet extends StatelessWidget {
                 color: AppColors.primaryColor,
                 borderRadius: BorderRadius.circular(12.r),
               ),
-              child: Icon(
-                icon,
-                color: Colors.white,
-                size: 24.sp,
-              ),
+              child: Icon(icon, color: Colors.white, size: 24.sp),
             ),
             SizedBox(height: 12.h),
             Text(
