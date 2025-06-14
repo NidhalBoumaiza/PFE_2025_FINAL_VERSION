@@ -10,8 +10,14 @@ import '../models/conversation_mode.dart';
 
 // Interface for messaging data source
 abstract class MessagingRemoteDataSource {
-  Future<List<ConversationEntity>> getConversations(String userId, bool isDoctor);
-  Stream<List<ConversationEntity>> conversationsStream(String userId, bool isDoctor);
+  Future<List<ConversationEntity>> getConversations(
+    String userId,
+    bool isDoctor,
+  );
+  Stream<List<ConversationEntity>> conversationsStream(
+    String userId,
+    bool isDoctor,
+  );
   Future<void> sendMessage(MessageModel message, File? file);
   Future<List<MessageModel>> getMessages(String conversationId);
   Stream<List<MessageModel>> getMessagesStream(String conversationId);
@@ -30,98 +36,130 @@ class MessagingRemoteDataSourceImpl implements MessagingRemoteDataSource {
   });
 
   @override
-  Future<List<ConversationEntity>> getConversations(String userId, bool isDoctor) async {
+  Future<List<ConversationEntity>> getConversations(
+    String userId,
+    bool isDoctor,
+  ) async {
     try {
-      print('Fetching conversations for userId: $userId, isDoctor: $isDoctor');
-      final snapshot = await firestore
-          .collection('conversations')
-          .where(isDoctor ? 'doctorId' : 'patientId', isEqualTo: userId)
-          .orderBy('lastMessageTime', descending: true)
-          .get();
-      print('Fetched ${snapshot.docs.length} conversations');
+      print(
+        'Récupération des conversations pour utilisateur: $userId, estMédecin: $isDoctor',
+      );
+      final snapshot =
+          await firestore
+              .collection('conversations')
+              .where(isDoctor ? 'doctorId' : 'patientId', isEqualTo: userId)
+              .orderBy('lastMessageTime', descending: true)
+              .get();
+      print('${snapshot.docs.length} conversations récupérées');
       return snapshot.docs.map((doc) {
         final data = doc.data();
-        print('Conversation data: $data');
+        print('Données de conversation: $data');
         // Validate required fields
         final patientId = data['patientId'] as String? ?? '';
         final doctorId = data['doctorId'] as String? ?? '';
         if (patientId.isEmpty || doctorId.isEmpty) {
-          print('Warning: Conversation ${doc.id} has empty patientId or doctorId');
+          print(
+            'Attention: Conversation ${doc.id} a un patientId ou doctorId vide',
+          );
         }
         return ConversationModel(
           id: doc.id,
           patientId: patientId,
           doctorId: doctorId,
-          patientName: data['patientName'] as String? ?? 'Unknown Patient',
-          doctorName: data['doctorName'] as String? ?? 'Unknown Doctor',
+          patientName: data['patientName'] as String? ?? 'Patient Inconnu',
+          doctorName: data['doctorName'] as String? ?? 'Médecin Inconnu',
           lastMessage: data['lastMessage'] as String? ?? '',
           lastMessageType: data['lastMessageType'] as String? ?? 'text',
-          lastMessageTime: ConversationModel.parseDateTime(data['lastMessageTime'] as String?) ?? DateTime.now(),
+          lastMessageTime:
+              ConversationModel.parseDateTime(
+                data['lastMessageTime'] as String?,
+              ) ??
+              DateTime.now(),
           lastMessageUrl: data['lastMessageUrl'] as String?,
           lastMessageRead: _isMessageReadByUser(data, userId, isDoctor),
         );
       }).toList();
     } catch (e) {
-      print('Error fetching conversations: $e');
+      print('Erreur lors de la récupération des conversations: $e');
       if (e is FirebaseException) {
-        print('Firebase error code: ${e.code}, message: ${e.message}');
+        print('Code d\'erreur Firebase: ${e.code}, message: ${e.message}');
       }
-      throw ServerException('Failed to fetch conversations: $e');
+      throw ServerException('Échec de récupération des conversations: $e');
     }
   }
 
   @override
-  Stream<List<ConversationEntity>> conversationsStream(String userId, bool isDoctor) {
+  Stream<List<ConversationEntity>> conversationsStream(
+    String userId,
+    bool isDoctor,
+  ) {
     try {
-      print('Starting conversation stream for userId: $userId, isDoctor: $isDoctor');
+      print(
+        'Démarrage du flux de conversations pour utilisateur: $userId, estMédecin: $isDoctor',
+      );
       return firestore
           .collection('conversations')
           .where(isDoctor ? 'doctorId' : 'patientId', isEqualTo: userId)
           .orderBy('lastMessageTime', descending: true)
           .snapshots()
           .map((snapshot) {
-        print('Stream received ${snapshot.docs.length} conversations');
-        return snapshot.docs.map((doc) {
-          final data = doc.data();
-          // Validate required fields
-          final patientId = data['patientId'] as String? ?? '';
-          final doctorId = data['doctorId'] as String? ?? '';
-          if (patientId.isEmpty || doctorId.isEmpty) {
-            print('Warning: Conversation ${doc.id} has empty patientId or doctorId');
-          }
-          return ConversationModel(
-            id: doc.id,
-            patientId: patientId,
-            doctorId: doctorId,
-            patientName: data['patientName'] as String? ?? 'Unknown Patient',
-            doctorName: data['doctorName'] as String? ?? 'Unknown Doctor',
-            lastMessage: data['lastMessage'] as String? ?? '',
-            lastMessageType: data['lastMessageType'] as String? ?? 'text',
-            lastMessageTime: ConversationModel.parseDateTime(data['lastMessageTime'] as String?) ?? DateTime.now(),
-            lastMessageUrl: data['lastMessageUrl'] as String?,
-            lastMessageRead: _isMessageReadByUser(data, userId, isDoctor),
-          );
-        }).toList();
-      }).handleError((error) {
-        print('Conversation stream error: $error');
-        throw ServerException('Firestore stream error: $error');
-      });
+            print('Flux a reçu ${snapshot.docs.length} conversations');
+            return snapshot.docs.map((doc) {
+              final data = doc.data();
+              // Validate required fields
+              final patientId = data['patientId'] as String? ?? '';
+              final doctorId = data['doctorId'] as String? ?? '';
+              if (patientId.isEmpty || doctorId.isEmpty) {
+                print(
+                  'Attention: Conversation ${doc.id} a un patientId ou doctorId vide',
+                );
+              }
+              return ConversationModel(
+                id: doc.id,
+                patientId: patientId,
+                doctorId: doctorId,
+                patientName:
+                    data['patientName'] as String? ?? 'Patient Inconnu',
+                doctorName: data['doctorName'] as String? ?? 'Médecin Inconnu',
+                lastMessage: data['lastMessage'] as String? ?? '',
+                lastMessageType: data['lastMessageType'] as String? ?? 'text',
+                lastMessageTime:
+                    ConversationModel.parseDateTime(
+                      data['lastMessageTime'] as String?,
+                    ) ??
+                    DateTime.now(),
+                lastMessageUrl: data['lastMessageUrl'] as String?,
+                lastMessageRead: _isMessageReadByUser(data, userId, isDoctor),
+              );
+            }).toList();
+          })
+          .handleError((error) {
+            print('Erreur de flux de conversation: $error');
+            throw ServerException('Erreur de flux Firestore: $error');
+          });
     } catch (e) {
-      print('Error initializing conversation stream: $e');
-      throw ServerException('Failed to initialize stream: $e');
+      print('Erreur d\'initialisation du flux de conversation: $e');
+      throw ServerException('Échec d\'initialisation du flux: $e');
     }
   }
 
   // Helper method to determine if the last message is read by the current user
-  bool _isMessageReadByUser(Map<String, dynamic> data, String userId, bool isDoctor) {
+  bool _isMessageReadByUser(
+    Map<String, dynamic> data,
+    String userId,
+    bool isDoctor,
+  ) {
     // If the current user is the sender of the last message, it's considered read
-    final String lastMessageSenderId = data['lastMessageSenderId'] as String? ?? '';
+    final String lastMessageSenderId =
+        data['lastMessageSenderId'] as String? ?? '';
     if (lastMessageSenderId == userId) {
       return true;
     }
 
     // Otherwise, check if the user is in the 'readBy' list of the last message
-    final List<String> readBy = List<String>.from(data['lastMessageReadBy'] ?? []);
+    final List<String> readBy = List<String>.from(
+      data['lastMessageReadBy'] ?? [],
+    );
     return readBy.contains(userId);
   }
 
@@ -133,58 +171,83 @@ class MessagingRemoteDataSourceImpl implements MessagingRemoteDataSource {
 
       // Upload file if provided
       if (file != null) {
-        print('Uploading file for message ${message.id}');
+        print('Téléchargement du fichier pour le message ${message.id}');
         if (file.path.isEmpty) {
-          throw ServerException('Invalid file path for message ${message.id}');
+          throw ServerException(
+            'Chemin de fichier invalide pour le message ${message.id}',
+          );
         }
-        final ref = storage.ref().child('conversations').child(message.conversationId).child(message.id);
+        final ref = storage
+            .ref()
+            .child('conversations')
+            .child(message.conversationId)
+            .child(message.id);
         final uploadTask = await ref.putFile(file);
         fileUrl = await uploadTask.ref.getDownloadURL();
         fileName = message.fileName ?? file.path.split('/').last;
-        print('File uploaded, URL: $fileUrl, fileName: $fileName');
+        print('Fichier téléchargé, URL: $fileUrl, nom du fichier: $fileName');
       }
 
       // Prepare message data with 'sent' status
-      final messageData = message.toJson()
-        ..['url'] = fileUrl
-        ..['fileName'] = fileName
-        ..['status'] = 'sent';
+      final messageData =
+          message.toJson()
+            ..['url'] = fileUrl
+            ..['fileName'] = fileName
+            ..['status'] = 'sent';
 
       // Save message to Firestore
-      print('Saving message ${message.id} to Firestore with status: sent');
+      print(
+        'Enregistrement du message ${message.id} dans Firestore avec statut: envoyé',
+      );
       await firestore
           .collection('conversations')
           .doc(message.conversationId)
           .collection('messages')
           .doc(message.id)
           .set(messageData);
-      print('Saved message ${message.id} with status: sent');
+      print('Message ${message.id} enregistré avec statut: envoyé');
 
       // Update conversation metadata
-      print('Updating conversation ${message.conversationId} lastMessage');
-      await firestore.collection('conversations').doc(message.conversationId).update({
-        'lastMessage': message.type == 'text' ? message.content : '',
-        'lastMessageType': message.type,
-        'lastMessageTime': message.timestamp.toIso8601String(),
-        'lastMessageUrl': fileUrl ?? '',
-        'lastMessageSenderId': message.senderId,
-        'lastMessageReadBy': [message.senderId],
-      });
-      print('Updated conversation ${message.conversationId} lastMessage');
+      print(
+        'Mise à jour du dernier message de la conversation ${message.conversationId}',
+      );
+      await firestore
+          .collection('conversations')
+          .doc(message.conversationId)
+          .update({
+            'lastMessage': message.type == 'text' ? message.content : '',
+            'lastMessageType': message.type,
+            'lastMessageTime': message.timestamp.toIso8601String(),
+            'lastMessageUrl': fileUrl ?? '',
+            'lastMessageSenderId': message.senderId,
+            'lastMessageReadBy': [message.senderId],
+          });
+      print(
+        'Dernier message de la conversation ${message.conversationId} mis à jour',
+      );
 
       // Send notification to the recipient
-      final conversationDoc = await firestore.collection('conversations').doc(message.conversationId).get();
+      final conversationDoc =
+          await firestore
+              .collection('conversations')
+              .doc(message.conversationId)
+              .get();
       if (conversationDoc.exists) {
         final conversationData = conversationDoc.data()!;
-        final recipientId = message.senderId == conversationData['patientId']
-            ? conversationData['doctorId'] as String
-            : conversationData['patientId'] as String;
-        final recipientRole = message.senderId == conversationData['patientId'] ? 'doctor' : 'patient';
-        final senderName = message.senderId == conversationData['patientId']
-            ? conversationData['patientName'] as String
-            : conversationData['doctorName'] as String;
+        final recipientId =
+            message.senderId == conversationData['patientId']
+                ? conversationData['doctorId'] as String
+                : conversationData['patientId'] as String;
+        final recipientRole =
+            message.senderId == conversationData['patientId']
+                ? 'doctor'
+                : 'patient';
+        final senderName =
+            message.senderId == conversationData['patientId']
+                ? conversationData['patientName'] as String
+                : conversationData['doctorName'] as String;
 
-        final notificationTitle = 'New Message from $senderName';
+        final notificationTitle = 'Nouveau message de $senderName';
 
         // Improved message body based on message type
         String notificationBody;
@@ -193,7 +256,7 @@ class MessagingRemoteDataSourceImpl implements MessagingRemoteDataSource {
             notificationBody = '📷 Photo';
             break;
           case 'video':
-            notificationBody = '🎬 Video';
+            notificationBody = '🎬 Vidéo';
             break;
           case 'document':
             notificationBody = '📄 Document';
@@ -202,9 +265,10 @@ class MessagingRemoteDataSourceImpl implements MessagingRemoteDataSource {
             notificationBody = '🎵 Audio';
             break;
           default: // text
-            notificationBody = message.content.length > 100
-                ? '${message.content.substring(0, _findWordBoundary(message.content, 97))}...'
-                : message.content;
+            notificationBody =
+                message.content.length > 100
+                    ? '${message.content.substring(0, _findWordBoundary(message.content, 97))}...'
+                    : message.content;
         }
 
         try {
@@ -229,20 +293,26 @@ class MessagingRemoteDataSourceImpl implements MessagingRemoteDataSource {
               if (fileName != null) 'fileName': fileName,
             },
           );
-          print('Sent notification for message ${message.id} to recipient $recipientId');
+          print(
+            'Notification envoyée pour le message ${message.id} au destinataire $recipientId',
+          );
         } catch (notificationError) {
-          print('Failed to send notification for message ${message.id}: $notificationError');
+          print(
+            'Échec d\'envoi de notification pour le message ${message.id}: $notificationError',
+          );
           // Consider retry mechanism or logging to analytics
         }
       } else {
-        print('Conversation ${message.conversationId} not found, skipping notification');
+        print(
+          'Conversation ${message.conversationId} non trouvée, notification ignorée',
+        );
       }
     } catch (e) {
-      print('Error sending message ${message.id}: $e');
+      print('Erreur lors de l\'envoi du message ${message.id}: $e');
       if (e is FirebaseException) {
-        print('Firebase error code: ${e.code}, message: ${e.message}');
+        print('Code d\'erreur Firebase: ${e.code}, message: ${e.message}');
       }
-      throw ServerException('Failed to send message: $e');
+      throw ServerException('Échec d\'envoi du message: $e');
     }
   }
 
@@ -256,35 +326,35 @@ class MessagingRemoteDataSourceImpl implements MessagingRemoteDataSource {
   @override
   Future<List<MessageModel>> getMessages(String conversationId) async {
     try {
-      print('Fetching messages for conversationId: $conversationId');
-      final snapshot = await firestore
-          .collection('conversations')
-          .doc(conversationId)
-          .collection('messages')
-          .orderBy('timestamp', descending: true)
-          .get();
-      print('Fetched ${snapshot.docs.length} messages');
+      print('Récupération des messages pour la conversation: $conversationId');
+      final snapshot =
+          await firestore
+              .collection('conversations')
+              .doc(conversationId)
+              .collection('messages')
+              .orderBy('timestamp', descending: true)
+              .get();
+      print('${snapshot.docs.length} messages récupérés');
       return snapshot.docs.map((doc) {
         final data = doc.data();
-        print('Message data: $data');
-        return MessageModel.fromJson({
-          'id': doc.id,
-          ...data,
-        });
+        print('Données du message: $data');
+        return MessageModel.fromJson({'id': doc.id, ...data});
       }).toList();
     } catch (e) {
-      print('Error fetching messages: $e');
+      print('Erreur lors de la récupération des messages: $e');
       if (e is FirebaseException) {
-        print('Firebase error code: ${e.code}, message: ${e.message}');
+        print('Code d\'erreur Firebase: ${e.code}, message: ${e.message}');
       }
-      throw ServerException('Failed to fetch messages: $e');
+      throw ServerException('Échec de récupération des messages: $e');
     }
   }
 
   @override
   Stream<List<MessageModel>> getMessagesStream(String conversationId) {
     try {
-      print('Starting message stream for conversationId: $conversationId');
+      print(
+        'Démarrage du flux de messages pour la conversation: $conversationId',
+      );
       return firestore
           .collection('conversations')
           .doc(conversationId)
@@ -292,22 +362,20 @@ class MessagingRemoteDataSourceImpl implements MessagingRemoteDataSource {
           .orderBy('timestamp', descending: true)
           .snapshots()
           .map((snapshot) {
-        print('Stream received ${snapshot.docs.length} messages');
-        return snapshot.docs.map((doc) {
-          final data = doc.data();
-          print('Stream message data: $data');
-          return MessageModel.fromJson({
-            'id': doc.id,
-            ...data,
+            print('Flux a reçu ${snapshot.docs.length} messages');
+            return snapshot.docs.map((doc) {
+              final data = doc.data();
+              print('Données du message du flux: $data');
+              return MessageModel.fromJson({'id': doc.id, ...data});
+            }).toList();
+          })
+          .handleError((error) {
+            print('Erreur de flux de messages: $error');
+            throw ServerException('Erreur de flux Firestore: $error');
           });
-        }).toList();
-      }).handleError((error) {
-        print('Message stream error: $error');
-        throw ServerException('Firestore stream error: $error');
-      });
     } catch (e) {
-      print('Error initializing message stream: $e');
-      throw ServerException('Failed to initialize stream: $e');
+      print('Erreur d\'initialisation du flux de messages: $e');
+      throw ServerException('Échec d\'initialisation du flux: $e');
     }
   }
 }

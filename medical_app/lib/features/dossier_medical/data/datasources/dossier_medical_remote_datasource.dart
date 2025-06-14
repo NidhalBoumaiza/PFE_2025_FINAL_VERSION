@@ -48,7 +48,6 @@ class DossierMedicalRemoteDataSourceImpl
   final FirebaseStorage storage;
   final FirebaseFirestore firestore;
   final NotificationRemoteDataSource notificationRemoteDataSource;
-  final String baseUrl = AppConstants.dossierMedicalEndpoint;
   final Uuid uuid = Uuid();
 
   DossierMedicalRemoteDataSourceImpl({

@@ -85,10 +85,12 @@ class RendezVousBloc extends Bloc<RendezVousEvent, RendezVousState> {
 
           emit(RendezVousLoaded([appointment]));
         } else {
-          emit(RendezVousError('Appointment not found'));
+          emit(RendezVousError('Rendez-vous non trouvé'));
         }
       } catch (e) {
-        emit(RendezVousError('Error fetching appointment: $e'));
+        emit(
+          RendezVousError('Erreur lors de la récupération du rendez-vous: $e'),
+        );
       }
       return;
     }
@@ -182,13 +184,8 @@ class RendezVousBloc extends Bloc<RendezVousEvent, RendezVousState> {
         (failure) =>
             emit(RendezVousErrorState(message: _mapFailureToMessage(failure))),
         (_) {
-          // Send notification to doctor about new appointment (non-blocking)
-          try {
-            _sendNewAppointmentNotification(event.rendezVous);
-          } catch (e) {
-            print('Error sending new appointment notification: $e');
-            // Don't fail the appointment creation if notification fails
-          }
+          // Notification is already sent at the data source level
+          // No need to send it again here
 
           // Emit RendezVousCreated state for navigation in UI
           emit(RendezVousCreated());
@@ -363,8 +360,8 @@ class RendezVousBloc extends Bloc<RendezVousEvent, RendezVousState> {
 
       // Create notification data
       Map<String, dynamic> notificationData = {
-        'patientName': rendezVous.patientName ?? 'Unknown',
-        'doctorName': rendezVous.doctorName ?? 'Unknown',
+        'patientName': rendezVous.patientName ?? 'Inconnu',
+        'doctorName': rendezVous.doctorName ?? 'Inconnu',
         'appointmentDate': formattedDate,
         'appointmentTime': formattedTime,
         'speciality': rendezVous.speciality ?? '',
@@ -379,9 +376,9 @@ class RendezVousBloc extends Bloc<RendezVousEvent, RendezVousState> {
       // Send through NotificationBloc
       notificationBloc!.add(
         SendNotificationEvent(
-          title: 'new_appointment'.tr,
+          title: 'Nouveau rendez-vous',
           body:
-              '${rendezVous.patientName ?? "patient_name_unknown".tr} ${"requested_appointment_for".tr} $formattedDate ${"at".tr} $formattedTime',
+              '${rendezVous.patientName ?? "Patient inconnu"} a demandé un rendez-vous pour le $formattedDate à $formattedTime',
           senderId: rendezVous.patientId!,
           recipientId: rendezVous.doctorId!,
           type: NotificationType.newAppointment,
@@ -503,17 +500,17 @@ class RendezVousBloc extends Bloc<RendezVousEvent, RendezVousState> {
         rendezVous.doctorId != null) {
       notificationBloc!.add(
         SendNotificationEvent(
-          title: 'appointment_accepted'.tr,
+          title: 'Rendez-vous accepté',
           body:
-              '${"doctor".tr} ${rendezVous.doctorName ?? "doctor_name_unknown".tr} ${"has_accepted_your_appointment_for".tr} ${rendezVous.startTime.toString().substring(0, 10)} ${"at".tr} ${_formatTime(rendezVous.startTime)}',
+              'Dr. ${rendezVous.doctorName ?? "Médecin inconnu"} a accepté votre rendez-vous pour le ${rendezVous.startTime.toString().substring(0, 10)} à ${_formatTime(rendezVous.startTime)}',
           senderId: rendezVous.doctorId!,
           recipientId: rendezVous.patientId!,
           type: NotificationType.appointmentAccepted,
           appointmentId: rendezVous.id,
           recipientRole: 'patient',
           data: {
-            'doctorName': rendezVous.doctorName ?? 'Unknown',
-            'patientName': rendezVous.patientName ?? 'Unknown',
+            'doctorName': rendezVous.doctorName ?? 'Inconnu',
+            'patientName': rendezVous.patientName ?? 'Inconnu',
             'appointmentDate': rendezVous.startTime.toString().substring(0, 10),
             'appointmentTime': _formatTime(rendezVous.startTime),
           },
@@ -528,17 +525,17 @@ class RendezVousBloc extends Bloc<RendezVousEvent, RendezVousState> {
         rendezVous.doctorId != null) {
       notificationBloc!.add(
         SendNotificationEvent(
-          title: 'appointment_rejected'.tr,
+          title: 'Rendez-vous refusé',
           body:
-              '${"doctor".tr} ${rendezVous.doctorName ?? "doctor_name_unknown".tr} ${"has_rejected_your_appointment_for".tr} ${rendezVous.startTime.toString().substring(0, 10)} ${"at".tr} ${_formatTime(rendezVous.startTime)}',
+              'Dr. ${rendezVous.doctorName ?? "Médecin inconnu"} a refusé votre rendez-vous pour le ${rendezVous.startTime.toString().substring(0, 10)} à ${_formatTime(rendezVous.startTime)}',
           senderId: rendezVous.doctorId!,
           recipientId: rendezVous.patientId!,
           type: NotificationType.appointmentRejected,
           appointmentId: rendezVous.id,
           recipientRole: 'patient',
           data: {
-            'doctorName': rendezVous.doctorName ?? 'Unknown',
-            'patientName': rendezVous.patientName ?? 'Unknown',
+            'doctorName': rendezVous.doctorName ?? 'Inconnu',
+            'patientName': rendezVous.patientName ?? 'Inconnu',
             'appointmentDate': rendezVous.startTime.toString().substring(0, 10),
             'appointmentTime': _formatTime(rendezVous.startTime),
           },

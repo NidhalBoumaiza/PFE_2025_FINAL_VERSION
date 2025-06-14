@@ -330,11 +330,6 @@ class _AiChatbotPageState extends State<AiChatbotPage> {
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.wifi_outlined, color: Colors.white),
-            onPressed: _testServerConnection,
-            tooltip: 'Tester la connexion au serveur',
-          ),
-          IconButton(
             icon: const Icon(Icons.clear_all, color: Colors.white),
             onPressed: () {
               context.read<AiChatbotBloc>().add(const ClearChatEvent());

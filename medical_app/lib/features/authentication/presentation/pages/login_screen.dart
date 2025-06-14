@@ -617,33 +617,6 @@ class _LoginScreenState extends State<LoginScreen> {
                       );
                     },
                   ),
-
-                  // Add a debug button to create a test account (only in debug/dev builds)
-                  if (const bool.fromEnvironment('dart.vm.product') == false)
-                    Padding(
-                      padding: EdgeInsets.only(top: 10.h, bottom: 10.h),
-                      child: GestureDetector(
-                        onTap: () => _createTestAccount(context),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(
-                              Icons.bug_report,
-                              color: Colors.grey,
-                              size: 16.sp,
-                            ),
-                            SizedBox(width: 8.w),
-                            Text(
-                              "Debug: Create test account",
-                              style: GoogleFonts.raleway(
-                                fontSize: 12.sp,
-                                color: Colors.grey,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
                 ],
               ),
             ),

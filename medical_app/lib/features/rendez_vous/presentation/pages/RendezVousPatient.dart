@@ -49,10 +49,18 @@ class _RendezVousPatientState extends State<RendezVousPatient> {
   void initState() {
     super.initState();
     initializeDateFormatting();
+
     if (widget.selectedSpecialty != null) {
-      // Check if the selected specialty exists in any language
+      // Get all available specialties from both sources
       List<String> translatedSpecialties = getTranslatedSpecialties();
-      if (translatedSpecialties.contains(widget.selectedSpecialty)) {
+      List<String> specialtiesWithImages =
+          getSpecialtiesWithImages()
+              .map((spec) => spec['text'] as String)
+              .toList();
+
+      // Check if the selected specialty exists in either list
+      if (translatedSpecialties.contains(widget.selectedSpecialty) ||
+          specialtiesWithImages.contains(widget.selectedSpecialty)) {
         selectedSpecialty = widget.selectedSpecialty;
       }
     }
@@ -119,6 +127,23 @@ class _RendezVousPatientState extends State<RendezVousPatient> {
         isCalendarVisible = false; // Hide calendar after selection
       });
     }
+  }
+
+  // Method to get all unique specialties from both sources
+  List<String> getAllSpecialties() {
+    List<String> translatedSpecialties = getTranslatedSpecialties();
+    List<String> specialtiesWithImages =
+        getSpecialtiesWithImages()
+            .map((spec) => spec['text'] as String)
+            .toList();
+
+    // Combine both lists and remove duplicates
+    Set<String> allSpecialties = {
+      ...translatedSpecialties,
+      ...specialtiesWithImages,
+    };
+
+    return allSpecialties.toList()..sort(); // Sort alphabetically
   }
 
   @override
@@ -308,7 +333,7 @@ class _RendezVousPatientState extends State<RendezVousPatient> {
                           ),
                           value: selectedSpecialty,
                           items:
-                              getTranslatedSpecialties()
+                              getAllSpecialties()
                                   .map(
                                     (specialty) => DropdownMenuItem(
                                       value: specialty,

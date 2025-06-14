@@ -59,11 +59,11 @@ class RendezVousRemoteDataSourceImpl implements RendezVousRemoteDataSource {
     String? doctorId,
   }) async {
     if (patientId == null && doctorId == null) {
-      throw ServerException('Either patientId or doctorId must be provided');
+      throw ServerException('Soit patientId ou doctorId doit être fourni');
     }
     try {
       print(
-        'RendezVousRemoteDataSource: Fetching appointments for patientId=$patientId, doctorId=$doctorId',
+        'RendezVousRemoteDataSource: Récupération des rendez-vous pour patientId=$patientId, doctorId=$doctorId',
       );
 
       Query<Map<String, dynamic>> query = firestore.collection('rendez_vous');
@@ -76,7 +76,7 @@ class RendezVousRemoteDataSourceImpl implements RendezVousRemoteDataSource {
 
       final snapshot = await query.get();
       print(
-        'RendezVousRemoteDataSource: Found ${snapshot.docs.length} appointments',
+        'RendezVousRemoteDataSource: ${snapshot.docs.length} rendez-vous trouvés',
       );
 
       final rendezVous =
@@ -84,7 +84,7 @@ class RendezVousRemoteDataSourceImpl implements RendezVousRemoteDataSource {
             final data = doc.data();
             data['id'] = doc.id; // Ensure the ID is set correctly
             print(
-              'RendezVousRemoteDataSource: Processing appointment ${doc.id}: status=${data['status']}',
+              'RendezVousRemoteDataSource: Traitement du rendez-vous ${doc.id}: statut=${data['status']}',
             );
             return RendezVousModel.fromJson(data);
           }).toList();
@@ -92,11 +92,11 @@ class RendezVousRemoteDataSourceImpl implements RendezVousRemoteDataSource {
       await localDataSource.cacheRendezVous(rendezVous);
       return rendezVous;
     } on FirebaseException catch (e) {
-      print('RendezVousRemoteDataSource: Firestore error: ${e.message}');
-      throw ServerException('Firestore error: ${e.message}');
+      print('RendezVousRemoteDataSource: Erreur Firestore: ${e.message}');
+      throw ServerException('Erreur de serveur: ${e.message}');
     } catch (e) {
-      print('RendezVousRemoteDataSource: Unexpected error: $e');
-      throw ServerException('Unexpected error: $e');
+      print('RendezVousRemoteDataSource: Erreur inattendue: $e');
+      throw ServerException('Erreur inattendue: $e');
     }
   }
 
@@ -115,7 +115,7 @@ class RendezVousRemoteDataSourceImpl implements RendezVousRemoteDataSource {
       final appointmentDoc =
           await firestore.collection('rendez_vous').doc(rendezVousId).get();
       if (!appointmentDoc.exists) {
-        throw ServerMessageException('Rendezvous not found');
+        throw ServerMessageException('Rendez-vous non trouvé');
       }
 
       final appointmentData = appointmentDoc.data() as Map<String, dynamic>;
@@ -127,7 +127,7 @@ class RendezVousRemoteDataSourceImpl implements RendezVousRemoteDataSource {
       } else if (appointmentData['startTime'] is String) {
         startTime = DateTime.parse(appointmentData['startTime'] as String);
       } else {
-        throw ServerException('Invalid startTime format in appointment');
+        throw ServerException('Format de date de début invalide dans le rendez-vous');
       }
 
       // Handle different status updates
@@ -158,7 +158,7 @@ class RendezVousRemoteDataSourceImpl implements RendezVousRemoteDataSource {
               'doctorId': doctorId,
               'patientName': patientName,
               'doctorName': doctorName,
-              'lastMessage': 'Conversation started for rendez-vous',
+              'lastMessage': 'Conversation démarrée pour le rendez-vous',
               'lastMessageType': 'text',
               'lastMessageTime': DateTime.now().toIso8601String(),
               'lastMessageSenderId': doctorId,
@@ -166,16 +166,16 @@ class RendezVousRemoteDataSourceImpl implements RendezVousRemoteDataSource {
             });
           }
         } catch (e) {
-          print('Error creating conversation: $e');
+          print('Erreur lors de la création de la conversation: $e');
           // Don't fail the status update if conversation creation fails
         }
 
         // Notify patient about acceptance (non-blocking)
         try {
           await notificationRemoteDataSource.sendNotification(
-            title: 'Appointment Accepted',
+            title: 'Rendez-vous accepté',
             body:
-                'Dr. $doctorName has accepted your appointment on ${startTime.toLocal().toString().substring(0, 16)}.',
+                'Dr. $doctorName a accepté votre rendez-vous du ${startTime.toLocal().toString().substring(0, 16)}.',
             senderId: doctorId,
             recipientId: patientId,
             type: NotificationType.appointmentAccepted,
@@ -187,7 +187,7 @@ class RendezVousRemoteDataSourceImpl implements RendezVousRemoteDataSource {
             },
           );
         } catch (e) {
-          print('Error sending acceptance notification: $e');
+          print('Erreur lors de l\'envoi de la notification d\'acceptation: $e');
           // Don't fail the status update if notification fails
         }
       } else if (status == 'rejected') {
@@ -198,9 +198,9 @@ class RendezVousRemoteDataSourceImpl implements RendezVousRemoteDataSource {
         // Notify patient about rejection (non-blocking)
         try {
           await notificationRemoteDataSource.sendNotification(
-            title: 'Appointment Rejected',
+            title: 'Rendez-vous refusé',
             body:
-                'Dr. $doctorName has rejected your appointment on ${startTime.toLocal().toString().substring(0, 16)}.',
+                'Dr. $doctorName a refusé votre rendez-vous du ${startTime.toLocal().toString().substring(0, 16)}.',
             senderId: doctorId,
             recipientId: patientId,
             type: NotificationType.appointmentRejected,
@@ -212,7 +212,7 @@ class RendezVousRemoteDataSourceImpl implements RendezVousRemoteDataSource {
             },
           );
         } catch (e) {
-          print('Error sending rejection notification: $e');
+          print('Erreur lors de l\'envoi de la notification de refus: $e');
           // Don't fail the status update if notification fails
         }
       } else if (status == 'canceled') {
@@ -228,9 +228,9 @@ class RendezVousRemoteDataSourceImpl implements RendezVousRemoteDataSource {
           if (isPatientCanceling) {
             // Notify doctor about patient's cancellation
             await notificationRemoteDataSource.sendNotification(
-              title: 'Appointment Canceled',
+              title: 'Rendez-vous annulé',
               body:
-                  '$patientName has canceled the appointment on ${startTime.toLocal().toString().substring(0, 16)}.',
+                  '$patientName a annulé le rendez-vous du ${startTime.toLocal().toString().substring(0, 16)}.',
               senderId: patientId,
               recipientId: doctorId,
               type: NotificationType.appointmentCanceled,
@@ -244,9 +244,9 @@ class RendezVousRemoteDataSourceImpl implements RendezVousRemoteDataSource {
           } else {
             // Notify patient about doctor's cancellation
             await notificationRemoteDataSource.sendNotification(
-              title: 'Appointment Canceled',
+              title: 'Rendez-vous annulé',
               body:
-                  'Dr. $doctorName has canceled your appointment on ${startTime.toLocal().toString().substring(0, 16)}.',
+                  'Dr. $doctorName a annulé votre rendez-vous du ${startTime.toLocal().toString().substring(0, 16)}.',
               senderId: doctorId,
               recipientId: patientId,
               type: NotificationType.appointmentCanceled,
@@ -259,7 +259,7 @@ class RendezVousRemoteDataSourceImpl implements RendezVousRemoteDataSource {
             );
           }
         } catch (e) {
-          print('Error sending cancellation notification: $e');
+          print('Erreur lors de l\'envoi de la notification d\'annulation: $e');
           // Don't fail the status update if notification fails
         }
       } else {
@@ -269,14 +269,14 @@ class RendezVousRemoteDataSourceImpl implements RendezVousRemoteDataSource {
         });
       }
 
-      print('Successfully updated appointment $rendezVousId to status $status');
+      print('Mise à jour réussie du rendez-vous $rendezVousId au statut $status');
     } on FirebaseException catch (e) {
       if (e.code == 'not-found') {
-        throw ServerMessageException('Rendezvous not found');
+        throw ServerMessageException('Rendez-vous non trouvé');
       }
-      throw ServerException('Firestore error: ${e.message}');
+      throw ServerException('Erreur de serveur: ${e.message}');
     } catch (e) {
-      throw ServerException('Unexpected error: $e');
+      throw ServerException('Erreur inattendue: $e');
     }
   }
 
@@ -295,7 +295,7 @@ class RendezVousRemoteDataSourceImpl implements RendezVousRemoteDataSource {
       }
       return 30; // Default if doctor not found
     } catch (e) {
-      print('Error fetching doctor appointment duration: $e');
+      print('Erreur lors de la récupération de la durée du rendez-vous: $e');
       return 30; // Default in case of error
     }
   }
@@ -334,9 +334,9 @@ class RendezVousRemoteDataSourceImpl implements RendezVousRemoteDataSource {
       // Send notification to the doctor (if assigned) or patient
       if (rendezVous.doctorId != null && rendezVous.doctorId!.isNotEmpty) {
         await notificationRemoteDataSource.sendNotification(
-          title: 'New Appointment Request',
+          title: 'Nouvelle demande de rendez-vous',
           body:
-              '${rendezVous.patientName} has requested an appointment on ${rendezVous.startTime.toLocal().toString().substring(0, 16)}.',
+              '${rendezVous.patientName} a demandé un rendez-vous le ${rendezVous.startTime.toLocal().toString().substring(0, 16)}.',
           senderId: rendezVous.patientId!,
           recipientId: rendezVous.doctorId!,
           type: NotificationType.newAppointment,
@@ -348,14 +348,14 @@ class RendezVousRemoteDataSourceImpl implements RendezVousRemoteDataSource {
           },
         );
         print(
-          'Sent notification for new appointment ${docRef.id} to doctor ${rendezVous.doctorId}',
+          'Notification envoyée pour le nouveau rendez-vous ${docRef.id} au médecin ${rendezVous.doctorId}',
         );
       } else {
         // Notify patient if no doctor is assigned yet
         await notificationRemoteDataSource.sendNotification(
-          title: 'Appointment Created',
+          title: 'Rendez-vous créé',
           body:
-              'Your appointment request for ${rendezVous.speciality} on ${rendezVous.startTime.toLocal().toString().substring(0, 16)} has been created.',
+              'Votre demande de rendez-vous pour ${rendezVous.speciality} le ${rendezVous.startTime.toLocal().toString().substring(0, 16)} a été créée.',
           senderId: rendezVous.patientId!,
           recipientId: rendezVous.patientId!,
           type: NotificationType.newAppointment,
@@ -368,13 +368,13 @@ class RendezVousRemoteDataSourceImpl implements RendezVousRemoteDataSource {
           },
         );
         print(
-          'Sent notification for new appointment ${docRef.id} to patient ${rendezVous.patientId}',
+          'Notification envoyée pour le nouveau rendez-vous ${docRef.id} au patient ${rendezVous.patientId}',
         );
       }
     } on FirebaseException catch (e) {
-      throw ServerException('Firestore error: ${e.message}');
+      throw ServerException('Erreur de serveur: ${e.message}');
     } catch (e) {
-      throw ServerException('Unexpected error: $e');
+      throw ServerException('Erreur inattendue: $e');
     }
   }
 
@@ -387,10 +387,10 @@ class RendezVousRemoteDataSourceImpl implements RendezVousRemoteDataSource {
     double? userLongitude,
   }) async {
     try {
-      print('Searching for doctors with specialty: $specialty');
-      print('Search radius: ${searchRadiusKm ?? "unlimited"} km');
+      print('Recherche de médecins avec spécialité: $specialty');
+      print('Rayon de recherche: ${searchRadiusKm ?? "illimité"} km');
       print(
-        'User location: ${userLatitude ?? "unknown"}, ${userLongitude ?? "unknown"}',
+        'Localisation utilisateur: ${userLatitude ?? "inconnue"}, ${userLongitude ?? "inconnue"}',
       );
 
       final doctorSnapshot =
@@ -400,7 +400,7 @@ class RendezVousRemoteDataSourceImpl implements RendezVousRemoteDataSource {
               .get();
 
       print(
-        'Found ${doctorSnapshot.docs.length} doctors with specialty $specialty',
+        'Trouvé ${doctorSnapshot.docs.length} médecins avec spécialité $specialty',
       );
 
       final doctors =
@@ -439,7 +439,7 @@ class RendezVousRemoteDataSourceImpl implements RendezVousRemoteDataSource {
 
           // Skip doctors without valid location data
           if (doctorLatitude == null || doctorLongitude == null) {
-            print('Skipping doctor ${doctor.name} - no valid location data');
+            print('Médecin ${doctor.name} ignoré - données de localisation invalides');
             continue;
           }
 
@@ -452,12 +452,12 @@ class RendezVousRemoteDataSourceImpl implements RendezVousRemoteDataSource {
           );
 
           print(
-            'Doctor ${doctor.name} distance: ${distance.toStringAsFixed(2)} km',
+            'Distance du médecin ${doctor.name}: ${distance.toStringAsFixed(2)} km',
           );
 
           // Skip doctors outside the search radius
           if (distance > searchRadiusKm) {
-            print('Skipping doctor ${doctor.name} - outside search radius');
+            print('Médecin ${doctor.name} ignoré - en dehors du rayon de recherche');
             continue;
           }
         }
@@ -476,24 +476,24 @@ class RendezVousRemoteDataSourceImpl implements RendezVousRemoteDataSource {
 
         if (rendezVousSnapshot.docs.isEmpty) {
           print(
-            'Doctor ${doctor.name} is available at ${startTime.toString()}',
+            'Médecin ${doctor.name} est disponible à ${startTime.toString()}',
           );
           availableDoctors.add(doctor);
         } else {
           print(
-            'Doctor ${doctor.name} has conflict at ${startTime.toString()} - ${rendezVousSnapshot.docs.length} appointments',
+            'Médecin ${doctor.name} a un conflit à ${startTime.toString()} - ${rendezVousSnapshot.docs.length} rendez-vous',
           );
         }
       }
 
       print(
-        'Found ${availableDoctors.length} available doctors within criteria',
+        'Trouvé ${availableDoctors.length} médecins disponibles selon les critères',
       );
       return availableDoctors;
     } on FirebaseException catch (e) {
-      throw ServerException('Firestore error: ${e.message}');
+      throw ServerException('Erreur de serveur: ${e.message}');
     } catch (e) {
-      throw ServerException('Unexpected error: $e');
+      throw ServerException('Erreur inattendue: $e');
     }
   }
 
@@ -508,7 +508,7 @@ class RendezVousRemoteDataSourceImpl implements RendezVousRemoteDataSource {
       final appointmentDoc =
           await firestore.collection('rendez_vous').doc(rendezVousId).get();
       if (!appointmentDoc.exists) {
-        throw ServerMessageException('Rendezvous not found');
+        throw ServerMessageException('Rendez-vous non trouvé');
       }
 
       final appointmentData = appointmentDoc.data() as Map<String, dynamic>;
@@ -520,7 +520,7 @@ class RendezVousRemoteDataSourceImpl implements RendezVousRemoteDataSource {
       } else if (appointmentData['startTime'] is String) {
         startTime = DateTime.parse(appointmentData['startTime'] as String);
       } else {
-        throw ServerException('Invalid startTime format in appointment');
+        throw ServerException('Format de date de début invalide dans le rendez-vous');
       }
 
       // Get the doctor's appointment duration
@@ -545,9 +545,9 @@ class RendezVousRemoteDataSourceImpl implements RendezVousRemoteDataSource {
 
       // Notify doctor
       await notificationRemoteDataSource.sendNotification(
-        title: 'New Appointment Assigned',
+        title: 'Nouveau rendez-vous assigné',
         body:
-            'You have been assigned an appointment with $patientName on ${startTime.toLocal().toString().substring(0, 16)}.',
+            'Un rendez-vous avec $patientName vous a été assigné le ${startTime.toLocal().toString().substring(0, 16)}.',
         senderId: patientId,
         recipientId: doctorId,
         type: NotificationType.newAppointment,
@@ -559,14 +559,14 @@ class RendezVousRemoteDataSourceImpl implements RendezVousRemoteDataSource {
         },
       );
       print(
-        'Sent notification for assigned appointment $rendezVousId to doctor $doctorId',
+        'Notification envoyée pour le rendez-vous assigné $rendezVousId au médecin $doctorId',
       );
 
       // Notify patient
       await notificationRemoteDataSource.sendNotification(
-        title: 'Doctor Assigned to Appointment',
+        title: 'Médecin assigné au rendez-vous',
         body:
-            'Dr. $doctorName has been assigned to your appointment on ${startTime.toLocal().toString().substring(0, 16)}.',
+            'Dr. $doctorName a été assigné à votre rendez-vous du ${startTime.toLocal().toString().substring(0, 16)}.',
         senderId: doctorId,
         recipientId: patientId,
         type: NotificationType.newAppointment,
@@ -578,15 +578,15 @@ class RendezVousRemoteDataSourceImpl implements RendezVousRemoteDataSource {
         },
       );
       print(
-        'Sent notification for assigned appointment $rendezVousId to patient $patientId',
+        'Notification envoyée pour le rendez-vous assigné $rendezVousId au patient $patientId',
       );
     } on FirebaseException catch (e) {
       if (e.code == 'not-found') {
-        throw ServerMessageException('Rendezvous not found');
+        throw ServerMessageException('Rendez-vous non trouvé');
       }
-      throw ServerException('Firestore error: ${e.message}');
+      throw ServerException('Erreur de serveur: ${e.message}');
     } catch (e) {
-      throw ServerException('Unexpected error: $e');
+      throw ServerException('Erreur inattendue: $e');
     }
   }
 }

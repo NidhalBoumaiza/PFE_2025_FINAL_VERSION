@@ -11,77 +11,71 @@ abstract class Failure extends Equatable {
 }
 
 class OfflineFailure extends Failure {
-  @override
-  String get message => 'offline_failure_message'.tr;
+  OfflineFailure() : super(message: 'Pas de connexion Internet');
 }
 
 class ServerFailure extends Failure {
-  const ServerFailure({String message = 'Server error occurred'})
+  const ServerFailure({String message = 'Une erreur de serveur est survenue'})
     : super(message: message);
 }
 
 class EmptyCacheFailure extends Failure {
-  @override
-  String get message => 'empty_cache_failure_message'.tr;
+  EmptyCacheFailure() : super(message: 'Aucune donnée trouvée en cache');
 }
 
 class ServerMessageFailure extends Failure {
   final String customMessage;
 
-  ServerMessageFailure(this.customMessage);
-
-  @override
-  String get message => customMessage;
+  ServerMessageFailure(this.customMessage) : super(message: customMessage);
 }
 
 class UnauthorizedFailure extends Failure {
-  @override
-  String get message => 'unauthorized_failure_message'.tr;
+  UnauthorizedFailure() : super(message: 'Accès non autorisé');
 }
 
 class TimeoutFailure extends Failure {
-  @override
-  String get message => 'timeout_failure_message'.tr;
+  TimeoutFailure() : super(message: 'La requête a expiré');
 }
 
 class AuthFailure extends Failure {
   final String? customMessage;
 
-  AuthFailure([this.customMessage]);
-
-  @override
-  String get message => customMessage ?? 'auth_failure_message'.tr;
+  AuthFailure([this.customMessage])
+    : super(message: customMessage ?? 'Erreur d\'authentification');
 }
 
 class UsedEmailOrPhoneNumberFailure extends Failure {
   final String? customMessage;
 
-  UsedEmailOrPhoneNumberFailure([this.customMessage]);
-
-  @override
-  String get message => customMessage ?? 'email_or_phone_number_used'.tr;
+  UsedEmailOrPhoneNumberFailure([this.customMessage])
+    : super(
+        message: customMessage ?? 'Email ou numéro de téléphone déjà utilisé',
+      );
 }
 
 class YouHaveToCreateAccountAgainFailure extends Failure {
   final String? customMessage;
 
-  YouHaveToCreateAccountAgainFailure([this.customMessage]);
-
-  @override
-  String get message => customMessage ?? 'create_account_again'.tr;
+  YouHaveToCreateAccountAgainFailure([this.customMessage])
+    : super(
+        message:
+            customMessage ??
+            'Compte inactif et code de validation expiré. Veuillez créer un nouveau compte.',
+      );
 }
 
 class CacheFailure extends Failure {
-  const CacheFailure({String message = 'Cache failure occurred'})
+  const CacheFailure({String message = 'Erreur de mise en cache'})
     : super(message: message);
 }
 
 class NetworkFailure extends Failure {
-  const NetworkFailure({String message = 'Network failure occurred'})
+  const NetworkFailure({String message = 'Erreur de réseau'})
     : super(message: message);
 }
 
 class FileFailure extends Failure {
-  const FileFailure({String message = 'File operation failure occurred'})
-    : super(message: message);
+  const FileFailure({
+    String message = 'Erreur lors de l\'opération sur le fichier',
+  }) : super(message: message);
 }

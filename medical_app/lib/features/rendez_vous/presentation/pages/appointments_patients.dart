@@ -1169,9 +1169,12 @@ class _AppointmentsPatientsState extends State<AppointmentsPatients> {
                                                   ],
                                                 ),
                                                 SizedBox(height: 16.h),
-                                                Row(
-                                                  mainAxisAlignment:
-                                                      MainAxisAlignment.center,
+                                                // Fix overflow by replacing Row with Wrap
+                                                Wrap(
+                                                  alignment:
+                                                      WrapAlignment.center,
+                                                  spacing: 8.w,
+                                                  runSpacing: 8.h,
                                                   children: [
                                                     TextButton.icon(
                                                       onPressed:
@@ -1207,7 +1210,6 @@ class _AppointmentsPatientsState extends State<AppointmentsPatients> {
                                                             ),
                                                       ),
                                                     ),
-                                                    SizedBox(width: 8.w),
                                                     if (appointment.status !=
                                                         "cancelled")
                                                       appointment.id != null &&

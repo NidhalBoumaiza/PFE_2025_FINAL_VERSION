@@ -5,16 +5,13 @@ class AppConstants {
   /// Use 'http://10.0.2.2:3000/api/v1' for Android emulators to access the host machine's localhost.
   /// Use 'http://192.168.0.8:3000/api/v1' for physical devices on the same network.
   /// For production, replace with your server URL (e.g., 'https://api.medicalapp.com/api/v1').
-  static const String baseUrl = 'http://192.168.0.100:3000/api/v1';
+  static const String baseUrl = 'http://192.168.86.174:3000/api/v1';
 
   /// Endpoint for user authentication and management.
   static String get usersEndpoint => '$baseUrl/users';
 
   /// Endpoint for email-related services.
   static const String emailServiceUrl = '$baseUrl/email';
-
-  /// Endpoint for medical dossier management.
-  static const String dossierMedicalEndpoint = '$baseUrl/dossier-medical';
 
   // Firebase Configuration
   /// Firebase project ID, obtained from the Firebase Console.

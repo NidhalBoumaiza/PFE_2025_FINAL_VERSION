@@ -391,7 +391,6 @@ wwxt8k2z9k2sCyBaXijtjTDC
                 'channel_id': _getChannelId(type),
                 'sound': sound == 'default' ? 'default' : '$sound.mp3',
                 'default_vibrate_timings': true,
-                'priority': priority == 'max' ? 'max' : 'high',
                 'visibility': priority == 'max' ? 'public' : 'private',
                 'icon': icon,
                 'color': _getNotificationColor(type),

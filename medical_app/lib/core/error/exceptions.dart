@@ -4,7 +4,7 @@ import 'package:equatable/equatable.dart';
 class ServerException extends Equatable implements Exception {
   final String message;
 
-  ServerException(this.message);
+  ServerException([this.message = 'Erreur du serveur']);
 
   @override
   List<Object?> get props => [message];
@@ -14,7 +14,7 @@ class ServerException extends Equatable implements Exception {
 class EmptyCacheException extends Equatable implements Exception {
   final String message;
 
-  EmptyCacheException(this.message);
+  EmptyCacheException([this.message = 'Aucune donnée trouvée en cache']);
 
   @override
   List<Object?> get props => [message];
@@ -24,7 +24,7 @@ class EmptyCacheException extends Equatable implements Exception {
 class OfflineException extends Equatable implements Exception {
   final String message;
 
-  OfflineException(this.message);
+  OfflineException([this.message = 'Pas de connexion Internet']);
 
   @override
   List<Object?> get props => [message];
@@ -34,7 +34,7 @@ class OfflineException extends Equatable implements Exception {
 class ServerMessageException extends Equatable implements Exception {
   final String message;
 
-  ServerMessageException(this.message);
+  ServerMessageException([this.message = 'Erreur du serveur']);
 
   @override
   List<Object?> get props => [message];
@@ -44,7 +44,7 @@ class ServerMessageException extends Equatable implements Exception {
 class UnauthorizedException extends Equatable implements Exception {
   final String message;
 
-  const UnauthorizedException([this.message = 'unauthorized_failure_message']);
+  const UnauthorizedException([this.message = 'Accès non autorisé']);
 
   @override
   List<Object?> get props => [message];
@@ -54,7 +54,7 @@ class UnauthorizedException extends Equatable implements Exception {
 class TimeoutException extends Equatable implements Exception {
   final String message;
 
-  const TimeoutException([this.message = 'Request timed out']);
+  const TimeoutException([this.message = 'La requête a expiré']);
 
   @override
   List<Object?> get props => [message];
@@ -64,7 +64,7 @@ class TimeoutException extends Equatable implements Exception {
 class AuthException extends Equatable implements Exception {
   final String message;
 
-  const AuthException([this.message = 'Authentication error']);
+  const AuthException([this.message = 'Erreur d\'authentification']);
 
   @override
   List<Object?> get props => [message];
@@ -75,7 +75,7 @@ class UsedEmailOrPhoneNumberException extends Equatable implements Exception {
   final String message;
 
   const UsedEmailOrPhoneNumberException([
-    this.message = 'Email or phone number already used',
+    this.message = 'Email ou numéro de téléphone déjà utilisé',
   ]);
 
   @override
@@ -89,7 +89,7 @@ class YouHaveToCreateAccountAgainException extends Equatable
 
   const YouHaveToCreateAccountAgainException([
     this.message =
-        'Account inactive and validation code expired. Please create a new account.',
+        'Compte inactif et code de validation expiré. Veuillez créer un nouveau compte.',
   ]);
 
   @override

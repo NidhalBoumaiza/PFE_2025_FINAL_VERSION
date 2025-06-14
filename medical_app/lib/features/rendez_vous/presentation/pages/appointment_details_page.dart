@@ -1052,6 +1052,8 @@ class _AppointmentDetailsPageState extends State<AppointmentDetailsPage> {
                                   // Cancel button (only show if not cancelled and not in the past)
                                   if (widget.appointment.status !=
                                           "cancelled" &&
+                                      widget.appointment.status !=
+                                          "completed" &&
                                       !isAppointmentPast)
                                     Padding(
                                       padding: EdgeInsets.only(top: 24.h),

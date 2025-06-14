@@ -5,7 +5,22 @@ const dotenv = require("dotenv");
 dotenv.config({ path: "./.env" });
 
 // Initialize Firebase Admin SDK early
-require("./utils/firebase");
+const { testConnection } = require("./utils/firebase");
+
+// Test Firebase connection on startup
+testConnection()
+  .then(() => {
+    console.log("✅ Firebase connection verified successfully");
+  })
+  .catch((error) => {
+    console.error(
+      "❌ Firebase connection test failed:",
+      error.message
+    );
+    console.error(
+      "Server will continue, but Firebase operations may fail"
+    );
+  });
 
 // Set NODE_ENV to development if not already set
 if (!process.env.NODE_ENV) {
